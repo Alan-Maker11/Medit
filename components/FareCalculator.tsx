@@ -1,0 +1,333 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
+import { calculateFare, formatDOP } from "@/lib/fare";
+import { SERVICE_TYPES, type FareBreakdown, type ServiceName, type TripType, type TransportationMode } from "@/lib/types";
+
+const ADDITIONAL_FEE_OPTIONS = [
+  { key: "delivery", label: "Delivery / Transportation", amount: 200 },
+  { key: "stairs", label: "Stairs / Accessibility", amount: 150 },
+  { key: "elevator", label: "Elevator usage", amount: 50 },
+] as const;
+
+export default function FareCalculator() {
+  const pickupRef = useRef<HTMLInputElement>(null);
+  const destinationRef = useRef<HTMLInputElement>(null);
+  const [mapsReady, setMapsReady] = useState(false);
+  const [mapsError, setMapsError] = useState<string | null>(() =>
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      ? null
+      : "Google Maps is not configured. Enter distance and duration manually below."
+  );
+
+  const [pickup, setPickup] = useState("");
+  const [destination, setDestination] = useState("");
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
+  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
+
+  const [serviceType, setServiceType] = useState<ServiceName>(SERVICE_TYPES[0]);
+  const [tripType, setTripType] = useState<TripType>("one-way");
+  const [mode, setMode] = useState<TransportationMode>("private");
+  const [waitingHours, setWaitingHours] = useState(0);
+  const [fees, setFees] = useState<Record<string, boolean>>({});
+
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const [breakdown, setBreakdown] = useState<FareBreakdown | null>(null);
+  const [calcError, setCalcError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return;
+
+    setOptions({ key: apiKey });
+    importLibrary("places")
+      .then(() => {
+        if (pickupRef.current) {
+          const autocomplete = new google.maps.places.Autocomplete(pickupRef.current, {
+            fields: ["formatted_address"],
+          });
+          autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            setPickup(place.formatted_address ?? pickupRef.current?.value ?? "");
+          });
+        }
+        if (destinationRef.current) {
+          const autocomplete = new google.maps.places.Autocomplete(destinationRef.current, {
+            fields: ["formatted_address"],
+          });
+          autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            setDestination(place.formatted_address ?? destinationRef.current?.value ?? "");
+          });
+        }
+        setMapsReady(true);
+      })
+      .catch(() => setMapsError("Could not load Google Maps. Enter distance and duration manually below."));
+  }, []);
+
+  async function fetchDistance() {
+    setCalcError(null);
+    if (!mapsReady || !pickup || !destination) return;
+    try {
+      const { DistanceMatrixService } = (await google.maps.importLibrary(
+        "routes"
+      )) as google.maps.RoutesLibrary;
+      const service = new DistanceMatrixService();
+      const result = await service.getDistanceMatrix({
+        origins: [pickup],
+        destinations: [destination],
+        travelMode: google.maps.TravelMode.DRIVING,
+      });
+      const element = result.rows[0]?.elements[0];
+      if (!element || element.status !== "OK") {
+        setCalcError("Could not calculate distance for those addresses.");
+        return;
+      }
+      setDistanceKm(Math.round((element.distance.value / 1000) * 10) / 10);
+      setDurationMinutes(Math.round(element.duration.value / 60));
+    } catch {
+      setCalcError("Could not calculate distance for those addresses.");
+    }
+  }
+
+  function handleCalculate() {
+    setCalcError(null);
+    if (distanceKm === null || durationMinutes === null) {
+      setCalcError("Please provide pickup/destination (or enter distance and duration manually).");
+      return;
+    }
+    const additionalFees = ADDITIONAL_FEE_OPTIONS.filter((f) => fees[f.key]).reduce(
+      (sum, f) => sum + f.amount,
+      0
+    );
+    setBreakdown(
+      calculateFare({
+        distanceKm,
+        durationMinutes,
+        tripType,
+        waitingHours: tripType === "round-trip" ? waitingHours : 0,
+        additionalFees,
+      })
+    );
+  }
+
+  const whatsappMessage = encodeURIComponent(
+    `Hola, quisiera reservar un viaje Medit.\nServicio: ${serviceType}\nDesde: ${pickup}\nHasta: ${destination}\nTipo: ${tripType}\nTotal estimado: ${
+      breakdown ? formatDOP(breakdown.totalFare) : ""
+    }\nNombre: ${name}\nTel: ${phone}`
+  );
+
+  return (
+    <div className="grid w-full max-w-5xl gap-8 md:grid-cols-2">
+      <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="text-lg font-semibold">Trip details</h2>
+
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          Pickup location
+          <input
+            ref={pickupRef}
+            value={pickup}
+            onChange={(e) => setPickup(e.target.value)}
+            onBlur={fetchDistance}
+            placeholder="Calle, sector, Santo Domingo"
+            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          Destination
+          <input
+            ref={destinationRef}
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            onBlur={fetchDistance}
+            placeholder="Hospital, aeropuerto, etc."
+            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+          />
+        </label>
+
+        {mapsError && (
+          <div className="grid grid-cols-2 gap-3">
+            <label className="flex flex-col gap-1 text-sm font-medium">
+              Distance (km)
+              <input
+                type="number"
+                min={0}
+                step={0.1}
+                value={distanceKm ?? ""}
+                onChange={(e) => setDistanceKm(e.target.value ? Number(e.target.value) : null)}
+                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-medium">
+              Duration (min)
+              <input
+                type="number"
+                min={0}
+                value={durationMinutes ?? ""}
+                onChange={(e) => setDurationMinutes(e.target.value ? Number(e.target.value) : null)}
+                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+              />
+            </label>
+          </div>
+        )}
+
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          Service type
+          <select
+            value={serviceType}
+            onChange={(e) => setServiceType(e.target.value as ServiceName)}
+            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+          >
+            {SERVICE_TYPES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="flex gap-6">
+          <fieldset className="flex flex-col gap-1 text-sm font-medium">
+            Trip type
+            <div className="flex gap-3 text-sm font-normal">
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  checked={tripType === "one-way"}
+                  onChange={() => setTripType("one-way")}
+                />
+                One-way
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  checked={tripType === "round-trip"}
+                  onChange={() => setTripType("round-trip")}
+                />
+                Round-trip
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset className="flex flex-col gap-1 text-sm font-medium">
+            Mode
+            <div className="flex gap-3 text-sm font-normal">
+              <label className="flex items-center gap-1">
+                <input type="radio" checked={mode === "private"} onChange={() => setMode("private")} />
+                Private
+              </label>
+              <label className="flex items-center gap-1">
+                <input type="radio" checked={mode === "public"} onChange={() => setMode("public")} />
+                Public (Meditiko)
+              </label>
+            </div>
+          </fieldset>
+        </div>
+
+        {tripType === "round-trip" && (
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Waiting hours at destination
+            <input
+              type="number"
+              min={0}
+              step={0.5}
+              value={waitingHours}
+              onChange={(e) => setWaitingHours(Number(e.target.value))}
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            />
+          </label>
+        )}
+
+        <fieldset className="flex flex-col gap-1 text-sm font-medium">
+          Additional fees
+          <div className="flex flex-col gap-1 text-sm font-normal">
+            {ADDITIONAL_FEE_OPTIONS.map((f) => (
+              <label key={f.key} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={!!fees[f.key]}
+                  onChange={(e) => setFees((prev) => ({ ...prev, [f.key]: e.target.checked }))}
+                />
+                {f.label} (+{formatDOP(f.amount)})
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Name (optional)
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Phone (optional)
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            />
+          </label>
+        </div>
+
+        {calcError && <p className="text-sm text-red-600">{calcError}</p>}
+
+        <button
+          onClick={handleCalculate}
+          className="mt-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+        >
+          Calculate fare
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="text-lg font-semibold">Estimated fare</h2>
+        {breakdown ? (
+          <>
+            <dl className="flex flex-col gap-2 text-sm">
+              <Row label="Base fare" value={formatDOP(breakdown.baseFare)} />
+              <Row label={`Distance (${breakdown.distanceKm} km)`} value={formatDOP(breakdown.distanceCost)} />
+              <Row label={`Duration (${breakdown.durationMinutes} min)`} value={formatDOP(breakdown.durationCost)} />
+              {breakdown.waitingCost > 0 && <Row label="Waiting time" value={formatDOP(breakdown.waitingCost)} />}
+              {breakdown.additionalFees > 0 && (
+                <Row label="Additional fees" value={formatDOP(breakdown.additionalFees)} />
+              )}
+            </dl>
+            <div className="mt-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+              <p className="text-sm text-zinc-500">Total estimated fare</p>
+              <p className="text-3xl font-bold">{formatDOP(breakdown.totalFare)}</p>
+            </div>
+            <a
+              href={`https://wa.me/?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 rounded-full bg-green-600 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-green-700"
+            >
+              Confirm booking on WhatsApp
+            </a>
+          </>
+        ) : (
+          <p className="text-sm text-zinc-500">
+            Fill in your trip details and click &ldquo;Calculate fare&rdquo; to see an estimate.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <dt className="text-zinc-500">{label}</dt>
+      <dd className="font-medium">{value}</dd>
+    </div>
+  );
+}
