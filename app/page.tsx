@@ -1,3 +1,4 @@
+import Link from "next/link";
 import FareCalculator from "@/components/FareCalculator";
 
 export default function Home() {
@@ -11,6 +12,12 @@ export default function Home() {
         </p>
       </div>
       <FareCalculator />
+      <Link
+        href="/login"
+        className="mt-12 text-xs text-zinc-400 underline-offset-2 hover:underline dark:text-zinc-600"
+      >
+        Staff login
+      </Link>
     </div>
   );
 }
