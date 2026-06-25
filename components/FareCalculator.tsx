@@ -33,7 +33,7 @@ declare global {
   }
 }
 
-export default function Calculator() {
+export default function FareCalculator() {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<CalculatorFormData>({
     defaultValues: {
       tripType: 'one-way',
@@ -74,46 +74,49 @@ export default function Calculator() {
   useEffect(() => {
     const initializeAutocomplete = () => {
       if (window.google) {
-        // Dominican Republic bounds
-        const DR_BOUNDS = new window.google.maps.LatLngBounds(
-          new window.google.maps.LatLng(17.5, -74.5),  // Southwest corner
-          new window.google.maps.LatLng(19.9, -68.3)   // Northeast corner
-        )
+        try {
+          // Dominican Republic bounds
+          const DR_BOUNDS = new window.google.maps.LatLngBounds(
+            new window.google.maps.LatLng(17.5, -74.5),  // Southwest corner
+            new window.google.maps.LatLng(19.9, -68.3)   // Northeast corner
+          )
 
-        // Santo Domingo center (for biasing results)
-        const SANTO_DOMINGO_CENTER = new window.google.maps.LatLng(18.4861, -69.9312)
+          // Santo Domingo center (for biasing results)
+          const SANTO_DOMINGO_CENTER = new window.google.maps.LatLng(18.4861, -69.9312)
 
-        // Setup pickup autocomplete
-        const pickupInput = document.getElementById('pickup') as HTMLInputElement
-        if (pickupInput) {
-          const pickup = new window.google.maps.places.Autocomplete(pickupInput, {
-            types: ['address'],
-            bounds: DR_BOUNDS,
-            strictBounds: true,  // Strictly enforce bounds
-            location: SANTO_DOMINGO_CENTER,  // Bias towards Santo Domingo
-            radius: 80000,  // 80km radius
-            componentRestrictions: { country: 'do' }  // Restrict to Dominican Republic
-          })
-          setPickupAutocomplete(pickup)
-        }
+          // Setup pickup autocomplete
+          const pickupInput = document.getElementById('pickup') as HTMLInputElement
+          if (pickupInput) {
+            const pickup = new window.google.maps.places.Autocomplete(pickupInput, {
+              types: ['address'],
+              bounds: DR_BOUNDS,
+              strictBounds: true,
+              location: SANTO_DOMINGO_CENTER,
+              radius: 80000,
+              componentRestrictions: { country: 'do' }
+            })
+            setPickupAutocomplete(pickup)
+          }
 
-        // Setup destination autocomplete
-        const destinationInput = document.getElementById('destination') as HTMLInputElement
-        if (destinationInput) {
-          const destination = new window.google.maps.places.Autocomplete(destinationInput, {
-            types: ['address'],
-            bounds: DR_BOUNDS,
-            strictBounds: true,
-            location: SANTO_DOMINGO_CENTER,
-            radius: 80000,
-            componentRestrictions: { country: 'do' }
-          })
-          setDestinationAutocomplete(destination)
+          // Setup destination autocomplete
+          const destinationInput = document.getElementById('destination') as HTMLInputElement
+          if (destinationInput) {
+            const destination = new window.google.maps.places.Autocomplete(destinationInput, {
+              types: ['address'],
+              bounds: DR_BOUNDS,
+              strictBounds: true,
+              location: SANTO_DOMINGO_CENTER,
+              radius: 80000,
+              componentRestrictions: { country: 'do' }
+            })
+            setDestinationAutocomplete(destination)
+          }
+        } catch (err) {
+          console.error('Error initializing Google Maps autocomplete:', err)
         }
       }
     }
 
-    // Small delay to ensure Google Maps is fully loaded
     const timer = setTimeout(initializeAutocomplete, 500)
     return () => clearTimeout(timer)
   }, [])
@@ -180,6 +183,7 @@ export default function Calculator() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* Form Column */}
           <div className="bg-white rounded-lg shadow-lg p-8">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
@@ -288,7 +292,7 @@ export default function Calculator() {
               </div>
 
               {error && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
                   {error}
                 </div>
               )}
@@ -303,6 +307,7 @@ export default function Calculator() {
             </form>
           </div>
 
+          {/* Results Column */}
           <div>
             {result ? (
               <div className="bg-white rounded-lg shadow-lg p-8 sticky top-8">
@@ -346,7 +351,7 @@ export default function Calculator() {
                   )}
                 </div>
 
-                <div className="border-t-2 pt-4">
+                <div className="border-t-2 pt-4 mb-6">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-gray-900">Total Fare</span>
                     <span className="text-3xl font-bold text-blue-600">
@@ -355,15 +360,15 @@ export default function Calculator() {
                   </div>
                 </div>
 
-                <p className="text-sm text-gray-500 text-center mt-6">
+                <p className="text-sm text-gray-500 text-center mb-4">
                   Contact us to confirm your booking
                 </p>
 
                 
-                  href="https://wa.me/1234567890?text=I%20would%20like%20to%20book%20a%20ride"
+                  href={`https://wa.me/1234567890?text=${encodeURIComponent(`I would like to book a ride for RD$${result.totalFare.toLocaleString()}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-4 block w-full bg-green-500 text-white py-3 rounded-lg font-medium text-center hover:bg-green-600 transition-colors"
+                  className="block w-full bg-green-500 text-white py-3 rounded-lg font-medium text-center hover:bg-green-600 transition-colors"
                 >
                   Confirm on WhatsApp
                 </a>
