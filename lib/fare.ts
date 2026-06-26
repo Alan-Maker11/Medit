@@ -19,6 +19,12 @@ export interface CalculateFareInput {
   additionalFees?: number;
 }
 
+// Meditiko's small electric vehicles travel slower than a private car:
+// 1km -> 10min, 2km -> 15min, 3km -> 20min, 4km -> 25min, 5km -> 30min.
+function publicModeDurationMinutes(distanceKm: number): number {
+  return 5 * distanceKm + 5;
+}
+
 export function calculateFare({
   distanceKm,
   durationMinutes,
@@ -28,12 +34,15 @@ export function calculateFare({
   additionalFees = 0,
 }: CalculateFareInput): FareBreakdown {
   const isPublic = mode === "public";
+  const effectiveDurationMinutes = isPublic
+    ? publicModeDurationMinutes(distanceKm)
+    : durationMinutes;
   const baseFare = isPublic ? PUBLIC_BASE_FARE : BASE_FARE;
   const distanceCost = Math.round(
     distanceKm * (isPublic ? PUBLIC_DISTANCE_RATE_PER_KM : DISTANCE_RATE_PER_KM)
   );
   const durationCost = Math.round(
-    durationMinutes * (isPublic ? PUBLIC_DURATION_RATE_PER_MIN : DURATION_RATE_PER_MIN)
+    effectiveDurationMinutes * (isPublic ? PUBLIC_DURATION_RATE_PER_MIN : DURATION_RATE_PER_MIN)
   );
   const waitingCost =
     tripType === "round-trip"
@@ -44,7 +53,7 @@ export function calculateFare({
 
   return {
     distanceKm,
-    durationMinutes,
+    durationMinutes: effectiveDurationMinutes,
     baseFare,
     distanceCost,
     durationCost,
