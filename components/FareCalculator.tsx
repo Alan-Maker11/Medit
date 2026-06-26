@@ -48,6 +48,7 @@ export default function FareCalculator() {
         if (pickupRef.current) {
           const autocomplete = new google.maps.places.Autocomplete(pickupRef.current, {
             fields: ["formatted_address"],
+            componentRestrictions: { country: "do" },
           });
           autocomplete.addListener("place_changed", () => {
             const place = autocomplete.getPlace();
@@ -57,6 +58,7 @@ export default function FareCalculator() {
         if (destinationRef.current) {
           const autocomplete = new google.maps.places.Autocomplete(destinationRef.current, {
             fields: ["formatted_address"],
+            componentRestrictions: { country: "do" },
           });
           autocomplete.addListener("place_changed", () => {
             const place = autocomplete.getPlace();
@@ -108,6 +110,7 @@ export default function FareCalculator() {
         distanceKm,
         durationMinutes,
         tripType,
+        mode,
         waitingHours: tripType === "round-trip" ? waitingHours : 0,
         additionalFees,
       })
