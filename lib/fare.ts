@@ -34,20 +34,24 @@ export function calculateFare({
   additionalFees = 0,
 }: CalculateFareInput): FareBreakdown {
   const isPublic = mode === "public";
+  const isRoundTrip = tripType === "round-trip";
+  const tripMultiplier = isRoundTrip ? 2 : 1; // round trip = the same one-way cost there and back
+
   const effectiveDurationMinutes = isPublic
     ? publicModeDurationMinutes(distanceKm)
     : durationMinutes;
-  const baseFare = isPublic ? PUBLIC_BASE_FARE : BASE_FARE;
+  const baseFare = (isPublic ? PUBLIC_BASE_FARE : BASE_FARE) * tripMultiplier;
   const distanceCost = Math.round(
-    distanceKm * (isPublic ? PUBLIC_DISTANCE_RATE_PER_KM : DISTANCE_RATE_PER_KM)
+    distanceKm * (isPublic ? PUBLIC_DISTANCE_RATE_PER_KM : DISTANCE_RATE_PER_KM) * tripMultiplier
   );
   const durationCost = Math.round(
-    effectiveDurationMinutes * (isPublic ? PUBLIC_DURATION_RATE_PER_MIN : DURATION_RATE_PER_MIN)
+    effectiveDurationMinutes *
+      (isPublic ? PUBLIC_DURATION_RATE_PER_MIN : DURATION_RATE_PER_MIN) *
+      tripMultiplier
   );
-  const waitingCost =
-    tripType === "round-trip"
-      ? Math.round(waitingHours * (isPublic ? PUBLIC_WAITING_RATE_PER_HOUR : WAITING_RATE_PER_HOUR))
-      : 0;
+  const waitingCost = isRoundTrip
+    ? Math.round(waitingHours * (isPublic ? PUBLIC_WAITING_RATE_PER_HOUR : WAITING_RATE_PER_HOUR))
+    : 0;
 
   const totalFare = baseFare + distanceCost + durationCost + waitingCost + additionalFees;
 
