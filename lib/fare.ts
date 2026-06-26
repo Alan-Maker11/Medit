@@ -35,7 +35,9 @@ export function calculateFare({
 }: CalculateFareInput): FareBreakdown {
   const isPublic = mode === "public";
   const isRoundTrip = tripType === "round-trip";
-  const tripMultiplier = isRoundTrip ? 2 : 1; // round trip = the same one-way cost there and back
+  // Public (Meditiko) round trips charge the one-way cost there and back;
+  // private round trips only add waiting time on top of a single trip cost.
+  const tripMultiplier = isPublic && isRoundTrip ? 2 : 1;
 
   const effectiveDurationMinutes = isPublic
     ? publicModeDurationMinutes(distanceKm)
