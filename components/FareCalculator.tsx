@@ -77,11 +77,11 @@ export default function FareCalculator() {
         try {
           // Dominican Republic bounds
           const DR_BOUNDS = new window.google.maps.LatLngBounds(
-            new window.google.maps.LatLng(17.5, -74.5),  // Southwest corner
-            new window.google.maps.LatLng(19.9, -68.3)   // Northeast corner
+            new window.google.maps.LatLng(17.5, -74.5),
+            new window.google.maps.LatLng(19.9, -68.3)
           )
 
-          // Santo Domingo center (for biasing results)
+          // Santo Domingo center
           const SANTO_DOMINGO_CENTER = new window.google.maps.LatLng(18.4861, -69.9312)
 
           // Setup pickup autocomplete
@@ -161,6 +161,17 @@ export default function FareCalculator() {
 
   const onSubmit = (data: CalculatorFormData) => {
     calculateFare(data)
+  }
+
+  const handleWhatsAppClick = () => {
+    if (!result) return
+    
+    const message = `Hola! Me gustaría reservar un viaje.\n\nDetalles:\n• Pickup: ${watch('pickup')}\n• Destination: ${watch('destination')}\n• Servicio: ${watch('serviceType')}\n• Costo estimado: RD$${result.totalFare.toLocaleString()}`
+    
+    const encodedMessage = encodeURIComponent(message)
+    const whatsappLink = `https://api.whatsapp.com/send?phone=18293296920&text=${encodedMessage}`
+    
+    window.open(whatsappLink, '_blank')
   }
 
   if (loading) {
@@ -361,17 +372,19 @@ export default function FareCalculator() {
                 </div>
 
                 <p className="text-sm text-gray-500 text-center mb-4">
-                  Contact us to confirm your booking
+                  Confirm your booking on WhatsApp
                 </p>
 
-                
-                  href={`https://wa.me/1234567890?text=${encodeURIComponent(`I would like to book a ride for RD$${result.totalFare.toLocaleString()}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full bg-green-500 text-white py-3 rounded-lg font-medium text-center hover:bg-green-600 transition-colors"
+                <button
+                  onClick={handleWhatsAppClick}
+                  type="button"
+                  className="w-full bg-green-500 text-white py-3 rounded-lg font-medium text-center hover:bg-green-600 transition-colors cursor-pointer flex items-center justify-center gap-2"
                 >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-4.781 1.226l-.012 7.387c0 .55.452 1.002 1.003 1.002h7.571c.55 0 1.002-.452 1.002-1.002v-7.387c-.002-.55-.453-1.002-1.004-1.002h-.782zm-4.38 8.68a.996.996 0 01-1.002-1.002c0-.552.451-1.002 1.002-1.002h7.571c.55 0 1.002.45 1.002 1.002 0 .55-.452 1.002-1.002 1.002h-7.571z"/>
+                  </svg>
                   Confirm on WhatsApp
-                </a>
+                </button>
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow-lg p-8 text-center">
