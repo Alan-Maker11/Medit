@@ -57,6 +57,7 @@ export async function POST(request: Request) {
     distanceKm: Number(distance_km),
     durationMinutes: Number(duration_minutes),
     tripType: trip_type,
+    mode: transportation_mode || "private",
     waitingHours: Number(waiting_hours ?? 0),
     additionalFees: Number(additional_fees ?? 0),
   });

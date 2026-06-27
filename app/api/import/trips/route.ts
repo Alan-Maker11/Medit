@@ -5,6 +5,19 @@ import { SERVICE_TYPES } from "@/lib/types";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+function getField(row: Record<string, string>, names: string[]): string | undefined {
+  for (const name of names) {
+    const value = row[name.toLowerCase()];
+    if (value !== undefined && value !== "") return value;
+  }
+  return undefined;
+}
+
+function parsePrice(raw: string | undefined): number {
+  if (!raw) return NaN;
+  return Number(raw.replace(/[^0-9.-]/g, ""));
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
   const formData = await request.formData();
@@ -31,25 +44,21 @@ export async function POST(request: Request) {
 
   rows.forEach((row, index) => {
     const rowNum = index + 2; // account for header row
-    const date = row.date;
-    const price = Number(row.price);
-    const serviceType = row.service_type;
-    const clientName = row.client_name;
+    const date = getField(row, ["date"]);
+    const price = parsePrice(getField(row, ["price"]));
+    const serviceType = getField(row, ["service_type", "type of transportation"]);
+    const clientName = getField(row, ["client_name", "customer name"]) ?? "";
 
     if (!date || !DATE_RE.test(date)) {
       errors.push(`Row ${rowNum}: invalid date "${date}"`);
       return;
     }
-    if (!row.price || Number.isNaN(price)) {
-      errors.push(`Row ${rowNum}: invalid price "${row.price}"`);
+    if (Number.isNaN(price)) {
+      errors.push(`Row ${rowNum}: invalid price "${getField(row, ["price"])}"`);
       return;
     }
     if (!serviceType || !SERVICE_TYPES.some((s) => s.toLowerCase() === serviceType.toLowerCase())) {
       errors.push(`Row ${rowNum}: unknown service_type "${serviceType}"`);
-      return;
-    }
-    if (!clientName) {
-      errors.push(`Row ${rowNum}: missing client_name`);
       return;
     }
 

@@ -37,9 +37,17 @@ export default async function VehiclesPage() {
           >
             <div className="flex items-center justify-between">
               <h3 className="font-semibold">{vehicle.name}</h3>
-              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs capitalize dark:bg-zinc-800">
-                {vehicle.status}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs capitalize dark:bg-zinc-800">
+                  {vehicle.status}
+                </span>
+                <Link
+                  href={`/admin/vehicles/${vehicle.id}/edit`}
+                  className="text-xs font-medium text-blue-600 hover:underline"
+                >
+                  Edit
+                </Link>
+              </div>
             </div>
             <p className="text-sm text-zinc-500">{vehicle.type ?? "-"} · {vehicle.license_plate ?? "no plate"}</p>
             <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
