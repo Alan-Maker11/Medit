@@ -1,42 +1,56 @@
 export function parseCsv(text: string): Record<string, string>[] {
-  const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
-  if (lines.length === 0) return [];
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let current = "";
+  let inQuotes = false;
 
-  const parseLine = (line: string): string[] => {
-    const cells: string[] = [];
-    let current = "";
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (inQuotes) {
-        if (char === '"' && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else if (char === '"') {
-          inQuotes = false;
-        } else {
-          current += char;
-        }
+  const pushCell = () => {
+    row.push(current.trim());
+    current = "";
+  };
+  const pushRow = () => {
+    pushCell();
+    rows.push(row);
+    row = [];
+  };
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (inQuotes) {
+      if (char === '"' && text[i + 1] === '"') {
+        current += '"';
+        i++;
       } else if (char === '"') {
-        inQuotes = true;
-      } else if (char === ",") {
-        cells.push(current);
-        current = "";
+        inQuotes = false;
       } else {
         current += char;
       }
+      continue;
     }
-    cells.push(current);
-    return cells.map((c) => c.trim());
-  };
 
-  const headers = parseLine(lines[0]).map((h) => h.toLowerCase());
-  return lines.slice(1).map((line) => {
-    const values = parseLine(line);
-    const row: Record<string, string> = {};
+    if (char === '"') {
+      inQuotes = true;
+    } else if (char === ",") {
+      pushCell();
+    } else if (char === "\r") {
+      // ignore; \n (or end of text) terminates the row
+    } else if (char === "\n") {
+      pushRow();
+    } else {
+      current += char;
+    }
+  }
+  if (current.length > 0 || row.length > 0) pushRow();
+
+  const nonEmptyRows = rows.filter((r) => !(r.length === 1 && r[0] === ""));
+  if (nonEmptyRows.length === 0) return [];
+
+  const headers = nonEmptyRows[0].map((h) => h.toLowerCase());
+  return nonEmptyRows.slice(1).map((values) => {
+    const record: Record<string, string> = {};
     headers.forEach((header, idx) => {
-      row[header] = values[idx] ?? "";
+      record[header] = values[idx] ?? "";
     });
-    return row;
+    return record;
   });
 }
