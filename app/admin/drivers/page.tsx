@@ -26,6 +26,7 @@ export default async function DriversPage() {
               <th className="px-4 py-3">Base salary</th>
               <th className="px-4 py-3">Overtime rate</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
@@ -40,11 +41,16 @@ export default async function DriversPage() {
                   {driver.overtime_hourly_rate ? formatDOP(driver.overtime_hourly_rate) + "/hr" : "-"}
                 </td>
                 <td className="px-4 py-3 capitalize">{driver.status}</td>
+                <td className="px-4 py-3">
+                  <Link href={`/admin/drivers/${driver.id}`} className="text-xs font-medium text-blue-600 hover:underline">
+                    Edit / Overtime
+                  </Link>
+                </td>
               </tr>
             ))}
             {(!drivers || drivers.length === 0) && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-zinc-500">
                   No drivers yet.
                 </td>
               </tr>

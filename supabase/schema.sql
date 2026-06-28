@@ -93,6 +93,7 @@ create table if not exists expenses (
   category varchar(100) not null check (category in ('gas', 'maintenance', 'insurance', 'registration', 'tolls', 'repairs')),
   vehicle_id uuid references vehicles(id),
   amount numeric(12, 2) not null,
+  km_at_fill numeric(12, 2),
   description text,
   receipt_url varchar(500),
   status varchar(50) default 'recorded' check (status in ('recorded', 'verified')),
@@ -155,6 +156,9 @@ insert into services (name, description) values
   ('Recreativa', 'Recreational activity transportation'),
   ('Subir/Bajar', 'Pickup/dropoff service')
 on conflict (name) do nothing;
+
+-- Migration: add km_at_fill to expenses for existing databases
+alter table expenses add column if not exists km_at_fill numeric(12, 2);
 
 -- Indexes
 create index if not exists idx_trips_date on trips(date);

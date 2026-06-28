@@ -21,6 +21,7 @@ export default function NewExpensePage() {
     category: EXPENSE_CATEGORIES[0],
     vehicle_id: "",
     amount: "",
+    km_at_fill: "",
     description: "",
   });
 
@@ -96,6 +97,18 @@ export default function NewExpensePage() {
             className="input"
           />
         </label>
+        {form.category === "gas" && (
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Odometer reading (km)
+            <input
+              type="number"
+              step="0.1"
+              value={form.km_at_fill}
+              onChange={(e) => update("km_at_fill", e.target.value)}
+              className="input"
+            />
+          </label>
+        )}
         <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
           Notes
           <textarea value={form.description} onChange={(e) => update("description", e.target.value)} className="input" rows={3} />

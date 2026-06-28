@@ -6,11 +6,28 @@ export default async function ExpensesPage() {
   const supabase = await createClient();
   const { data: expenses } = await supabase
     .from("expenses")
-    .select("id, date, category, amount, description, vehicles(name)")
+    .select("id, date, category, amount, km_at_fill, vehicle_id, description, vehicles(name)")
     .order("date", { ascending: false })
     .limit(100);
 
   const total = (expenses ?? []).reduce((sum, e) => sum + (e.amount ?? 0), 0);
+
+  // km/tank = km since the previous gas fill-up for the same vehicle
+  const kmPerTankById = new Map<string, number | null>();
+  const gasByVehicle = new Map<string, { id: string; date: string; km_at_fill: number | null }[]>();
+  for (const e of expenses ?? []) {
+    if (e.category !== "gas" || e.km_at_fill == null || !e.vehicle_id) continue;
+    const list = gasByVehicle.get(e.vehicle_id) ?? [];
+    list.push({ id: e.id, date: e.date, km_at_fill: e.km_at_fill });
+    gasByVehicle.set(e.vehicle_id, list);
+  }
+  for (const list of gasByVehicle.values()) {
+    list.sort((a, b) => a.date.localeCompare(b.date));
+    list.forEach((entry, i) => {
+      const prev = list[i - 1];
+      kmPerTankById.set(entry.id, prev ? (entry.km_at_fill ?? 0) - (prev.km_at_fill ?? 0) : entry.km_at_fill);
+    });
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -32,6 +49,8 @@ export default async function ExpensesPage() {
               <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Vehicle</th>
               <th className="px-4 py-3">Amount</th>
+              <th className="px-4 py-3">Km</th>
+              <th className="px-4 py-3">Km/tank</th>
               <th className="px-4 py-3">Notes</th>
             </tr>
           </thead>
@@ -42,12 +61,14 @@ export default async function ExpensesPage() {
                 <td className="px-4 py-3 capitalize">{expense.category}</td>
                 <td className="px-4 py-3">{(expense.vehicles as unknown as { name: string } | null)?.name ?? "-"}</td>
                 <td className="px-4 py-3">{formatDOP(expense.amount)}</td>
+                <td className="px-4 py-3">{expense.km_at_fill ?? "-"}</td>
+                <td className="px-4 py-3">{kmPerTankById.get(expense.id) ?? "-"}</td>
                 <td className="px-4 py-3">{expense.description ?? "-"}</td>
               </tr>
             ))}
             {(!expenses || expenses.length === 0) && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
+                <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
                   No expenses logged yet.
                 </td>
               </tr>

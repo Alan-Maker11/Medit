@@ -5,12 +5,6 @@ import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { calculateFare, formatDOP } from "@/lib/fare";
 import { SERVICE_TYPES, type FareBreakdown, type ServiceName, type TripType, type TransportationMode } from "@/lib/types";
 
-const ADDITIONAL_FEE_OPTIONS = [
-  { key: "delivery", label: "Delivery / Transportation", amount: 200 },
-  { key: "stairs", label: "Stairs / Accessibility", amount: 150 },
-  { key: "elevator", label: "Elevator usage", amount: 50 },
-] as const;
-
 export default function FareCalculator() {
   const pickupRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
@@ -30,7 +24,9 @@ export default function FareCalculator() {
   const [tripType, setTripType] = useState<TripType>("one-way");
   const [mode, setMode] = useState<TransportationMode>("private");
   const [waitingHours, setWaitingHours] = useState(0);
-  const [fees, setFees] = useState<Record<string, boolean>>({});
+  const [deliveryFee, setDeliveryFee] = useState("0");
+  const [wheelchair, setWheelchair] = useState(false);
+  const [stairsElevator, setStairsElevator] = useState(false);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -101,10 +97,7 @@ export default function FareCalculator() {
       setCalcError("Please provide pickup/destination (or enter distance and duration manually).");
       return;
     }
-    const additionalFees = ADDITIONAL_FEE_OPTIONS.filter((f) => fees[f.key]).reduce(
-      (sum, f) => sum + f.amount,
-      0
-    );
+    const additionalFees = (Number(deliveryFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 : 0);
     setBreakdown(
       calculateFare({
         distanceKm,
@@ -245,19 +238,31 @@ export default function FareCalculator() {
           </label>
         )}
 
-        <fieldset className="flex flex-col gap-1 text-sm font-medium">
+        <fieldset className="flex flex-col gap-2 text-sm font-medium">
           Additional fees
-          <div className="flex flex-col gap-1 text-sm font-normal">
-            {ADDITIONAL_FEE_OPTIONS.map((f) => (
-              <label key={f.key} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={!!fees[f.key]}
-                  onChange={(e) => setFees((prev) => ({ ...prev, [f.key]: e.target.checked }))}
-                />
-                {f.label} (+{formatDOP(f.amount)})
-              </label>
-            ))}
+          <div className="flex flex-col gap-2 text-sm font-normal">
+            <label className="flex items-center gap-2">
+              Transportation / Delivery (DOP)
+              <input
+                type="number"
+                min={0}
+                value={deliveryFee}
+                onChange={(e) => setDeliveryFee(e.target.value)}
+                className="w-28 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+              />
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={wheelchair} onChange={(e) => setWheelchair(e.target.checked)} />
+              Wheelchair (+{formatDOP(350)})
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={stairsElevator}
+                onChange={(e) => setStairsElevator(e.target.checked)}
+              />
+              Stairs / Elevator (+{formatDOP(500)})
+            </label>
           </div>
         </fieldset>
 
