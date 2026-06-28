@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   rows.forEach((row, index) => {
     const rowNum = index + 2; // account for header row
     const date = getField(row, ["date"]);
-    const price = parsePrice(getField(row, ["price"]));
+    const rawPrice = getField(row, ["price"]);
     const serviceType = getField(row, ["service_type", "type of transportation"]);
     const clientName = getField(row, ["client_name", "customer name"]) ?? "";
 
@@ -53,6 +53,12 @@ export async function POST(request: Request) {
       errors.push(`Row ${rowNum}: invalid date "${date}"`);
       return;
     }
+    if (!rawPrice && !serviceType) {
+      // No trip recorded for this day (day off, holiday, blank placeholder row)
+      skipped++;
+      return;
+    }
+    const price = parsePrice(rawPrice);
     if (Number.isNaN(price)) {
       errors.push(`Row ${rowNum}: invalid price "${getField(row, ["price"])}"`);
       return;
