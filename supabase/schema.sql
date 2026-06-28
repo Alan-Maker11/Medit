@@ -121,6 +121,17 @@ create table if not exists driver_compensation (
   unique (driver_id, month)
 );
 
+-- overtime_entries table (per-day overtime/diet log feeding driver_compensation)
+create table if not exists overtime_entries (
+  id uuid primary key default gen_random_uuid(),
+  driver_id uuid not null references drivers(id) on delete cascade,
+  date date not null,
+  hours numeric(10, 2) default 0,
+  dieta_amount numeric(12, 2) default 0,
+  notes text,
+  created_at timestamptz default now()
+);
+
 -- reports table (cache weekly reports)
 create table if not exists reports (
   id uuid primary key default gen_random_uuid(),
@@ -160,6 +171,17 @@ on conflict (name) do nothing;
 -- Migration: add km_at_fill to expenses for existing databases
 alter table expenses add column if not exists km_at_fill numeric(12, 2);
 
+-- Migration: create overtime_entries for existing databases
+create table if not exists overtime_entries (
+  id uuid primary key default gen_random_uuid(),
+  driver_id uuid not null references drivers(id) on delete cascade,
+  date date not null,
+  hours numeric(10, 2) default 0,
+  dieta_amount numeric(12, 2) default 0,
+  notes text,
+  created_at timestamptz default now()
+);
+
 -- Indexes
 create index if not exists idx_trips_date on trips(date);
 create index if not exists idx_trips_driver on trips(driver_id);
@@ -179,6 +201,7 @@ alter table expenses enable row level security;
 alter table driver_compensation enable row level security;
 alter table reports enable row level security;
 alter table import_logs enable row level security;
+alter table overtime_entries enable row level security;
 
 create policy "Authenticated users can manage services" on services
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
@@ -200,4 +223,6 @@ create policy "Authenticated users can manage driver_compensation" on driver_com
 create policy "Authenticated users can manage reports" on reports
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "Authenticated users can manage import_logs" on import_logs
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "Authenticated users can manage overtime_entries" on overtime_entries
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');

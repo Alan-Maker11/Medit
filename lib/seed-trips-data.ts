@@ -1,0 +1,4257 @@
+export interface SeedTrip {
+  date: string;
+  price: number;
+  service: string | null;
+  client_name: string | null;
+}
+
+export const SEED_TRIPS: SeedTrip[] = [
+  {
+    "date": "2024-10-03",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2024-10-08",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2024-10-25",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2024-11-14",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2024-11-15",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2024-11-24",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2024-11-27",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2024-11-27",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2024-11-30",
+    "price": 6000,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2024-12-05",
+    "price": 3000,
+    "service": "Pre Cirugia",
+    "client_name": "Primera semana de Raul"
+  },
+  {
+    "date": "2024-12-05",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2024-12-06",
+    "price": 2000,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2024-12-07",
+    "price": 0,
+    "service": "Post Cirugia",
+    "client_name": "Cristhel"
+  },
+  {
+    "date": "2024-12-10",
+    "price": 1200,
+    "service": "Post Cirugia",
+    "client_name": "El abuelo"
+  },
+  {
+    "date": "2024-12-10",
+    "price": 1000,
+    "service": "Pre Cirugia",
+    "client_name": "Gigante"
+  },
+  {
+    "date": "2024-12-11",
+    "price": 1000,
+    "service": "Post Cirugia",
+    "client_name": "Gigante"
+  },
+  {
+    "date": "2024-12-12",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2024-12-15",
+    "price": 1800,
+    "service": "Recreativa",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2024-12-16",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Gigante"
+  },
+  {
+    "date": "2024-12-17",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Heidi Tineo"
+  },
+  {
+    "date": "2024-12-18",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Sandra Brea"
+  },
+  {
+    "date": "2024-12-19",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2024-12-20",
+    "price": 1800,
+    "service": "Cita Medica",
+    "client_name": "Soraya Nivar"
+  },
+  {
+    "date": "2024-12-20",
+    "price": 2100,
+    "service": "Aeropuerto",
+    "client_name": "Luxury Recovery"
+  },
+  {
+    "date": "2024-12-26",
+    "price": 1800,
+    "service": "Terapia",
+    "client_name": "Sandra Brea"
+  },
+  {
+    "date": "2024-12-26",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2024-12-27",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": "Gigante"
+  },
+  {
+    "date": "2024-12-27",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Heidi Tineo"
+  },
+  {
+    "date": "2024-12-27",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2024-12-28",
+    "price": 6000,
+    "service": "Aeropuerto",
+    "client_name": "Marcia Zabala"
+  },
+  {
+    "date": "2024-12-29",
+    "price": 500,
+    "service": "Eventos",
+    "client_name": "Paloma (aventura)"
+  },
+  {
+    "date": "2024-12-30",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-01-02",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-01-02",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2025-01-03",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2025-01-07",
+    "price": 1500,
+    "service": "Post Cirugia",
+    "client_name": "Sandra Brea"
+  },
+  {
+    "date": "2025-01-09",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2025-01-10",
+    "price": 800,
+    "service": "Terapia",
+    "client_name": "Heidi Tineo"
+  },
+  {
+    "date": "2025-01-13",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Heidi Tineo"
+  },
+  {
+    "date": "2025-01-13",
+    "price": 1800,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2025-01-14",
+    "price": 5000,
+    "service": "Post Cirugia",
+    "client_name": "Janna Cecilip"
+  },
+  {
+    "date": "2025-01-14",
+    "price": 1000,
+    "service": "Recreativa",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-01-15",
+    "price": 3000,
+    "service": "Post Cirugia",
+    "client_name": "Janna Cecilip"
+  },
+  {
+    "date": "2025-01-16",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2025-01-17",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Heidi Tineo"
+  },
+  {
+    "date": "2025-01-18",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-01-19",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-01-21",
+    "price": 2000,
+    "service": "Eventos",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2025-01-22",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Heidi Tineo"
+  },
+  {
+    "date": "2025-01-23",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2025-01-24",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Heidi Tineo"
+  },
+  {
+    "date": "2025-01-25",
+    "price": 8700,
+    "service": "Recreativa",
+    "client_name": "Nisalli Alcantara"
+  },
+  {
+    "date": "2025-01-26",
+    "price": 1300,
+    "service": "Post Cirugia",
+    "client_name": "Jacqueline firpo"
+  },
+  {
+    "date": "2025-01-27",
+    "price": 4500,
+    "service": "Eventos",
+    "client_name": "Yafreisy Gonzalez"
+  },
+  {
+    "date": "2025-01-27",
+    "price": 3200,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo."
+  },
+  {
+    "date": "2025-01-28",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-01-30",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2025-02-01",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Indhira Hernan"
+  },
+  {
+    "date": "2025-01-22",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-02-03",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo."
+  },
+  {
+    "date": "2025-02-04",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-02-06",
+    "price": 1800,
+    "service": "Cita Medica",
+    "client_name": "Corayma Optica oviedo"
+  },
+  {
+    "date": "2025-02-06",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2025-02-06",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": "Benedikt"
+  },
+  {
+    "date": "2025-02-08",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2025-02-08",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-02-09",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-02-10",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo."
+  },
+  {
+    "date": "2025-02-11",
+    "price": 1200,
+    "service": "Pre Cirugia",
+    "client_name": "Gigante"
+  },
+  {
+    "date": "2025-02-11",
+    "price": 2600,
+    "service": "Recreativa",
+    "client_name": "Melissa Intec"
+  },
+  {
+    "date": "2025-02-12",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": null
+  },
+  {
+    "date": "2025-02-13",
+    "price": 1500,
+    "service": "Terapia",
+    "client_name": "Dra. Rosanna"
+  },
+  {
+    "date": "2025-02-14",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Rudy a Cemdoe"
+  },
+  {
+    "date": "2025-02-17",
+    "price": 3200,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo."
+  },
+  {
+    "date": "2025-02-18",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-02-19",
+    "price": 1800,
+    "service": "Cita Medica",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2025-02-21",
+    "price": 1200,
+    "service": "Post Cirugia",
+    "client_name": "Wilber Baez"
+  },
+  {
+    "date": "2025-02-21",
+    "price": 2300,
+    "service": "Cita Medica",
+    "client_name": "Maria Celeste"
+  },
+  {
+    "date": "2025-02-22",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-02-24",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-02-25",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-02-26",
+    "price": 2000,
+    "service": "Post Cirugia",
+    "client_name": "Wilber Baez"
+  },
+  {
+    "date": "2025-02-27",
+    "price": 0,
+    "service": "Post Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-02-28",
+    "price": 2200,
+    "service": "Cita Medica",
+    "client_name": "Maria Celeste"
+  },
+  {
+    "date": "2025-03-01",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-03-02",
+    "price": 3200,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo."
+  },
+  {
+    "date": "2025-03-04",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-03-05",
+    "price": 2000,
+    "service": "Post Cirugia",
+    "client_name": "Wilber Baez"
+  },
+  {
+    "date": "2025-03-07",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "Maria Celeste"
+  },
+  {
+    "date": "2025-03-09",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-03-10",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-03-11",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-03-12",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo."
+  },
+  {
+    "date": "2025-03-12",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Oskar"
+  },
+  {
+    "date": "2025-03-13",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-03-16",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-03-17",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-03-18",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-03-19",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Nouel"
+  },
+  {
+    "date": "2025-03-20",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Glenny villanueva"
+  },
+  {
+    "date": "2025-03-21",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Nouel"
+  },
+  {
+    "date": "2025-03-23",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-03-24",
+    "price": 2500,
+    "service": "Eventos",
+    "client_name": "Clemencia Nouel"
+  },
+  {
+    "date": "2025-03-25",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": "Luisana Roa"
+  },
+  {
+    "date": "2025-03-25",
+    "price": 1000,
+    "service": "Cita Medica",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-03-26",
+    "price": 500,
+    "service": "Cita Medica",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-03-26",
+    "price": 5000,
+    "service": "Cita Medica",
+    "client_name": "Williana Encarnacion"
+  },
+  {
+    "date": "2025-03-27",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Glenny Villanueva"
+  },
+  {
+    "date": "2025-03-27",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Clemencia Nouel"
+  },
+  {
+    "date": "2025-03-29",
+    "price": 3200,
+    "service": "Cita Medica",
+    "client_name": "Chriss Contreras"
+  },
+  {
+    "date": "2025-03-31",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-01",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-02",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Melissa Ventura"
+  },
+  {
+    "date": "2025-04-04",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-05",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-06",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-07",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Williana Encarnacion"
+  },
+  {
+    "date": "2025-04-08",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-09",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-04-11",
+    "price": 6200,
+    "service": "Aeropuerto",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2025-04-12",
+    "price": 6200,
+    "service": "Aeropuerto",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2025-04-12",
+    "price": 2800,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-04-12",
+    "price": 2400,
+    "service": "Recreativa",
+    "client_name": "Sarah Mojica"
+  },
+  {
+    "date": "2025-04-13",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Clemencia Nouel"
+  },
+  {
+    "date": "2025-04-14",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Williana Encarnacion"
+  },
+  {
+    "date": "2025-04-14",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-04-16",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-04-16",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-17",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-18",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-20",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "OFF"
+  },
+  {
+    "date": "2025-04-21",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": "OFF"
+  },
+  {
+    "date": "2025-04-22",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "OFF"
+  },
+  {
+    "date": "2025-04-23",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": "OFF"
+  },
+  {
+    "date": "2025-04-24",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": "OFF"
+  },
+  {
+    "date": "2025-04-25",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": "OFF"
+  },
+  {
+    "date": "2025-04-26",
+    "price": 9000,
+    "service": "Aeropuerto",
+    "client_name": "Veronica Kavaliova"
+  },
+  {
+    "date": "2025-04-27",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-28",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-29",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-04-30",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Melissa Ventura"
+  },
+  {
+    "date": "2025-05-01",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Melissa Ventura"
+  },
+  {
+    "date": "2025-05-02",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-05-02",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Clemencia Nouel"
+  },
+  {
+    "date": "2025-05-03",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-05-05",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-06",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-07",
+    "price": 1300,
+    "service": "Terapia",
+    "client_name": "Louisiana Roa"
+  },
+  {
+    "date": "2025-05-08",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-05-09",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-10",
+    "price": 2300,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-05-11",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-12",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-13",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-14",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-15",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-16",
+    "price": 4500,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-05-17",
+    "price": 1000,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-05-18",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-19",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-20",
+    "price": 1000,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-05-21",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-05-21",
+    "price": 2300,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-05-22",
+    "price": 700,
+    "service": "Cita Medica",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-05-23",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-05-23",
+    "price": 6000,
+    "service": "Aeropuerto",
+    "client_name": "Alondra Candelario"
+  },
+  {
+    "date": "2025-05-26",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-27",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-05-28",
+    "price": 1200,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-05-29",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-05-29",
+    "price": 2300,
+    "service": "Cita Medica",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-05-30",
+    "price": 1000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-05-30",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-05-31",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Alondra Candelario"
+  },
+  {
+    "date": "2025-06-02",
+    "price": 3500,
+    "service": "Aeropuerto",
+    "client_name": "Alondra Candelario"
+  },
+  {
+    "date": "2025-06-03",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-04",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2025-06-04",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-06-05",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-06",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-06-07",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-08",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-09",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-06-10",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-11",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-12",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-06-13",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-14",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-06-15",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-16",
+    "price": 3500,
+    "service": "Aeropuerto",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-06-17",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-18",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-06-18",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-06-19",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2025-06-20",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-06-21",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-22",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-23",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2025-06-24",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-25",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Margarita"
+  },
+  {
+    "date": "2025-06-25",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-06-27",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-06-28",
+    "price": 2000,
+    "service": "Recreativa",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2025-06-29",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-06-30",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-07-01",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-07-02",
+    "price": 2000,
+    "service": "Post Cirugia",
+    "client_name": "Luisa Martinez"
+  },
+  {
+    "date": "2025-07-02",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-07-03",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-07-04",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-07-05",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-07-06",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-07-07",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-07-08",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-07-09",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2025-07-09",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-07-10",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-07-10",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-07-10",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Marilyn"
+  },
+  {
+    "date": "2025-07-11",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-07-12",
+    "price": 4500,
+    "service": "Eventos",
+    "client_name": "Daiana Pichardo"
+  },
+  {
+    "date": "2025-07-13",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-07-14",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-07-15",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-07-16",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-07-17",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-07-17",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Argentina"
+  },
+  {
+    "date": "2025-07-18",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-07-18",
+    "price": 1600,
+    "service": "Cita Medica",
+    "client_name": "Jose Ivant"
+  },
+  {
+    "date": "2025-07-18",
+    "price": 1800,
+    "service": "Cita Medica",
+    "client_name": "Julliette Cabanillas"
+  },
+  {
+    "date": "2025-07-18",
+    "price": 1000,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-07-19",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-07-20",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": "Julliette Cabanillas"
+  },
+  {
+    "date": "2025-07-21",
+    "price": 1200,
+    "service": "Post Cirugia",
+    "client_name": "Sara Verdugo"
+  },
+  {
+    "date": "2025-07-22",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo"
+  },
+  {
+    "date": "2025-07-23",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-07-23",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo"
+  },
+  {
+    "date": "2025-07-23",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Luisana Roa"
+  },
+  {
+    "date": "2025-07-25",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-07-25",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo"
+  },
+  {
+    "date": "2025-07-26",
+    "price": 3300,
+    "service": "Recreativa",
+    "client_name": "Luis Aparicio"
+  },
+  {
+    "date": "2025-07-27",
+    "price": 6000,
+    "service": "Recreativa",
+    "client_name": "Marilyn"
+  },
+  {
+    "date": "2025-07-27",
+    "price": 6000,
+    "service": "Recreativa",
+    "client_name": "Diana Pichardo"
+  },
+  {
+    "date": "2025-07-28",
+    "price": 1800,
+    "service": "Terapia",
+    "client_name": "Sara Verdugo"
+  },
+  {
+    "date": "2025-07-29",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": null
+  },
+  {
+    "date": "2025-07-30",
+    "price": 1800,
+    "service": "Eventos",
+    "client_name": "Sugehy SD Este"
+  },
+  {
+    "date": "2025-07-31",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo"
+  },
+  {
+    "date": "2025-08-01",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-08-02",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Sandra Molina"
+  },
+  {
+    "date": "2025-08-04",
+    "price": 1600,
+    "service": "Terapia",
+    "client_name": "Sara Verdugo"
+  },
+  {
+    "date": "2025-08-04",
+    "price": 1500,
+    "service": "Post Cirugia",
+    "client_name": "Nilda Diaz"
+  },
+  {
+    "date": "2025-08-05",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-06",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-07",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-08",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-08-08",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-09",
+    "price": 5000,
+    "service": "Recreativa",
+    "client_name": "Diana Pichardo"
+  },
+  {
+    "date": "2025-08-10",
+    "price": 1300,
+    "service": "Recreativa",
+    "client_name": "Elizabeth Martinez"
+  },
+  {
+    "date": "2025-08-11",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-11",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-11",
+    "price": 1800,
+    "service": "Cita Medica",
+    "client_name": "Sandra Molina"
+  },
+  {
+    "date": "2025-08-12",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-12",
+    "price": 4500,
+    "service": "Cita Medica",
+    "client_name": "Eddy Fernandez"
+  },
+  {
+    "date": "2025-08-13",
+    "price": 1600,
+    "service": "Terapia",
+    "client_name": "Sara Verdugo"
+  },
+  {
+    "date": "2025-08-13",
+    "price": 1800,
+    "service": "Cita Medica",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-08-14",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-15",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-15",
+    "price": 2200,
+    "service": "Recreativa",
+    "client_name": "Rafael Leandro Morales"
+  },
+  {
+    "date": "2025-08-15",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Nilda Diaz"
+  },
+  {
+    "date": "2025-08-18",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-19",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-19",
+    "price": 1800,
+    "service": "Cita Medica",
+    "client_name": "Ana Gilda"
+  },
+  {
+    "date": "2025-08-19",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo"
+  },
+  {
+    "date": "2025-08-20",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-21",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-22",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-23",
+    "price": 5000,
+    "service": "Eventos",
+    "client_name": "Mauricio Caceres"
+  },
+  {
+    "date": "2025-08-23",
+    "price": 7500,
+    "service": "Recreativa",
+    "client_name": "Sandra Molina"
+  },
+  {
+    "date": "2025-08-25",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-26",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-26",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-08-26",
+    "price": 4500,
+    "service": "Cita Medica",
+    "client_name": "Emilio Sosa"
+  },
+  {
+    "date": "2025-08-27",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-28",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-29",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-08-30",
+    "price": 1500,
+    "service": "Recreativa",
+    "client_name": "Simone Morillo"
+  },
+  {
+    "date": "2025-08-31",
+    "price": 2200,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-09-01",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-01",
+    "price": 1000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-02",
+    "price": 500,
+    "service": "Eventos",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-09-03",
+    "price": 2800,
+    "service": "Cita Medica",
+    "client_name": "Nilda Diaz"
+  },
+  {
+    "date": "2025-09-04",
+    "price": 0,
+    "service": null,
+    "client_name": "Oskar Obama"
+  },
+  {
+    "date": "2025-09-05",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-08",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-09",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-09-10",
+    "price": 6300,
+    "service": "Aeropuerto",
+    "client_name": "Jaime Skeete"
+  },
+  {
+    "date": "2025-09-10",
+    "price": 6300,
+    "service": "Aeropuerto",
+    "client_name": "Joan Butcher"
+  },
+  {
+    "date": "2025-09-10",
+    "price": 6300,
+    "service": "Aeropuerto",
+    "client_name": "Sudhir Ramessar"
+  },
+  {
+    "date": "2025-09-10",
+    "price": 6300,
+    "service": "Aeropuerto",
+    "client_name": "Neville Sinclair"
+  },
+  {
+    "date": "2025-09-10",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Lucia Luciano"
+  },
+  {
+    "date": "2025-09-11",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-12",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-12",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Jorge Isaac"
+  },
+  {
+    "date": "2025-09-12",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-13",
+    "price": 1800,
+    "service": "Post Cirugia",
+    "client_name": "Yadoris Encarnacion"
+  },
+  {
+    "date": "2025-09-13",
+    "price": 0,
+    "service": "Eventos",
+    "client_name": "Jaime Skeete"
+  },
+  {
+    "date": "2025-09-13",
+    "price": 0,
+    "service": "Eventos",
+    "client_name": "Joan Butcher"
+  },
+  {
+    "date": "2025-09-13",
+    "price": 0,
+    "service": "Eventos",
+    "client_name": "Neville Sinclair"
+  },
+  {
+    "date": "2025-09-14",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": "Jaime Skeete"
+  },
+  {
+    "date": "2025-09-14",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": "Joan Butcher"
+  },
+  {
+    "date": "2025-09-14",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": "Neville Sinclair"
+  },
+  {
+    "date": "2025-09-15",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-15",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-16",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-16",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-09-17",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-17",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-18",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-18",
+    "price": 1800,
+    "service": "Cita Medica",
+    "client_name": "Nery Reyes"
+  },
+  {
+    "date": "2025-09-19",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-19",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-19",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-09-22",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-09-22",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-22",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-22",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Yadoris Encarnacion"
+  },
+  {
+    "date": "2025-09-23",
+    "price": 1800,
+    "service": "Pre Cirugia",
+    "client_name": "Ylka Martinez"
+  },
+  {
+    "date": "2025-09-23",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-09-24",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": null
+  },
+  {
+    "date": "2025-09-25",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-09-25",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-26",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-26",
+    "price": 1200,
+    "service": "Post Cirugia",
+    "client_name": "Jose Ivant"
+  },
+  {
+    "date": "2025-09-26",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-09-26",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "Jorge Isaac"
+  },
+  {
+    "date": "2025-09-28",
+    "price": 1000,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-09-28",
+    "price": 3200,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-09-29",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-09-29",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-09-29",
+    "price": 1500,
+    "service": "Post Cirugia",
+    "client_name": "Ylka Martinez"
+  },
+  {
+    "date": "2025-09-30",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-01",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-02",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-03",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-10-03",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-10-04",
+    "price": 1500,
+    "service": "Post Cirugia",
+    "client_name": "Elizabeth cliente"
+  },
+  {
+    "date": "2025-10-04",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": null
+  },
+  {
+    "date": "2025-10-05",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-10-06",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-10-06",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-10-08",
+    "price": 1250,
+    "service": null,
+    "client_name": "Gina Cliente"
+  },
+  {
+    "date": "2025-10-10",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-10-10",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-10-11",
+    "price": 5000,
+    "service": "Eventos",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-10-12",
+    "price": 1800,
+    "service": "Post Cirugia",
+    "client_name": "Gina Cliente"
+  },
+  {
+    "date": "2025-10-13",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-10-13",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-10-14",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Gina Cliente"
+  },
+  {
+    "date": "2025-10-16",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Jose Ivant"
+  },
+  {
+    "date": "2025-10-17",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-10-17",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-10-17",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Omil Garcia"
+  },
+  {
+    "date": "2025-10-17",
+    "price": 8000,
+    "service": "Aeropuerto",
+    "client_name": "Eddie"
+  },
+  {
+    "date": "2025-10-18",
+    "price": 3400,
+    "service": "Recreativa",
+    "client_name": "Brunilda Amaral"
+  },
+  {
+    "date": "2025-10-20",
+    "price": 3000,
+    "service": "Eventos",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-10-20",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-10-21",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Gina Cliente"
+  },
+  {
+    "date": "2025-10-21",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Sandra Molina"
+  },
+  {
+    "date": "2025-10-23",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-24",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-10-24",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-10-24",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-25",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": null
+  },
+  {
+    "date": "2025-10-27",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-10-27",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-28",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-28",
+    "price": 5300,
+    "service": "Cita Medica",
+    "client_name": "Adelina lake"
+  },
+  {
+    "date": "2025-10-29",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-30",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-31",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-10-31",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-10-31",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-10-31",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Caroline Ellenbogen"
+  },
+  {
+    "date": "2025-11-03",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-11-03",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-11-04",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-11-04",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-11-04",
+    "price": 3000,
+    "service": "Eventos",
+    "client_name": "Marino Caceres"
+  },
+  {
+    "date": "2025-11-05",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-11-05",
+    "price": 600,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-11-06",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-11-07",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-11-07",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-11-07",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": null
+  },
+  {
+    "date": "2025-11-12",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-11-14",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-11-14",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-11-15",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-11-16",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Brunilda Amaral"
+  },
+  {
+    "date": "2025-11-17",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-11-18",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-11-18",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-11-20",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-11-21",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-11-21",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-11-21",
+    "price": 1800,
+    "service": "Eventos",
+    "client_name": "Simone Morillo"
+  },
+  {
+    "date": "2025-11-21",
+    "price": 4410,
+    "service": "Eventos",
+    "client_name": "Rosanna"
+  },
+  {
+    "date": "2025-11-21",
+    "price": 3410,
+    "service": "Eventos",
+    "client_name": "Rosanna"
+  },
+  {
+    "date": "2025-11-24",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Yadimir Guerra"
+  },
+  {
+    "date": "2025-11-24",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-11-24",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-11-25",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-11-26",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-11-27",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-11-27",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Enna Contreras"
+  },
+  {
+    "date": "2025-11-28",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-11-28",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-11-28",
+    "price": 500,
+    "service": "Eventos",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2025-11-29",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-12-02",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-12-02",
+    "price": 1200,
+    "service": "Post Cirugia",
+    "client_name": "Carolina Hospiten"
+  },
+  {
+    "date": "2025-12-03",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-12-03",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Iris Lora"
+  },
+  {
+    "date": "2025-12-03",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "David Pachon"
+  },
+  {
+    "date": "2025-12-03",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-12-04",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-12-05",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-12-05",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-12-06",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Gringo"
+  },
+  {
+    "date": "2025-12-07",
+    "price": 0,
+    "service": "Eventos",
+    "client_name": null
+  },
+  {
+    "date": "2025-12-08",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "David Pachon"
+  },
+  {
+    "date": "2025-12-09",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2025-12-10",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-12-11",
+    "price": 4500,
+    "service": "Cita Medica",
+    "client_name": "Yuleisy Feliz"
+  },
+  {
+    "date": "2025-12-11",
+    "price": 2000,
+    "service": "Recreativa",
+    "client_name": "Gringo"
+  },
+  {
+    "date": "2025-12-12",
+    "price": 500,
+    "service": "Cita Medica",
+    "client_name": "Paloma"
+  },
+  {
+    "date": "2025-12-12",
+    "price": 2500,
+    "service": "Post Cirugia",
+    "client_name": "Claudia Brito"
+  },
+  {
+    "date": "2025-12-12",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Clemencia"
+  },
+  {
+    "date": "2025-12-13",
+    "price": 1300,
+    "service": "Post Cirugia",
+    "client_name": "Jose Garcia"
+  },
+  {
+    "date": "2025-12-15",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-12-16",
+    "price": 4500,
+    "service": "Cita Medica",
+    "client_name": "Yuleisy Feliz"
+  },
+  {
+    "date": "2025-12-16",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Elvys Antonio"
+  },
+  {
+    "date": "2025-12-17",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "David Pachon"
+  },
+  {
+    "date": "2025-12-17",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Maridalia Hernandez"
+  },
+  {
+    "date": "2025-12-18",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Jose Garcia"
+  },
+  {
+    "date": "2025-12-19",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-12-19",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-12-20",
+    "price": 1000,
+    "service": "Post Cirugia",
+    "client_name": "Yudelka Casado"
+  },
+  {
+    "date": "2025-12-20",
+    "price": 1300,
+    "service": "Post Cirugia",
+    "client_name": "Jose Ivant"
+  },
+  {
+    "date": "2025-12-22",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-12-22",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Xiomara Sosa"
+  },
+  {
+    "date": "2025-12-22",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "David Pachon"
+  },
+  {
+    "date": "2025-12-24",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2025-12-27",
+    "price": 4000,
+    "service": "Eventos",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2025-12-27",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2025-12-27",
+    "price": 2000,
+    "service": "Recreativa",
+    "client_name": "Francisca Americana"
+  },
+  {
+    "date": "2025-12-29",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "David Pachon"
+  },
+  {
+    "date": "2025-12-29",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Juan Fdo"
+  },
+  {
+    "date": "2025-12-29",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2025-12-30",
+    "price": 500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2026-01-07",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-01-07",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Mayra Urena"
+  },
+  {
+    "date": "2026-01-09",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2026-01-12",
+    "price": 1800,
+    "service": "Pre Cirugia",
+    "client_name": "Nelson Ledesma"
+  },
+  {
+    "date": "2026-01-12",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2026-01-13",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Anaisa Perez"
+  },
+  {
+    "date": "2026-01-14",
+    "price": 4500,
+    "service": "Cita Medica",
+    "client_name": "Yuleisy Feliz"
+  },
+  {
+    "date": "2026-01-15",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2026-01-16",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2026-01-17",
+    "price": 1000,
+    "service": "Eventos",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2026-01-17",
+    "price": 4000,
+    "service": "Eventos",
+    "client_name": "Ref de Santiago"
+  },
+  {
+    "date": "2026-01-19",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2026-01-19",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Raul Lizardo"
+  },
+  {
+    "date": "2026-01-19",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Jose Ivant"
+  },
+  {
+    "date": "2026-01-20",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2026-01-22",
+    "price": 1600,
+    "service": "Pre Cirugia",
+    "client_name": "Anaisa Perez"
+  },
+  {
+    "date": "2026-01-23",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2026-01-29",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2026-01-29",
+    "price": 1800,
+    "service": "Post Cirugia",
+    "client_name": "Yira Padilla"
+  },
+  {
+    "date": "2026-01-30",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2026-01-30",
+    "price": 5000,
+    "service": "Eventos",
+    "client_name": "Maria Irene"
+  },
+  {
+    "date": "2026-02-08",
+    "price": 1800,
+    "service": "Post Cirugia",
+    "client_name": "Grecia Richards"
+  },
+  {
+    "date": "2026-02-09",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Anaisa Perez"
+  },
+  {
+    "date": "2026-02-10",
+    "price": 5000,
+    "service": "Aeropuerto",
+    "client_name": "FM Transport"
+  },
+  {
+    "date": "2026-02-10",
+    "price": 1500,
+    "service": "Post Cirugia",
+    "client_name": "Fausto Infante"
+  },
+  {
+    "date": "2026-02-11",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Nelly Benzan"
+  },
+  {
+    "date": "2026-02-12",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Alvin Almonte"
+  },
+  {
+    "date": "2026-02-13",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Frinette Bodden"
+  },
+  {
+    "date": "2026-02-14",
+    "price": 4500,
+    "service": "Cita Medica",
+    "client_name": "Yudelka Casado"
+  },
+  {
+    "date": "2026-02-14",
+    "price": 1500,
+    "service": "Pre Cirugia",
+    "client_name": "Alvin Almonte"
+  },
+  {
+    "date": "2026-02-15",
+    "price": 2500,
+    "service": "Aeropuerto",
+    "client_name": "FM Transport"
+  },
+  {
+    "date": "2026-02-18",
+    "price": 1500,
+    "service": "Pre Cirugia",
+    "client_name": "Idalia Maria"
+  },
+  {
+    "date": "2026-02-19",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2026-02-19",
+    "price": 6000,
+    "service": "Cita Medica",
+    "client_name": "Katiusca Castellano"
+  },
+  {
+    "date": "2026-02-20",
+    "price": 0,
+    "service": "Eventos",
+    "client_name": "Travegali (Santiago)"
+  },
+  {
+    "date": "2026-02-21",
+    "price": 5000,
+    "service": "Eventos",
+    "client_name": "Travegali (Santiago)"
+  },
+  {
+    "date": "2026-02-24",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2026-02-25",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2026-02-26",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Anaisa Perez"
+  },
+  {
+    "date": "2026-02-27",
+    "price": 3800,
+    "service": "Cita Medica",
+    "client_name": "Francina Rodriguez"
+  },
+  {
+    "date": "2026-03-01",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2026-03-03",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2026-03-04",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2026-03-05",
+    "price": 0,
+    "service": "Cita Medica",
+    "client_name": null
+  },
+  {
+    "date": "2026-03-06",
+    "price": 4000,
+    "service": "Cita Medica",
+    "client_name": "Raul Lizardo"
+  },
+  {
+    "date": "2026-03-08",
+    "price": 2000,
+    "service": "Recreativa",
+    "client_name": "Gildenise de la cruz"
+  },
+  {
+    "date": "2026-03-09",
+    "price": 9000,
+    "service": "Aeropuerto",
+    "client_name": "Natalia Baez"
+  },
+  {
+    "date": "2026-03-09",
+    "price": 3800,
+    "service": "Cita Medica",
+    "client_name": "Francina Rodriguez"
+  },
+  {
+    "date": "2026-03-10",
+    "price": 3300,
+    "service": "Cita Medica",
+    "client_name": "Fausto Infante"
+  },
+  {
+    "date": "2026-03-10",
+    "price": 4500,
+    "service": "Cita Medica",
+    "client_name": "Michael Romero"
+  },
+  {
+    "date": "2026-03-12",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Anaisa Perez"
+  },
+  {
+    "date": "2026-03-13",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal)"
+  },
+  {
+    "date": "2026-03-14",
+    "price": 5400,
+    "service": "Aeropuerto",
+    "client_name": "Nelson Heredia"
+  },
+  {
+    "date": "2026-03-14",
+    "price": 1300,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2026-03-16",
+    "price": 5000,
+    "service": "Eventos",
+    "client_name": "Nelson Heredia"
+  },
+  {
+    "date": "2026-03-16",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-03-16",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-03-16",
+    "price": 1800,
+    "service": "Post Cirugia",
+    "client_name": "Eliza"
+  },
+  {
+    "date": "2026-03-16",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Nelson Heredia"
+  },
+  {
+    "date": "2026-03-17",
+    "price": 1500,
+    "service": "Pre Cirugia",
+    "client_name": "Fausto Infante"
+  },
+  {
+    "date": "2026-03-18",
+    "price": 6000,
+    "service": "Aeropuerto",
+    "client_name": "Maria Vergara"
+  },
+  {
+    "date": "2026-03-18",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-03-18",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-03-19",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Maria Vergara"
+  },
+  {
+    "date": "2026-03-19",
+    "price": 1600,
+    "service": "Post Cirugia",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2026-03-19",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2026-03-20",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-03-20",
+    "price": 1500,
+    "service": "Post Cirugia",
+    "client_name": "Fausto Infante"
+  },
+  {
+    "date": "2026-03-20",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2026-03-20",
+    "price": 2200,
+    "service": "Recreativa",
+    "client_name": "Simone Morillo"
+  },
+  {
+    "date": "2026-03-23",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-03-23",
+    "price": 6000,
+    "service": "Aeropuerto",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-03-23",
+    "price": 3000,
+    "service": "Eventos",
+    "client_name": "Nelson Heredia"
+  },
+  {
+    "date": "2026-03-23",
+    "price": 5000,
+    "service": "Aeropuerto",
+    "client_name": "Nelson Heredia"
+  },
+  {
+    "date": "2026-03-23",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Maria Vergara"
+  },
+  {
+    "date": "2026-03-24",
+    "price": 1300,
+    "service": "Pre Cirugia",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-03-24",
+    "price": 3300,
+    "service": "Recreativa",
+    "client_name": "Maria Vergara"
+  },
+  {
+    "date": "2026-03-24",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-03-25",
+    "price": 5400,
+    "service": "Aeropuerto",
+    "client_name": "Maria Vergara"
+  },
+  {
+    "date": "2026-03-25",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-03-25",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-03-26",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-03-26",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-03-27",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-03-27",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-03-28",
+    "price": 2500,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-03-28",
+    "price": 4500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-03-29",
+    "price": 4500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-03-30",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-03-30",
+    "price": 6000,
+    "service": "Eventos",
+    "client_name": "Altagracia Mejia"
+  },
+  {
+    "date": "2026-03-30",
+    "price": 4500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-03-31",
+    "price": 6000,
+    "service": "Aeropuerto",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-03-31",
+    "price": 1000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-04-01",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-04-01",
+    "price": 1000,
+    "service": "Eventos",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2026-04-02",
+    "price": 1000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-04-06",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-04-06",
+    "price": 1600,
+    "service": "Post Cirugia",
+    "client_name": "Raul Lizardo"
+  },
+  {
+    "date": "2026-04-06",
+    "price": 1500,
+    "service": "Recreativa",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2026-04-07",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-04-07",
+    "price": 5400,
+    "service": "Aeropuerto",
+    "client_name": "Rosanna Vasquez"
+  },
+  {
+    "date": "2026-04-08",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-04-08",
+    "price": 0,
+    "service": "Eventos",
+    "client_name": "Rosanna Vasquez"
+  },
+  {
+    "date": "2026-04-08",
+    "price": 0,
+    "service": "Recreativa",
+    "client_name": "Rosanna Vasquez"
+  },
+  {
+    "date": "2026-04-09",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-04-09",
+    "price": 0,
+    "service": "Eventos",
+    "client_name": "Rosanna Vasquez"
+  },
+  {
+    "date": "2026-04-09",
+    "price": 0,
+    "service": "Pre Cirugia",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2026-04-10",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Ramon Espinal"
+  },
+  {
+    "date": "2026-04-10",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Angustina Perez"
+  },
+  {
+    "date": "2026-04-10",
+    "price": 0,
+    "service": "Aeropuerto",
+    "client_name": "Rosanna Vasquez"
+  },
+  {
+    "date": "2026-04-19",
+    "price": 4500,
+    "service": "Cita Medica",
+    "client_name": "Nelson Castillo"
+  },
+  {
+    "date": "2026-04-20",
+    "price": 1300,
+    "service": "Pre Cirugia",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-04-20",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Angustina Perez"
+  },
+  {
+    "date": "2026-04-20",
+    "price": 500,
+    "service": "Cita Medica",
+    "client_name": "Paloma Bonilla"
+  },
+  {
+    "date": "2026-04-20",
+    "price": 4200,
+    "service": "Cita Medica",
+    "client_name": "Francina Rodriguez"
+  },
+  {
+    "date": "2026-04-21",
+    "price": 3800,
+    "service": "Cita Medica",
+    "client_name": "Nelson Castillo"
+  },
+  {
+    "date": "2026-04-21",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-04-22",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Angustina Perez"
+  },
+  {
+    "date": "2026-04-22",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Maridalia Hernandez"
+  },
+  {
+    "date": "2026-04-22",
+    "price": 3200,
+    "service": "Cita Medica",
+    "client_name": "Elvestirde Eliza"
+  },
+  {
+    "date": "2026-04-23",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-04-23",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Xiomara"
+  },
+  {
+    "date": "2026-04-24",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Angustina Perez"
+  },
+  {
+    "date": "2026-04-26",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2026-04-27",
+    "price": 2000,
+    "service": "Post Cirugia",
+    "client_name": "Anaisa"
+  },
+  {
+    "date": "2026-04-28",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-04-28",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Fausto Infante"
+  },
+  {
+    "date": "2026-04-28",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2026-04-29",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-04-29",
+    "price": 5600,
+    "service": "Aeropuerto",
+    "client_name": "World television"
+  },
+  {
+    "date": "2026-04-30",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-04-30",
+    "price": 4400,
+    "service": "Eventos",
+    "client_name": "World television"
+  },
+  {
+    "date": "2026-05-01",
+    "price": 4400,
+    "service": "Eventos",
+    "client_name": "World television"
+  },
+  {
+    "date": "2026-05-02",
+    "price": 2300,
+    "service": "Post Cirugia",
+    "client_name": "Stephanie Rodriguez"
+  },
+  {
+    "date": "2026-05-02",
+    "price": 1600,
+    "service": "Post Cirugia",
+    "client_name": "Alemana"
+  },
+  {
+    "date": "2026-05-02",
+    "price": 2000,
+    "service": "Recreativa",
+    "client_name": "World television"
+  },
+  {
+    "date": "2026-05-04",
+    "price": 4100,
+    "service": "Terapia",
+    "client_name": "Stephanie Rodriguez"
+  },
+  {
+    "date": "2026-05-04",
+    "price": 4400,
+    "service": "Recreativa",
+    "client_name": "World television"
+  },
+  {
+    "date": "2026-05-05",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Dayra Jimenez"
+  },
+  {
+    "date": "2026-05-05",
+    "price": 5600,
+    "service": "Aeropuerto",
+    "client_name": "World television"
+  },
+  {
+    "date": "2026-05-05",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-05-05",
+    "price": 1200,
+    "service": "Post Cirugia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-05-06",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-05-06",
+    "price": 4000,
+    "service": "Cita Medica",
+    "client_name": "Evelyn Castillo"
+  },
+  {
+    "date": "2026-05-06",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Carolina Hospiten"
+  },
+  {
+    "date": "2026-05-06",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Stephanie Rodriguez"
+  },
+  {
+    "date": "2026-05-07",
+    "price": 2800,
+    "service": "Cita Medica",
+    "client_name": "Xiomara"
+  },
+  {
+    "date": "2026-05-07",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-05-07",
+    "price": 6000,
+    "service": "Aeropuerto",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-05-07",
+    "price": 4500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-05-08",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Stephanie Rodriguez"
+  },
+  {
+    "date": "2026-05-08",
+    "price": 1000,
+    "service": "Cita Medica",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-05-08",
+    "price": 4500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-05-09",
+    "price": 4500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-05-10",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2026-05-10",
+    "price": 4500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-05-11",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Stephanie Rodriguez"
+  },
+  {
+    "date": "2026-05-11",
+    "price": 4500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-05-12",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-05-12",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-05-12",
+    "price": 11000,
+    "service": "Aeropuerto",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-05-13",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-05-13",
+    "price": 3500,
+    "service": "Terapia",
+    "client_name": "Stephanie Rodriguez"
+  },
+  {
+    "date": "2026-05-13",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Carolina Hospiten"
+  },
+  {
+    "date": "2026-05-13",
+    "price": 6000,
+    "service": "Aeropuerto",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-05-14",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-05-15",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Anaisa Perez"
+  },
+  {
+    "date": "2026-05-15",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Arinna Martin"
+  },
+  {
+    "date": "2026-05-16",
+    "price": 5000,
+    "service": "Eventos",
+    "client_name": "Jean Figueroa"
+  },
+  {
+    "date": "2026-05-16",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-05-16",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Angel Maria"
+  },
+  {
+    "date": "2026-05-19",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-05-19",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-05-20",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Wanda Checo"
+  },
+  {
+    "date": "2026-05-20",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-05-21",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-05-21",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Lucinda Chavez"
+  },
+  {
+    "date": "2026-05-21",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Marylin cliente"
+  },
+  {
+    "date": "2026-05-22",
+    "price": 2000,
+    "service": "Pre Cirugia",
+    "client_name": "Marylin cliente"
+  },
+  {
+    "date": "2026-05-22",
+    "price": 2000,
+    "service": "Post Cirugia",
+    "client_name": "Stephanie gonzalez"
+  },
+  {
+    "date": "2026-05-23",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-05-23",
+    "price": 2000,
+    "service": "Post Cirugia",
+    "client_name": "Marylin cliente"
+  },
+  {
+    "date": "2026-05-23",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2026-05-25",
+    "price": 2500,
+    "service": "Eventos",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2026-05-26",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-05-26",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-05-26",
+    "price": 400,
+    "service": "Post Cirugia",
+    "client_name": "Stephanie gonzalez"
+  },
+  {
+    "date": "2026-05-27",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-05-28",
+    "price": 2400,
+    "service": "Cita Medica",
+    "client_name": "Jocelyn Osvaldo"
+  },
+  {
+    "date": "2026-05-28",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-05-30",
+    "price": 2800,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-05-31",
+    "price": 5500,
+    "service": "Recreativa",
+    "client_name": "Daiana Pichardo"
+  },
+  {
+    "date": "2026-05-31",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Annel Camilo"
+  },
+  {
+    "date": "2026-05-31",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Clemencia Reyes"
+  },
+  {
+    "date": "2026-06-02",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-06-02",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-06-03",
+    "price": 3500,
+    "service": "Cita Medica",
+    "client_name": "Elvestirde Eliza"
+  },
+  {
+    "date": "2026-06-03",
+    "price": 2400,
+    "service": "Cita Medica",
+    "client_name": "Jocelyn Osvaldo"
+  },
+  {
+    "date": "2026-06-06",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-06-06",
+    "price": 3000,
+    "service": "Recreativa",
+    "client_name": "Brunilda Herasme"
+  },
+  {
+    "date": "2026-06-09",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-06-09",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-06-10",
+    "price": 2500,
+    "service": "Cita Medica",
+    "client_name": "Argentina Mendez"
+  },
+  {
+    "date": "2026-06-10",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Rosa Moreta"
+  },
+  {
+    "date": "2026-06-11",
+    "price": 0,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-06-13",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Zoila Herasme"
+  },
+  {
+    "date": "2026-06-15",
+    "price": 2400,
+    "service": "Cita Medica",
+    "client_name": "Jocelyn Osvaldo"
+  },
+  {
+    "date": "2026-06-15",
+    "price": 2600,
+    "service": "Terapia",
+    "client_name": "Andrés Martinez"
+  },
+  {
+    "date": "2026-06-15",
+    "price": 5800,
+    "service": "Aeropuerto",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-06-15",
+    "price": 2500,
+    "service": "Recreativa",
+    "client_name": "Clemencia reyes"
+  },
+  {
+    "date": "2026-06-15",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-06-15",
+    "price": 1800,
+    "service": "Terapia",
+    "client_name": "Turkos de alta"
+  },
+  {
+    "date": "2026-06-16",
+    "price": 2800,
+    "service": "Cita Medica",
+    "client_name": "Pilar Alvarez"
+  },
+  {
+    "date": "2026-06-16",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-06-16",
+    "price": 2400,
+    "service": "Cita Medica",
+    "client_name": "Jocelyn Osvaldo"
+  },
+  {
+    "date": "2026-06-16",
+    "price": 11200,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-06-17",
+    "price": 2600,
+    "service": "Terapia",
+    "client_name": "Andrés Martinez"
+  },
+  {
+    "date": "2026-06-17",
+    "price": 1200,
+    "service": "Cita Medica",
+    "client_name": "Emerita Pachon"
+  },
+  {
+    "date": "2026-06-17",
+    "price": 2000,
+    "service": "Cita Medica",
+    "client_name": "Dilia Espinal"
+  },
+  {
+    "date": "2026-06-17",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-06-18",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-06-18",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-06-18",
+    "price": 2000,
+    "service": "Post Cirugia",
+    "client_name": "Mireya Casado"
+  },
+  {
+    "date": "2026-06-18",
+    "price": 1000,
+    "service": "Subir/Bajar",
+    "client_name": "Jenn Guzman"
+  },
+  {
+    "date": "2026-06-19",
+    "price": 2600,
+    "service": "Terapia",
+    "client_name": "Andrés Martinez"
+  },
+  {
+    "date": "2026-06-19",
+    "price": 900,
+    "service": "Subir/Bajar",
+    "client_name": "Joan Andujar"
+  },
+  {
+    "date": "2026-06-19",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-06-20",
+    "price": 3500,
+    "service": "Recreativa",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-06-21",
+    "price": 5800,
+    "service": "Aeropuerto",
+    "client_name": "Ibrahim"
+  },
+  {
+    "date": "2026-06-21",
+    "price": 900,
+    "service": "Subir/Bajar",
+    "client_name": "Horacio Stagno"
+  },
+  {
+    "date": "2026-06-21",
+    "price": 1000,
+    "service": "Subir/Bajar",
+    "client_name": "Patricia Federo"
+  },
+  {
+    "date": "2026-06-22",
+    "price": 2400,
+    "service": "Cita Medica",
+    "client_name": "Jocelyn Osvaldo"
+  },
+  {
+    "date": "2026-06-22",
+    "price": 2600,
+    "service": "Terapia",
+    "client_name": "Andrés Martinez"
+  },
+  {
+    "date": "2026-06-22",
+    "price": 900,
+    "service": "Subir/Bajar",
+    "client_name": "Horacio Stagno"
+  },
+  {
+    "date": "2026-06-22",
+    "price": 3000,
+    "service": "Post Cirugia",
+    "client_name": "Saul Castro"
+  },
+  {
+    "date": "2026-06-22",
+    "price": 1500,
+    "service": "Cita Medica",
+    "client_name": "Turkos de hotel crown"
+  },
+  {
+    "date": "2026-06-23",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-06-23",
+    "price": 3000,
+    "service": "Terapia",
+    "client_name": "Silvia Collins"
+  },
+  {
+    "date": "2026-06-23",
+    "price": 1750,
+    "service": "Subir/Bajar",
+    "client_name": "Jenn Guzman"
+  },
+  {
+    "date": "2026-06-23",
+    "price": 2400,
+    "service": "Cita Medica",
+    "client_name": "Jocelyn Osvaldo"
+  },
+  {
+    "date": "2026-06-23",
+    "price": 2600,
+    "service": "Cita Medica",
+    "client_name": "Fausto Infante"
+  },
+  {
+    "date": "2026-06-23",
+    "price": 2000,
+    "service": "Recreativa",
+    "client_name": "Arianna Martin"
+  },
+  {
+    "date": "2026-06-24",
+    "price": 2600,
+    "service": "Terapia",
+    "client_name": "Andrés Martinez"
+  },
+  {
+    "date": "2026-06-24",
+    "price": 2900,
+    "service": "Cita Medica",
+    "client_name": "Veronica Elis"
+  },
+  {
+    "date": "2026-06-25",
+    "price": 2000,
+    "service": "Terapia",
+    "client_name": "Maria Villar"
+  },
+  {
+    "date": "2026-06-25",
+    "price": 3000,
+    "service": "Cita Medica",
+    "client_name": "Lucinda Chavez"
+  },
+  {
+    "date": "2026-06-26",
+    "price": 1400,
+    "service": "Subir/Bajar",
+    "client_name": "Tanya Santos"
+  },
+  {
+    "date": "2026-06-27",
+    "price": 2000,
+    "service": "Recreativa",
+    "client_name": "Argentina Mendez"
+  }
+];

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDOP } from "@/lib/fare";
 import { startOfWeek, endOfWeek, formatISO } from "date-fns";
+import SeedHistoricalTripsButton from "./SeedHistoricalTripsButton";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -38,6 +39,7 @@ export default async function AdminDashboard() {
           </div>
         ))}
       </div>
+      <SeedHistoricalTripsButton />
     </div>
   );
 }

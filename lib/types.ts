@@ -102,6 +102,15 @@ export interface Trip {
   notes: string | null;
 }
 
+export interface OvertimeEntry {
+  id: string;
+  driver_id: string;
+  date: string;
+  hours: number;
+  dieta_amount: number;
+  notes: string | null;
+}
+
 export interface Expense {
   id: string;
   date: string;
