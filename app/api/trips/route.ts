@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { calculateFare } from "@/lib/fare";
+import { nowLocalTime } from "@/lib/date";
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
     .from("trips")
     .insert({
       date,
-      time: time || new Date().toISOString().slice(11, 19),
+      time: time || nowLocalTime(),
       service_id: service_id || null,
       client_name,
       client_phone,
@@ -91,5 +92,36 @@ export async function POST(request: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  if (client_name && client_name.trim()) {
+    const { data: existing } = await supabase
+      .from("clients")
+      .select("id")
+      .ilike("name", client_name.trim())
+      .maybeSingle();
+
+    const clientPayload = {
+      name: client_name.trim(),
+      phone: client_phone || null,
+      last_service_id: data.service_id,
+      last_total_fare: data.total_fare,
+      last_trip_date: data.date,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (existing) {
+      await supabase.from("clients").update(clientPayload).eq("id", existing.id);
+    } else {
+      await supabase.from("clients").insert(clientPayload);
+    }
+  }
+
   return NextResponse.json(data, { status: 201 });
+}
+
+export async function DELETE() {
+  const supabase = await createClient();
+  const { error } = await supabase.from("trips").delete().gte("date", "1900-01-01");
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ success: true });
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { EXPENSE_CATEGORIES } from "@/lib/types";
+import { todayLocalISO } from "@/lib/date";
 
 interface Option {
   id: string;
@@ -17,7 +18,7 @@ export default function NewExpensePage() {
   const [submitting, setSubmitting] = useState(false);
 
   const [form, setForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
+    date: todayLocalISO(),
     category: EXPENSE_CATEGORIES[0],
     vehicle_id: "",
     amount: "",

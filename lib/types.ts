@@ -102,6 +102,16 @@ export interface Trip {
   notes: string | null;
 }
 
+export interface Client {
+  id: string;
+  name: string;
+  phone: string | null;
+  last_service_id: string | null;
+  last_service_name: string | null;
+  last_total_fare: number | null;
+  last_trip_date: string | null;
+}
+
 export interface OvertimeEntry {
   id: string;
   driver_id: string;

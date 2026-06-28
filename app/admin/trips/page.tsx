@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatDOP } from "@/lib/fare";
+import EraseAllTripsButton from "./EraseAllTripsButton";
 
 export default async function TripsPage() {
   const supabase = await createClient();
@@ -56,6 +57,7 @@ export default async function TripsPage() {
           </tbody>
         </table>
       </div>
+      <EraseAllTripsButton />
     </div>
   );
 }

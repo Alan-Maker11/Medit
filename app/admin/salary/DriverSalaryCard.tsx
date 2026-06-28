@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatDOP } from "@/lib/fare";
 import type { Driver, OvertimeEntry } from "@/lib/types";
+import { todayLocalISO } from "@/lib/date";
 
 export default function DriverSalaryCard({
   driver,
@@ -13,7 +14,7 @@ export default function DriverSalaryCard({
   entries: OvertimeEntry[];
 }) {
   const router = useRouter();
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(todayLocalISO());
   const [hours, setHours] = useState("");
   const [dieta, setDieta] = useState("");
   const [submitting, setSubmitting] = useState(false);

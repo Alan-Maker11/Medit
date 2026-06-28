@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { formatDOP } from "@/lib/fare";
+import { todayLocalISO, currentLocalMonth } from "@/lib/date";
 
 interface WeeklyReport {
   period_start: string;
@@ -32,8 +33,8 @@ interface PayrollDriver {
 }
 
 export default function ReportsPage() {
-  const [weekOf, setWeekOf] = useState(new Date().toISOString().slice(0, 10));
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [weekOf, setWeekOf] = useState(todayLocalISO());
+  const [month, setMonth] = useState(currentLocalMonth());
   const [report, setReport] = useState<WeeklyReport | null>(null);
   const [payroll, setPayroll] = useState<{ drivers: PayrollDriver[]; grand_total: number } | null>(null);
 

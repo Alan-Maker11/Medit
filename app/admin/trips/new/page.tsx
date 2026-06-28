@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { createClient } from "@/lib/supabase/client";
 import { calculateFare, formatDOP } from "@/lib/fare";
+import { todayLocalISO } from "@/lib/date";
 import { SERVICE_TYPES, type FareBreakdown, type TransportationMode, type TripType } from "@/lib/types";
+import ClientAutocomplete from "./ClientAutocomplete";
+import type { Client } from "@/lib/types";
 
 interface Option {
   id: string;
@@ -31,7 +34,7 @@ export default function NewTripPage() {
   );
 
   const [form, setForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
+    date: todayLocalISO(),
     service_id: "",
     client_name: "",
     client_phone: "",
@@ -50,6 +53,8 @@ export default function NewTripPage() {
   const [deliveryFee, setDeliveryFee] = useState("0");
   const [wheelchair, setWheelchair] = useState(false);
   const [stairsElevator, setStairsElevator] = useState(false);
+  const [manualFare, setManualFare] = useState("");
+  const [previousTrip, setPreviousTrip] = useState<Client | null>(null);
 
   const [breakdown, setBreakdown] = useState<FareBreakdown | null>(null);
   const [calcError, setCalcError] = useState<string | null>(null);
@@ -110,6 +115,16 @@ export default function NewTripPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function handleSelectClient(client: Client) {
+    setForm((prev) => ({
+      ...prev,
+      client_name: client.name,
+      client_phone: client.phone ?? "",
+      service_id: client.last_service_id ?? prev.service_id,
+    }));
+    setPreviousTrip(client);
+  }
+
   async function fetchDistance() {
     setCalcError(null);
     if (!mapsReady || !form.pickup_address || !form.destination_address) return;
@@ -141,6 +156,20 @@ export default function NewTripPage() {
 
   function handleCalculate() {
     setCalcError(null);
+    const overrideFare = Number(manualFare);
+    if (manualFare && !Number.isNaN(overrideFare) && overrideFare > 0) {
+      setBreakdown({
+        distanceKm: Number(form.distance_km) || 0,
+        durationMinutes: Number(form.duration_minutes) || 0,
+        baseFare: overrideFare,
+        distanceCost: 0,
+        durationCost: 0,
+        waitingCost: 0,
+        additionalFees: additionalFeesTotal(),
+        totalFare: overrideFare + additionalFeesTotal(),
+      });
+      return;
+    }
     const distanceKm = Number(form.distance_km);
     const durationMinutes = Number(form.duration_minutes);
     if (!form.distance_km || !form.duration_minutes || Number.isNaN(distanceKm) || Number.isNaN(durationMinutes)) {
@@ -218,11 +247,31 @@ export default function NewTripPage() {
             </select>
           </Field>
           <Field label="Client name">
-            <input value={form.client_name} onChange={(e) => update("client_name", e.target.value)} className="input" />
+            <ClientAutocomplete
+              value={form.client_name}
+              onChange={(value) => update("client_name", value)}
+              onSelect={handleSelectClient}
+            />
           </Field>
           <Field label="Client phone">
             <input value={form.client_phone} onChange={(e) => update("client_phone", e.target.value)} className="input" />
           </Field>
+          {previousTrip && (
+            <p className="text-xs text-zinc-500 sm:col-span-2">
+              Previous trip: {previousTrip.last_trip_date ?? "-"} ·{" "}
+              {previousTrip.last_service_name ?? "no service"} ·{" "}
+              {previousTrip.last_total_fare != null ? formatDOP(previousTrip.last_total_fare) : "-"}
+              {previousTrip.last_total_fare != null && (
+                <button
+                  type="button"
+                  onClick={() => setManualFare(String(previousTrip.last_total_fare))}
+                  className="ml-2 text-blue-600 hover:underline"
+                >
+                  Use this amount
+                </button>
+              )}
+            </p>
+          )}
           <Field label="Pickup address" full>
             <input
               ref={pickupRef}
@@ -315,6 +364,17 @@ export default function NewTripPage() {
               />
             </Field>
           )}
+
+          <Field label="Quick fare override (DOP, optional)" full>
+            <input
+              type="number"
+              min={0}
+              value={manualFare}
+              onChange={(e) => setManualFare(e.target.value)}
+              placeholder="Leave blank to calculate from distance/duration"
+              className="input"
+            />
+          </Field>
 
           <fieldset className="flex flex-col gap-2 text-sm font-medium sm:col-span-2">
             Additional fees

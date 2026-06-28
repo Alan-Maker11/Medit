@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { formatDOP } from "@/lib/fare";
+import { currentLocalMonth } from "@/lib/date";
 
 export default function OvertimeForm({ driverId }: { driverId: string }) {
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(currentLocalMonth());
   const [overtimeHours, setOvertimeHours] = useState("0");
   const [morningCount, setMorningCount] = useState("0");
   const [eveningCount, setEveningCount] = useState("0");
