@@ -16,6 +16,121 @@ function termOf(dateStr: string): 1 | 2 {
   return day <= 15 ? 1 : 2;
 }
 
+interface EditState {
+  id: string;
+  date: string;
+  hours: string;
+  dieta_amount: string;
+  elevator_amount: string;
+}
+
+function EntryRow({
+  entry,
+  overtimeRate,
+  onSave,
+  onDelete,
+}: {
+  entry: OvertimeEntry;
+  overtimeRate: number;
+  onSave: (state: EditState) => Promise<string | null>;
+  onDelete: (id: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState<EditState>({
+    id: entry.id,
+    date: entry.date,
+    hours: String(entry.hours),
+    dieta_amount: String(entry.dieta_amount),
+    elevator_amount: String(entry.elevator_amount),
+  });
+
+  function startEdit() {
+    setDraft({
+      id: entry.id,
+      date: entry.date,
+      hours: String(entry.hours),
+      dieta_amount: String(entry.dieta_amount),
+      elevator_amount: String(entry.elevator_amount),
+    });
+    setError(null);
+    setEditing(true);
+  }
+
+  async function save() {
+    setSaving(true);
+    const err = await onSave(draft);
+    setSaving(false);
+    if (err) { setError(err); return; }
+    setEditing(false);
+  }
+
+  function cancel() {
+    setEditing(false);
+    setError(null);
+  }
+
+  const cellClass = "px-4 py-2";
+  const inputClass = "w-full rounded-lg border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800";
+
+  if (editing) {
+    return (
+      <>
+        <tr className="border-b border-zinc-100 bg-blue-50 dark:border-zinc-800 dark:bg-blue-950/30">
+          <td className={cellClass}>
+            <input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} className={inputClass} />
+          </td>
+          <td className={cellClass}>
+            <input type="number" min={0} step={0.5} value={draft.hours} onChange={(e) => setDraft({ ...draft, hours: e.target.value })} className={inputClass} style={{ width: "5rem" }} />
+          </td>
+          <td className={cellClass}>
+            {formatDOP(Number(draft.hours) * overtimeRate)}
+          </td>
+          <td className={cellClass}>
+            <input type="number" min={0} value={draft.dieta_amount} onChange={(e) => setDraft({ ...draft, dieta_amount: e.target.value })} className={inputClass} style={{ width: "6rem" }} />
+          </td>
+          <td className={cellClass}>
+            <input type="number" min={0} step={100} value={draft.elevator_amount} onChange={(e) => setDraft({ ...draft, elevator_amount: e.target.value })} className={inputClass} style={{ width: "6rem" }} />
+          </td>
+          <td className={`${cellClass} whitespace-nowrap`}>
+            <button onClick={save} disabled={saving} className="mr-2 text-xs font-medium text-blue-600 hover:underline disabled:opacity-50">
+              {saving ? "Saving…" : "Save"}
+            </button>
+            <button onClick={cancel} className="text-xs text-zinc-500 hover:underline">Cancel</button>
+          </td>
+        </tr>
+        {error && (
+          <tr className="border-b border-zinc-100 dark:border-zinc-800">
+            <td colSpan={6} className="px-4 pb-2 text-xs text-red-600">{error}</td>
+          </tr>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <tr className="group border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+      <td className={cellClass}>{entry.date}</td>
+      <td className={cellClass}>{entry.hours}</td>
+      <td className={cellClass}>{formatDOP(Number(entry.hours) * overtimeRate)}</td>
+      <td className={cellClass}>{formatDOP(entry.dieta_amount)}</td>
+      <td className={cellClass}>{entry.elevator_amount ? formatDOP(entry.elevator_amount) : "-"}</td>
+      <td className={`${cellClass} whitespace-nowrap`}>
+        <button
+          onClick={startEdit}
+          className="mr-3 text-xs font-medium text-blue-600 hover:underline md:invisible md:group-hover:visible"
+        >
+          Edit
+        </button>
+        <button onClick={() => onDelete(entry.id)} className="text-xs text-red-600 hover:underline">
+          Remove
+        </button>
+      </td>
+    </tr>
+  );
+}
+
 export default function DriverSalaryCard({
   driver,
   entries,
@@ -97,6 +212,25 @@ export default function DriverSalaryCard({
     setDieta("");
     setElevator("");
     router.refresh();
+  }
+
+  async function handleSaveEntry(state: EditState): Promise<string | null> {
+    const res = await fetch(`/api/overtime-entries/${state.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date: state.date,
+        hours: state.hours,
+        dieta_amount: state.dieta_amount,
+        elevator_amount: state.elevator_amount,
+      }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      return data.error ?? "Failed to update entry";
+    }
+    router.refresh();
+    return null;
   }
 
   async function handleDelete(id: string) {
@@ -201,21 +335,13 @@ export default function DriverSalaryCard({
                   </thead>
                   <tbody>
                     {group.entries.map((entry) => (
-                      <tr key={entry.id} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
-                        <td className="px-4 py-2">{entry.date}</td>
-                        <td className="px-4 py-2">{entry.hours}</td>
-                        <td className="px-4 py-2">{formatDOP(Number(entry.hours) * overtimeRate)}</td>
-                        <td className="px-4 py-2">{formatDOP(entry.dieta_amount)}</td>
-                        <td className="px-4 py-2">{entry.elevator_amount ? formatDOP(entry.elevator_amount) : "-"}</td>
-                        <td className="px-4 py-2">
-                          <button
-                            onClick={() => handleDelete(entry.id)}
-                            className="text-xs text-red-600 hover:underline"
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
+                      <EntryRow
+                        key={entry.id}
+                        entry={entry}
+                        overtimeRate={overtimeRate}
+                        onSave={handleSaveEntry}
+                        onDelete={handleDelete}
+                      />
                     ))}
                   </tbody>
                 </table>
