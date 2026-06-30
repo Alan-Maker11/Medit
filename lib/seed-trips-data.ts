@@ -337,12 +337,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Juan Fdo."
   },
   {
-    "date": "2025-01-28",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
     "date": "2025-01-30",
     "price": 1500,
     "service": "Terapia",
@@ -355,22 +349,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Indhira Hernan"
   },
   {
-    "date": "2025-01-22",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
     "date": "2025-02-03",
     "price": 2500,
     "service": "Cita Medica",
     "client_name": "Juan Fdo."
-  },
-  {
-    "date": "2025-02-04",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
   },
   {
     "date": "2025-02-06",
@@ -383,30 +365,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 1500,
     "service": "Terapia",
     "client_name": "Dra. Rosanna"
-  },
-  {
-    "date": "2025-02-06",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": "Benedikt"
-  },
-  {
-    "date": "2025-02-08",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": "Argentina"
-  },
-  {
-    "date": "2025-02-08",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
-    "date": "2025-02-09",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
   },
   {
     "date": "2025-02-10",
@@ -427,12 +385,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Melissa Intec"
   },
   {
-    "date": "2025-02-12",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": null
-  },
-  {
     "date": "2025-02-13",
     "price": 1500,
     "service": "Terapia",
@@ -449,12 +401,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 3200,
     "service": "Cita Medica",
     "client_name": "Juan Fdo."
-  },
-  {
-    "date": "2025-02-18",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-02-19",
@@ -481,28 +427,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Paloma"
   },
   {
-    "date": "2025-02-24",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-02-25",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
-  },
-  {
     "date": "2025-02-26",
     "price": 2000,
     "service": "Post Cirugia",
     "client_name": "Wilber Baez"
-  },
-  {
-    "date": "2025-02-27",
-    "price": 0,
-    "service": "Post Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-02-28",
@@ -511,52 +439,16 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Maria Celeste"
   },
   {
-    "date": "2025-03-01",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
     "date": "2025-03-02",
     "price": 3200,
     "service": "Cita Medica",
     "client_name": "Juan Fdo."
   },
   {
-    "date": "2025-03-04",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
-  },
-  {
     "date": "2025-03-05",
     "price": 2000,
     "service": "Post Cirugia",
     "client_name": "Wilber Baez"
-  },
-  {
-    "date": "2025-03-07",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "Maria Celeste"
-  },
-  {
-    "date": "2025-03-09",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": "Paloma"
-  },
-  {
-    "date": "2025-03-10",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-03-11",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-03-12",
@@ -569,30 +461,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 2500,
     "service": "Cita Medica",
     "client_name": "Oskar"
-  },
-  {
-    "date": "2025-03-13",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-03-16",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
-    "date": "2025-03-17",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-03-18",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-03-19",
@@ -611,12 +479,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 3000,
     "service": "Cita Medica",
     "client_name": "Clemencia Nouel"
-  },
-  {
-    "date": "2025-03-23",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
   },
   {
     "date": "2025-03-24",
@@ -667,52 +529,16 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Chriss Contreras"
   },
   {
-    "date": "2025-03-31",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-04-01",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
-  },
-  {
     "date": "2025-04-02",
     "price": 3000,
     "service": "Cita Medica",
     "client_name": "Melissa Ventura"
   },
   {
-    "date": "2025-04-04",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-04-05",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-04-06",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
     "date": "2025-04-07",
     "price": 3500,
     "service": "Cita Medica",
     "client_name": "Williana Encarnacion"
-  },
-  {
-    "date": "2025-04-08",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-04-09",
@@ -769,82 +595,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Paloma"
   },
   {
-    "date": "2025-04-16",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-04-17",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-04-18",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
-    "date": "2025-04-20",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "OFF"
-  },
-  {
-    "date": "2025-04-21",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": "OFF"
-  },
-  {
-    "date": "2025-04-22",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "OFF"
-  },
-  {
-    "date": "2025-04-23",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": "OFF"
-  },
-  {
-    "date": "2025-04-24",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": "OFF"
-  },
-  {
-    "date": "2025-04-25",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": "OFF"
-  },
-  {
     "date": "2025-04-26",
     "price": 9000,
     "service": "Aeropuerto",
     "client_name": "Veronica Kavaliova"
-  },
-  {
-    "date": "2025-04-27",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
-    "date": "2025-04-28",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-04-29",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-04-30",
@@ -877,18 +631,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Paloma Bonilla"
   },
   {
-    "date": "2025-05-05",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-05-06",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
-  },
-  {
     "date": "2025-05-07",
     "price": 1300,
     "service": "Terapia",
@@ -901,46 +643,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Paloma Bonilla"
   },
   {
-    "date": "2025-05-09",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
     "date": "2025-05-10",
     "price": 2300,
     "service": "Recreativa",
     "client_name": "Argentina Mendez"
-  },
-  {
-    "date": "2025-05-11",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
-  },
-  {
-    "date": "2025-05-12",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-05-13",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
-  },
-  {
-    "date": "2025-05-14",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": null
-  },
-  {
-    "date": "2025-05-15",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
   },
   {
     "date": "2025-05-16",
@@ -953,18 +659,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 1000,
     "service": "Recreativa",
     "client_name": "Paloma Bonilla"
-  },
-  {
-    "date": "2025-05-18",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
-  },
-  {
-    "date": "2025-05-19",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
   },
   {
     "date": "2025-05-20",
@@ -1001,18 +695,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 6000,
     "service": "Aeropuerto",
     "client_name": "Alondra Candelario"
-  },
-  {
-    "date": "2025-05-26",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2025-05-27",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
   },
   {
     "date": "2025-05-28",
@@ -1057,12 +739,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Alondra Candelario"
   },
   {
-    "date": "2025-06-03",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
-  },
-  {
     "date": "2025-06-04",
     "price": 2000,
     "service": "Cita Medica",
@@ -1075,28 +751,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Rosa Moreta"
   },
   {
-    "date": "2025-06-05",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
-  },
-  {
     "date": "2025-06-06",
     "price": 2500,
     "service": "Terapia",
     "client_name": "Rosa Moreta"
-  },
-  {
-    "date": "2025-06-07",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
-  },
-  {
-    "date": "2025-06-08",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
   },
   {
     "date": "2025-06-09",
@@ -1105,28 +763,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Clemencia Reyes"
   },
   {
-    "date": "2025-06-10",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
-  },
-  {
-    "date": "2025-06-11",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
     "date": "2025-06-12",
     "price": 3000,
     "service": "Terapia",
     "client_name": "Rosa Moreta"
-  },
-  {
-    "date": "2025-06-13",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
   },
   {
     "date": "2025-06-14",
@@ -1135,22 +775,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Rosa Moreta"
   },
   {
-    "date": "2025-06-15",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
-  },
-  {
     "date": "2025-06-16",
     "price": 3500,
     "service": "Aeropuerto",
     "client_name": "Rosa Moreta"
-  },
-  {
-    "date": "2025-06-17",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-06-18",
@@ -1177,28 +805,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Rosa Moreta"
   },
   {
-    "date": "2025-06-21",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
-  },
-  {
-    "date": "2025-06-22",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
     "date": "2025-06-23",
     "price": 2000,
     "service": "Cita Medica",
     "client_name": "Argentina"
-  },
-  {
-    "date": "2025-06-24",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-06-25",
@@ -1225,22 +835,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Argentina"
   },
   {
-    "date": "2025-06-29",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
     "date": "2025-06-30",
     "price": 3000,
     "service": "Terapia",
     "client_name": "Rosa Moreta"
-  },
-  {
-    "date": "2025-07-01",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-07-02",
@@ -1267,28 +865,10 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Rosa Moreta"
   },
   {
-    "date": "2025-07-05",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
-  },
-  {
-    "date": "2025-07-06",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
     "date": "2025-07-07",
     "price": 3000,
     "service": "Terapia",
     "client_name": "Rosa Moreta"
-  },
-  {
-    "date": "2025-07-08",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-07-09",
@@ -1321,12 +901,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Marilyn"
   },
   {
-    "date": "2025-07-11",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
     "date": "2025-07-12",
     "price": 4500,
     "service": "Eventos",
@@ -1343,12 +917,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 3500,
     "service": "Cita Medica",
     "client_name": "Rosa Moreta"
-  },
-  {
-    "date": "2025-07-15",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
   },
   {
     "date": "2025-07-16",
@@ -1397,12 +965,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 500,
     "service": "Recreativa",
     "client_name": "Paloma Bonilla"
-  },
-  {
-    "date": "2025-07-20",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": "Julliette Cabanillas"
   },
   {
     "date": "2025-07-21",
@@ -1471,12 +1033,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Sara Verdugo"
   },
   {
-    "date": "2025-07-29",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": null
-  },
-  {
     "date": "2025-07-30",
     "price": 1800,
     "service": "Eventos",
@@ -1487,12 +1043,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 2500,
     "service": "Cita Medica",
     "client_name": "Juan Fdo"
-  },
-  {
-    "date": "2025-08-01",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
   },
   {
     "date": "2025-08-02",
@@ -1837,54 +1387,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Yadoris Encarnacion"
   },
   {
-    "date": "2025-09-13",
-    "price": 0,
-    "service": "Eventos",
-    "client_name": "Jaime Skeete"
-  },
-  {
-    "date": "2025-09-13",
-    "price": 0,
-    "service": "Eventos",
-    "client_name": "Joan Butcher"
-  },
-  {
-    "date": "2025-09-13",
-    "price": 0,
-    "service": "Eventos",
-    "client_name": "Neville Sinclair"
-  },
-  {
-    "date": "2025-09-14",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": "Jaime Skeete"
-  },
-  {
-    "date": "2025-09-14",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": "Joan Butcher"
-  },
-  {
-    "date": "2025-09-14",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": "Neville Sinclair"
-  },
-  {
-    "date": "2025-09-15",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Clemencia Reyes"
-  },
-  {
-    "date": "2025-09-15",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "Yadimir Guerra"
-  },
-  {
     "date": "2025-09-16",
     "price": 2000,
     "service": "Terapia",
@@ -1975,12 +1477,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Frinette Bodden"
   },
   {
-    "date": "2025-09-24",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": null
-  },
-  {
     "date": "2025-09-25",
     "price": 2000,
     "service": "Terapia",
@@ -2003,18 +1499,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 1200,
     "service": "Post Cirugia",
     "client_name": "Jose Ivant"
-  },
-  {
-    "date": "2025-09-26",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Frinette Bodden"
-  },
-  {
-    "date": "2025-09-26",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "Jorge Isaac"
   },
   {
     "date": "2025-09-28",
@@ -2081,18 +1565,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 1500,
     "service": "Post Cirugia",
     "client_name": "Elizabeth cliente"
-  },
-  {
-    "date": "2025-10-04",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": null
-  },
-  {
-    "date": "2025-10-05",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
   },
   {
     "date": "2025-10-06",
@@ -2215,36 +1687,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Sandra Molina"
   },
   {
-    "date": "2025-10-23",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Clemencia Reyes"
-  },
-  {
-    "date": "2025-10-24",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "Yadimir Guerra"
-  },
-  {
-    "date": "2025-10-24",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "Frinette Bodden"
-  },
-  {
-    "date": "2025-10-24",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Clemencia Reyes"
-  },
-  {
-    "date": "2025-10-25",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": null
-  },
-  {
     "date": "2025-10-27",
     "price": 2000,
     "service": "Terapia",
@@ -2365,12 +1807,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Clemencia Reyes"
   },
   {
-    "date": "2025-11-07",
-    "price": 0,
-    "service": "Aeropuerto",
-    "client_name": null
-  },
-  {
     "date": "2025-11-12",
     "price": 2500,
     "service": "Cita Medica",
@@ -2473,12 +1909,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Clemencia Reyes"
   },
   {
-    "date": "2025-11-25",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
     "date": "2025-11-26",
     "price": 2000,
     "service": "Cita Medica",
@@ -2551,52 +1981,16 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "David Pachon"
   },
   {
-    "date": "2025-12-03",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "Clemencia Reyes"
-  },
-  {
-    "date": "2025-12-04",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Clemencia Reyes"
-  },
-  {
-    "date": "2025-12-05",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "Clemencia Reyes"
-  },
-  {
-    "date": "2025-12-05",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": "Frinette Bodden"
-  },
-  {
     "date": "2025-12-06",
     "price": 3500,
     "service": "Cita Medica",
     "client_name": "Gringo"
   },
   {
-    "date": "2025-12-07",
-    "price": 0,
-    "service": "Eventos",
-    "client_name": null
-  },
-  {
     "date": "2025-12-08",
     "price": 2000,
     "service": "Cita Medica",
     "client_name": "David Pachon"
-  },
-  {
-    "date": "2025-12-09",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
   },
   {
     "date": "2025-12-10",
@@ -2851,12 +2245,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Jose Ivant"
   },
   {
-    "date": "2026-01-20",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
     "date": "2026-01-22",
     "price": 1600,
     "service": "Pre Cirugia",
@@ -2971,12 +2359,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Katiusca Castellano"
   },
   {
-    "date": "2026-02-20",
-    "price": 0,
-    "service": "Eventos",
-    "client_name": "Travegali (Santiago)"
-  },
-  {
     "date": "2026-02-21",
     "price": 5000,
     "service": "Eventos",
@@ -3011,24 +2393,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 3000,
     "service": "Recreativa",
     "client_name": "Clemencia Reyes"
-  },
-  {
-    "date": "2026-03-03",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2026-03-04",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
-  },
-  {
-    "date": "2026-03-05",
-    "price": 0,
-    "service": "Cita Medica",
-    "client_name": null
   },
   {
     "date": "2026-03-06",
@@ -3369,60 +2733,6 @@ export const SEED_TRIPS: SeedTrip[] = [
   {
     "date": "2026-04-07",
     "price": 5400,
-    "service": "Aeropuerto",
-    "client_name": "Rosanna Vasquez"
-  },
-  {
-    "date": "2026-04-08",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Ramon Espinal"
-  },
-  {
-    "date": "2026-04-08",
-    "price": 0,
-    "service": "Eventos",
-    "client_name": "Rosanna Vasquez"
-  },
-  {
-    "date": "2026-04-08",
-    "price": 0,
-    "service": "Recreativa",
-    "client_name": "Rosanna Vasquez"
-  },
-  {
-    "date": "2026-04-09",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Maria Villar"
-  },
-  {
-    "date": "2026-04-09",
-    "price": 0,
-    "service": "Eventos",
-    "client_name": "Rosanna Vasquez"
-  },
-  {
-    "date": "2026-04-09",
-    "price": 0,
-    "service": "Pre Cirugia",
-    "client_name": "Paloma Bonilla"
-  },
-  {
-    "date": "2026-04-10",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Ramon Espinal"
-  },
-  {
-    "date": "2026-04-10",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Angustina Perez"
-  },
-  {
-    "date": "2026-04-10",
-    "price": 0,
     "service": "Aeropuerto",
     "client_name": "Rosanna Vasquez"
   },
@@ -3973,12 +3283,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "client_name": "Zoila Herasme"
   },
   {
-    "date": "2026-06-09",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Maria Villar"
-  },
-  {
     "date": "2026-06-10",
     "price": 2500,
     "service": "Cita Medica",
@@ -3989,12 +3293,6 @@ export const SEED_TRIPS: SeedTrip[] = [
     "price": 3000,
     "service": "Cita Medica",
     "client_name": "Rosa Moreta"
-  },
-  {
-    "date": "2026-06-11",
-    "price": 0,
-    "service": "Terapia",
-    "client_name": "Maria Villar"
   },
   {
     "date": "2026-06-13",
