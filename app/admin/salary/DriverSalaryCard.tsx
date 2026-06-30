@@ -1,10 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { formatDOP } from "@/lib/fare";
 import type { Driver, OvertimeEntry } from "@/lib/types";
 import { todayLocalISO } from "@/lib/date";
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function termOf(dateStr: string): 1 | 2 {
+  const day = Number(dateStr.slice(8, 10));
+  return day <= 15 ? 1 : 2;
+}
 
 export default function DriverSalaryCard({
   driver,
@@ -22,11 +32,41 @@ export default function DriverSalaryCard({
 
   const overtimeRate = driver.overtime_hourly_rate ?? 0;
   const baseSalary = driver.base_monthly_salary ?? 0;
+  const halfBaseSalary = baseSalary / 2;
 
   const totalHours = entries.reduce((sum, e) => sum + Number(e.hours), 0);
   const totalOvertimePay = entries.reduce((sum, e) => sum + Number(e.hours) * overtimeRate, 0);
   const totalDieta = entries.reduce((sum, e) => sum + Number(e.dieta_amount), 0);
   const totalToPay = baseSalary + totalOvertimePay + totalDieta;
+
+  const termGroups = useMemo(() => {
+    const map = new Map<string, OvertimeEntry[]>();
+    for (const entry of entries) {
+      const month = entry.date.slice(0, 7);
+      const key = `${month}-${termOf(entry.date)}`;
+      const list = map.get(key) ?? [];
+      list.push(entry);
+      map.set(key, list);
+    }
+    return [...map.entries()]
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([key, termEntries]) => {
+        const [year, month, term] = key.split("-");
+        const termHours = termEntries.reduce((sum, e) => sum + Number(e.hours), 0);
+        const termOvertimePay = termHours * overtimeRate;
+        const termDieta = termEntries.reduce((sum, e) => sum + Number(e.dieta_amount), 0);
+        const termTotal = halfBaseSalary + termOvertimePay + termDieta;
+        return {
+          key,
+          label: `${MONTH_NAMES[Number(month) - 1]} ${year} - ${term === "1" ? "1st term (1-15)" : "2nd term (16-end)"}`,
+          entries: termEntries,
+          termHours,
+          termOvertimePay,
+          termDieta,
+          termTotal,
+        };
+      });
+  }, [entries, overtimeRate, halfBaseSalary]);
 
   async function handleAddEntry(e: React.FormEvent) {
     e.preventDefault();
@@ -111,37 +151,49 @@ export default function DriverSalaryCard({
       </form>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
-      {entries.length > 0 && (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
-                <th className="py-2 pr-4">Date</th>
-                <th className="py-2 pr-4">Hours</th>
-                <th className="py-2 pr-4">Price</th>
-                <th className="py-2 pr-4">Dieta</th>
-                <th className="py-2 pr-4"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry) => (
-                <tr key={entry.id} className="border-b border-zinc-100 dark:border-zinc-800">
-                  <td className="py-2 pr-4">{entry.date}</td>
-                  <td className="py-2 pr-4">{entry.hours}</td>
-                  <td className="py-2 pr-4">{formatDOP(Number(entry.hours) * overtimeRate)}</td>
-                  <td className="py-2 pr-4">{formatDOP(entry.dieta_amount)}</td>
-                  <td className="py-2 pr-4">
-                    <button
-                      onClick={() => handleDelete(entry.id)}
-                      className="text-xs text-red-600 hover:underline"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {termGroups.length > 0 && (
+        <div className="mt-4 flex flex-col gap-4">
+          {termGroups.map((group) => (
+            <div key={group.key} className="rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
+                <p className="text-sm font-semibold">{group.label}</p>
+                <p className="text-sm text-zinc-500">
+                  Half base {formatDOP(halfBaseSalary)} + {group.termHours}h ({formatDOP(group.termOvertimePay)}) +
+                  dieta {formatDOP(group.termDieta)} ={" "}
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(group.termTotal)}</span>
+                </p>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
+                    <th className="px-4 py-2">Date</th>
+                    <th className="px-4 py-2">Hours</th>
+                    <th className="px-4 py-2">Price</th>
+                    <th className="px-4 py-2">Dieta</th>
+                    <th className="px-4 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.entries.map((entry) => (
+                    <tr key={entry.id} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+                      <td className="px-4 py-2">{entry.date}</td>
+                      <td className="px-4 py-2">{entry.hours}</td>
+                      <td className="px-4 py-2">{formatDOP(Number(entry.hours) * overtimeRate)}</td>
+                      <td className="px-4 py-2">{formatDOP(entry.dieta_amount)}</td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={() => handleDelete(entry.id)}
+                          className="text-xs text-red-600 hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
         </div>
       )}
     </div>

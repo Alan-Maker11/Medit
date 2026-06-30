@@ -54,9 +54,51 @@ export async function POST() {
     imported = toInsert.length;
   }
 
+  await backfillClients(supabase);
+
   return NextResponse.json({
     total_records: SEED_TRIPS.length,
     imported,
     skipped,
   });
+}
+
+async function backfillClients(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data: trips } = await supabase
+    .from("trips")
+    .select("client_name, service_id, total_fare, date")
+    .not("client_name", "is", null)
+    .order("date", { ascending: true });
+
+  const latestByName = new Map<string, { client_name: string; service_id: string | null; total_fare: number | null; date: string }>();
+  for (const t of trips ?? []) {
+    const name = (t.client_name ?? "").trim();
+    if (!name) continue;
+    latestByName.set(name.toLowerCase(), {
+      client_name: name,
+      service_id: t.service_id,
+      total_fare: t.total_fare,
+      date: t.date,
+    });
+  }
+
+  if (latestByName.size === 0) return;
+
+  const { data: existingClients } = await supabase.from("clients").select("id, name");
+  const existingByLowerName = new Map((existingClients ?? []).map((c) => [c.name.toLowerCase(), c.id]));
+
+  const toInsert: Record<string, unknown>[] = [];
+  for (const [lowerName, latest] of latestByName) {
+    if (existingByLowerName.has(lowerName)) continue;
+    toInsert.push({
+      name: latest.client_name,
+      last_service_id: latest.service_id,
+      last_total_fare: latest.total_fare,
+      last_trip_date: latest.date,
+    });
+  }
+
+  if (toInsert.length > 0) {
+    await supabase.from("clients").insert(toInsert);
+  }
 }
