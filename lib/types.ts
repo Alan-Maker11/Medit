@@ -118,6 +118,7 @@ export interface OvertimeEntry {
   date: string;
   hours: number;
   dieta_amount: number;
+  elevator_amount: number;
   notes: string | null;
 }
 

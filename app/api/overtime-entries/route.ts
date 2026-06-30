@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const supabase = await createClient();
   const body = await request.json();
-  const { driver_id, date, hours, dieta_amount, notes } = body;
+  const { driver_id, date, hours, dieta_amount, elevator_amount, notes } = body;
 
   if (!driver_id || !date) {
     return NextResponse.json({ error: "driver_id and date are required" }, { status: 400 });
@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       date,
       hours: Number(hours) || 0,
       dieta_amount: Number(dieta_amount) || 0,
+      elevator_amount: Number(elevator_amount) || 0,
       notes: notes || null,
     })
     .select()

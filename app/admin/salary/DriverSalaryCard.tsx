@@ -27,6 +27,7 @@ export default function DriverSalaryCard({
   const [date, setDate] = useState(todayLocalISO());
   const [hours, setHours] = useState("");
   const [dieta, setDieta] = useState("");
+  const [elevator, setElevator] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +38,8 @@ export default function DriverSalaryCard({
   const totalHours = entries.reduce((sum, e) => sum + Number(e.hours), 0);
   const totalOvertimePay = entries.reduce((sum, e) => sum + Number(e.hours) * overtimeRate, 0);
   const totalDieta = entries.reduce((sum, e) => sum + Number(e.dieta_amount), 0);
-  const totalToPay = baseSalary + totalOvertimePay + totalDieta;
+  const totalElevator = entries.reduce((sum, e) => sum + Number(e.elevator_amount), 0);
+  const totalToPay = baseSalary + totalOvertimePay + totalDieta + totalElevator;
 
   const termGroups = useMemo(() => {
     const map = new Map<string, OvertimeEntry[]>();
@@ -55,7 +57,8 @@ export default function DriverSalaryCard({
         const termHours = termEntries.reduce((sum, e) => sum + Number(e.hours), 0);
         const termOvertimePay = termHours * overtimeRate;
         const termDieta = termEntries.reduce((sum, e) => sum + Number(e.dieta_amount), 0);
-        const termTotal = halfBaseSalary + termOvertimePay + termDieta;
+        const termElevator = termEntries.reduce((sum, e) => sum + Number(e.elevator_amount), 0);
+        const termTotal = halfBaseSalary + termOvertimePay + termDieta + termElevator;
         return {
           key,
           label: `${MONTH_NAMES[Number(month) - 1]} ${year} - ${term === "1" ? "1st term (1-15)" : "2nd term (16-end)"}`,
@@ -63,6 +66,7 @@ export default function DriverSalaryCard({
           termHours,
           termOvertimePay,
           termDieta,
+          termElevator,
           termTotal,
         };
       });
@@ -75,7 +79,13 @@ export default function DriverSalaryCard({
     const res = await fetch("/api/overtime-entries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ driver_id: driver.id, date, hours, dieta_amount: dieta }),
+      body: JSON.stringify({
+        driver_id: driver.id,
+        date,
+        hours,
+        dieta_amount: dieta,
+        elevator_amount: elevator,
+      }),
     });
     setSubmitting(false);
     if (!res.ok) {
@@ -85,6 +95,7 @@ export default function DriverSalaryCard({
     }
     setHours("");
     setDieta("");
+    setElevator("");
     router.refresh();
   }
 
@@ -102,10 +113,11 @@ export default function DriverSalaryCard({
         </p>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
         <Stat label="Salario regular" value={formatDOP(baseSalary)} />
         <Stat label="Horas extras" value={`${totalHours} h / ${formatDOP(totalOvertimePay)}`} />
         <Stat label="Dieta" value={formatDOP(totalDieta)} />
+        <Stat label="Ascensor/Bajador" value={formatDOP(totalElevator)} />
         <Stat label="Total a pagar" value={formatDOP(totalToPay)} highlight />
       </div>
 
@@ -141,6 +153,18 @@ export default function DriverSalaryCard({
             className="w-28 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
           />
         </label>
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          Ascensor/Bajador (DOP)
+          <input
+            type="number"
+            min={0}
+            step={100}
+            value={elevator}
+            onChange={(e) => setElevator(e.target.value)}
+            className="w-36 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            placeholder="100, 200…"
+          />
+        </label>
         <button
           type="submit"
           disabled={submitting}
@@ -159,39 +183,43 @@ export default function DriverSalaryCard({
                 <p className="text-sm font-semibold">{group.label}</p>
                 <p className="text-sm text-zinc-500">
                   Half base {formatDOP(halfBaseSalary)} + {group.termHours}h ({formatDOP(group.termOvertimePay)}) +
-                  dieta {formatDOP(group.termDieta)} ={" "}
+                  dieta {formatDOP(group.termDieta)} + ascensor {formatDOP(group.termElevator)} ={" "}
                   <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(group.termTotal)}</span>
                 </p>
               </div>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
-                    <th className="px-4 py-2">Date</th>
-                    <th className="px-4 py-2">Hours</th>
-                    <th className="px-4 py-2">Price</th>
-                    <th className="px-4 py-2">Dieta</th>
-                    <th className="px-4 py-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {group.entries.map((entry) => (
-                    <tr key={entry.id} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
-                      <td className="px-4 py-2">{entry.date}</td>
-                      <td className="px-4 py-2">{entry.hours}</td>
-                      <td className="px-4 py-2">{formatDOP(Number(entry.hours) * overtimeRate)}</td>
-                      <td className="px-4 py-2">{formatDOP(entry.dieta_amount)}</td>
-                      <td className="px-4 py-2">
-                        <button
-                          onClick={() => handleDelete(entry.id)}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          Remove
-                        </button>
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
+                      <th className="px-4 py-2">Date</th>
+                      <th className="px-4 py-2">Hours</th>
+                      <th className="px-4 py-2">Price</th>
+                      <th className="px-4 py-2">Dieta</th>
+                      <th className="px-4 py-2">Ascensor/Bajador</th>
+                      <th className="px-4 py-2"></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {group.entries.map((entry) => (
+                      <tr key={entry.id} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+                        <td className="px-4 py-2">{entry.date}</td>
+                        <td className="px-4 py-2">{entry.hours}</td>
+                        <td className="px-4 py-2">{formatDOP(Number(entry.hours) * overtimeRate)}</td>
+                        <td className="px-4 py-2">{formatDOP(entry.dieta_amount)}</td>
+                        <td className="px-4 py-2">{entry.elevator_amount ? formatDOP(entry.elevator_amount) : "-"}</td>
+                        <td className="px-4 py-2">
+                          <button
+                            onClick={() => handleDelete(entry.id)}
+                            className="text-xs text-red-600 hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ))}
         </div>
