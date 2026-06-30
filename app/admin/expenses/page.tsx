@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatDOP } from "@/lib/fare";
+import DeleteExpenseButton from "./DeleteExpenseButton";
 
 export default async function ExpensesPage() {
   const supabase = await createClient();
@@ -52,6 +53,7 @@ export default async function ExpensesPage() {
               <th className="px-4 py-3">Km</th>
               <th className="px-4 py-3">Km/tank</th>
               <th className="px-4 py-3">Notes</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -64,11 +66,19 @@ export default async function ExpensesPage() {
                 <td className="px-4 py-3">{expense.km_at_fill ?? "-"}</td>
                 <td className="px-4 py-3">{kmPerTankById.get(expense.id) ?? "-"}</td>
                 <td className="px-4 py-3">{expense.description ?? "-"}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <Link href={`/admin/expenses/${expense.id}/edit`} className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                      Edit
+                    </Link>
+                    <DeleteExpenseButton id={expense.id} />
+                  </div>
+                </td>
               </tr>
             ))}
             {(!expenses || expenses.length === 0) && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
+                <td colSpan={8} className="px-4 py-6 text-center text-zinc-500">
                   No expenses logged yet.
                 </td>
               </tr>
