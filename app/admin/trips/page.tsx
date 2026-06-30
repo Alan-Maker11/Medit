@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import EraseAllTripsButton from "./EraseAllTripsButton";
+import AssignJuneCrewButton from "./AssignJuneCrewButton";
 import TripsByMonth from "./TripsByMonth";
 
 export default async function TripsPage() {
@@ -22,6 +23,7 @@ export default async function TripsPage() {
         </Link>
       </div>
       <TripsByMonth trips={(trips ?? []) as unknown as Parameters<typeof TripsByMonth>[0]["trips"]} />
+      <AssignJuneCrewButton />
       <EraseAllTripsButton />
     </div>
   );

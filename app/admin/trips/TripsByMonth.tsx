@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { formatDOP } from "@/lib/fare";
 
@@ -74,11 +75,12 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                       <th className="px-4 py-3">Vehicle</th>
                       <th className="px-4 py-3">Fare</th>
                       <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3 w-16"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {monthTrips.map((trip) => (
-                      <tr key={trip.id} className="border-b border-zinc-100 dark:border-zinc-800">
+                      <tr key={trip.id} className="group relative border-b border-zinc-100 dark:border-zinc-800">
                         <td className="px-4 py-3">{trip.date}</td>
                         <td className="px-4 py-3">{trip.services?.name ?? "-"}</td>
                         <td className="px-4 py-3">{trip.client_name ?? "-"}</td>
@@ -86,6 +88,14 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                         <td className="px-4 py-3">{trip.vehicles?.name ?? "-"}</td>
                         <td className="px-4 py-3">{trip.total_fare ? formatDOP(trip.total_fare) : "-"}</td>
                         <td className="px-4 py-3 capitalize">{trip.status}</td>
+                        <td className="px-4 py-3">
+                          <Link
+                            href={`/admin/trips/${trip.id}/edit`}
+                            className="invisible text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline group-hover:visible"
+                          >
+                            Edit
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
