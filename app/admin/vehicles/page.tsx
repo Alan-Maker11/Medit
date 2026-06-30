@@ -20,7 +20,7 @@ export default async function VehiclesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Vehicles</h1>
         <Link
           href="/admin/vehicles/new"
@@ -35,7 +35,7 @@ export default async function VehiclesPage() {
             key={vehicle.id}
             className="flex flex-col gap-2 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="font-semibold">{vehicle.name}</h3>
               <div className="flex items-center gap-2">
                 <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs capitalize dark:bg-zinc-800">

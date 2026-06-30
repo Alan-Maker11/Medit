@@ -54,10 +54,10 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
           <div key={key} className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
             <button
               onClick={() => toggle(key)}
-              className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+              className="flex w-full flex-wrap items-center justify-between gap-2 px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
             >
               <span className="font-semibold">{label}</span>
-              <span className="flex items-center gap-4 text-sm text-zinc-500">
+              <span className="flex flex-wrap items-center gap-3 text-sm text-zinc-500">
                 <span>{monthTrips.length} trips</span>
                 <span>{formatDOP(monthTotal)}</span>
                 <span>{isOpen ? "▲" : "▼"}</span>
@@ -91,7 +91,7 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                         <td className="px-4 py-3">
                           <Link
                             href={`/admin/trips/${trip.id}/edit`}
-                            className="invisible text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline group-hover:visible"
+                            className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline md:invisible md:group-hover:visible"
                           >
                             Edit
                           </Link>

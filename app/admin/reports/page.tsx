@@ -119,9 +119,9 @@ export default function ReportsPage() {
       <h1 className="text-2xl font-bold">Reports</h1>
 
       <section className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Weekly report</h2>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <input type="date" value={weekOf} onChange={(e) => setWeekOf(e.target.value)} className="input" />
             <button
               onClick={exportWeeklyReport}
@@ -152,9 +152,9 @@ export default function ReportsPage() {
       </section>
 
       <section className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Driver payroll</h2>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="input" />
             <button
               onClick={exportPayroll}
