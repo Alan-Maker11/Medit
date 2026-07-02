@@ -366,7 +366,14 @@ export default function NewTripPage() {
               <Field label="Mode">
                 <select
                   value={form.transportation_mode}
-                  onChange={(e) => update("transportation_mode", e.target.value as TransportationMode)}
+                  onChange={(e) => {
+                    const mode = e.target.value as TransportationMode;
+                    update("transportation_mode", mode);
+                    if (mode === "public") {
+                      const meditiko = vehicles.find((v) => v.name.toLowerCase() === "meditiko");
+                      if (meditiko) update("vehicle_id", meditiko.id);
+                    }
+                  }}
                   className="input"
                 >
                   <option value="private">Private</option>
