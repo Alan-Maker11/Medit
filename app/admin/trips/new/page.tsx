@@ -50,7 +50,7 @@ export default function NewTripPage() {
     notes: "",
   });
 
-  const [deliveryFee, setDeliveryFee] = useState("0");
+  const [transportFee, setTransportFee] = useState("0");
   const [wheelchair, setWheelchair] = useState(false);
   const [stairsElevator, setStairsElevator] = useState(false);
   const [manualFare, setManualFare] = useState("");
@@ -59,22 +59,36 @@ export default function NewTripPage() {
   const [breakdown, setBreakdown] = useState<FareBreakdown | null>(null);
   const [calcError, setCalcError] = useState<string | null>(null);
 
+  // Detect Subir/Bajar mode
+  const selectedService = services.find((s) => s.id === form.service_id);
+  const isSubirBajar = selectedService?.name === "Subir/Bajar";
+
+  // For Subir/Bajar: auto-compute breakdown live from fees — no Calculate button needed
+  const subBajarTotal =
+    (Number(transportFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 : 0);
+
+  useEffect(() => {
+    if (!isSubirBajar) {
+      setBreakdown(null);
+      return;
+    }
+    setBreakdown({
+      distanceKm: 0,
+      durationMinutes: 0,
+      baseFare: 0,
+      distanceCost: 0,
+      durationCost: 0,
+      waitingCost: 0,
+      additionalFees: subBajarTotal,
+      totalFare: subBajarTotal,
+    });
+  }, [isSubirBajar, subBajarTotal]);
+
   useEffect(() => {
     const supabase = createClient();
-    supabase
-      .from("services")
-      .select("id, name")
-      .then(({ data }) => setServices(data ?? []));
-    supabase
-      .from("drivers")
-      .select("id, name")
-      .eq("status", "active")
-      .then(({ data }) => setDrivers(data ?? []));
-    supabase
-      .from("vehicles")
-      .select("id, name")
-      .eq("status", "active")
-      .then(({ data }) => setVehicles(data ?? []));
+    supabase.from("services").select("id, name").then(({ data }) => setServices(data ?? []));
+    supabase.from("drivers").select("id, name").eq("status", "active").then(({ data }) => setDrivers(data ?? []));
+    supabase.from("vehicles").select("id, name").eq("status", "active").then(({ data }) => setVehicles(data ?? []));
   }, []);
 
   useEffect(() => {
@@ -85,25 +99,23 @@ export default function NewTripPage() {
     importLibrary("places")
       .then(() => {
         if (pickupRef.current) {
-          const autocomplete = new google.maps.places.Autocomplete(pickupRef.current, {
+          const ac = new google.maps.places.Autocomplete(pickupRef.current, {
             fields: ["formatted_address"],
             componentRestrictions: { country: "do" },
           });
-          autocomplete.addListener("place_changed", () => {
-            const place = autocomplete.getPlace();
-            const address = place.formatted_address ?? pickupRef.current?.value ?? "";
-            update("pickup_address", address);
+          ac.addListener("place_changed", () => {
+            const place = ac.getPlace();
+            update("pickup_address", place.formatted_address ?? pickupRef.current?.value ?? "");
           });
         }
         if (destinationRef.current) {
-          const autocomplete = new google.maps.places.Autocomplete(destinationRef.current, {
+          const ac = new google.maps.places.Autocomplete(destinationRef.current, {
             fields: ["formatted_address"],
             componentRestrictions: { country: "do" },
           });
-          autocomplete.addListener("place_changed", () => {
-            const place = autocomplete.getPlace();
-            const address = place.formatted_address ?? destinationRef.current?.value ?? "";
-            update("destination_address", address);
+          ac.addListener("place_changed", () => {
+            const place = ac.getPlace();
+            update("destination_address", place.formatted_address ?? destinationRef.current?.value ?? "");
           });
         }
         setMapsReady(true);
@@ -126,12 +138,11 @@ export default function NewTripPage() {
   }
 
   async function fetchDistance() {
+    if (isSubirBajar) return;
     setCalcError(null);
     if (!mapsReady || !form.pickup_address || !form.destination_address) return;
     try {
-      const { DistanceMatrixService } = (await google.maps.importLibrary(
-        "routes"
-      )) as google.maps.RoutesLibrary;
+      const { DistanceMatrixService } = (await google.maps.importLibrary("routes")) as google.maps.RoutesLibrary;
       const service = new DistanceMatrixService();
       const result = await service.getDistanceMatrix({
         origins: [form.pickup_address],
@@ -150,11 +161,12 @@ export default function NewTripPage() {
     }
   }
 
-  function additionalFeesTotal() {
-    return (Number(deliveryFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 : 0);
+  function regularAdditionalFees() {
+    return (Number(transportFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 : 0);
   }
 
   function handleCalculate() {
+    if (isSubirBajar) return; // handled automatically
     setCalcError(null);
     const overrideFare = Number(manualFare);
     if (manualFare && !Number.isNaN(overrideFare) && overrideFare > 0) {
@@ -165,8 +177,8 @@ export default function NewTripPage() {
         distanceCost: 0,
         durationCost: 0,
         waitingCost: 0,
-        additionalFees: additionalFeesTotal(),
-        totalFare: overrideFare + additionalFeesTotal(),
+        additionalFees: regularAdditionalFees(),
+        totalFare: overrideFare + regularAdditionalFees(),
       });
       return;
     }
@@ -183,7 +195,7 @@ export default function NewTripPage() {
         tripType: form.trip_type,
         mode: form.transportation_mode,
         waitingHours: form.trip_type === "round-trip" ? Number(form.waiting_hours) : 0,
-        additionalFees: additionalFeesTotal(),
+        additionalFees: regularAdditionalFees(),
       })
     );
   }
@@ -191,7 +203,7 @@ export default function NewTripPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!breakdown) {
+    if (!breakdown && !isSubirBajar) {
       setError("Please calculate the fare before saving the trip.");
       return;
     }
@@ -201,7 +213,7 @@ export default function NewTripPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
-        additional_fees: additionalFeesTotal(),
+        additional_fees: isSubirBajar ? subBajarTotal : regularAdditionalFees(),
       }),
     });
     setSubmitting(false);
@@ -246,6 +258,7 @@ export default function NewTripPage() {
                   ))}
             </select>
           </Field>
+
           <Field label="Client name">
             <ClientAutocomplete
               value={form.client_name}
@@ -256,10 +269,10 @@ export default function NewTripPage() {
           <Field label="Client phone">
             <input value={form.client_phone} onChange={(e) => update("client_phone", e.target.value)} className="input" />
           </Field>
+
           {previousTrip && (
             <p className="text-xs text-zinc-500 sm:col-span-2">
-              Previous trip: {previousTrip.last_trip_date ?? "-"} ·{" "}
-              {previousTrip.last_service_name ?? "no service"} ·{" "}
+              Previous trip: {previousTrip.last_trip_date ?? "-"} · {previousTrip.last_service_name ?? "no service"} ·{" "}
               {previousTrip.last_total_fare != null ? formatDOP(previousTrip.last_total_fare) : "-"}
               {previousTrip.last_total_fare != null && (
                 <button
@@ -272,7 +285,9 @@ export default function NewTripPage() {
               )}
             </p>
           )}
-          <Field label="Pickup address" full>
+
+          {/* Pickup address — always shown; label changes for Subir/Bajar */}
+          <Field label={isSubirBajar ? "Building / pickup address" : "Pickup address"} full>
             <input
               ref={pickupRef}
               required
@@ -282,38 +297,36 @@ export default function NewTripPage() {
               className="input"
             />
           </Field>
-          <Field label="Destination address" full>
-            <input
-              ref={destinationRef}
-              required
-              value={form.destination_address}
-              onChange={(e) => update("destination_address", e.target.value)}
-              onBlur={fetchDistance}
-              className="input"
-            />
-          </Field>
+
+          {/* Destination only for regular trips */}
+          {!isSubirBajar && (
+            <Field label="Destination address" full>
+              <input
+                ref={destinationRef}
+                required
+                value={form.destination_address}
+                onChange={(e) => update("destination_address", e.target.value)}
+                onBlur={fetchDistance}
+                className="input"
+              />
+            </Field>
+          )}
+
           <Field label="Driver">
             <select value={form.driver_id} onChange={(e) => update("driver_id", e.target.value)} className="input">
               <option value="">Select driver</option>
-              {drivers.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
+              {drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </Field>
           <Field label="Vehicle">
             <select value={form.vehicle_id} onChange={(e) => update("vehicle_id", e.target.value)} className="input">
               <option value="">Select vehicle</option>
-              {vehicles.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name}
-                </option>
-              ))}
+              {vehicles.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
             </select>
           </Field>
 
-          {mapsError && (
+          {/* Distance/duration manual entry — only for regular trips */}
+          {!isSubirBajar && mapsError && (
             <>
               <Field label="Distance (km)">
                 <input
@@ -337,55 +350,60 @@ export default function NewTripPage() {
             </>
           )}
 
-          <Field label="Trip type">
-            <select value={form.trip_type} onChange={(e) => update("trip_type", e.target.value as TripType)} className="input">
-              <option value="one-way">One-way</option>
-              <option value="round-trip">Round-trip</option>
-            </select>
-          </Field>
-          <Field label="Mode">
-            <select
-              value={form.transportation_mode}
-              onChange={(e) => update("transportation_mode", e.target.value as TransportationMode)}
-              className="input"
-            >
-              <option value="private">Private</option>
-              <option value="public">Public (Meditiko)</option>
-            </select>
-          </Field>
-          {form.trip_type === "round-trip" && (
-            <Field label="Waiting hours">
-              <input
-                type="number"
-                step="0.5"
-                value={form.waiting_hours}
-                onChange={(e) => update("waiting_hours", e.target.value)}
-                className="input"
-              />
-            </Field>
-          )}
-
-          <Field label="Quick fare override (DOP, optional)" full>
-            <input
-              type="number"
-              min={0}
-              value={manualFare}
-              onChange={(e) => setManualFare(e.target.value)}
-              placeholder="Leave blank to calculate from distance/duration"
-              className="input"
-            />
-          </Field>
-
-          <fieldset className="flex flex-col gap-2 text-sm font-medium sm:col-span-2">
-            Additional fees
-            <div className="flex flex-col gap-2 text-sm font-normal">
-              <label className="flex items-center gap-2">
-                Transportation / Delivery (DOP)
+          {/* Trip type / mode / waiting — only for regular trips */}
+          {!isSubirBajar && (
+            <>
+              <Field label="Trip type">
+                <select value={form.trip_type} onChange={(e) => update("trip_type", e.target.value as TripType)} className="input">
+                  <option value="one-way">One-way</option>
+                  <option value="round-trip">Round-trip</option>
+                </select>
+              </Field>
+              <Field label="Mode">
+                <select
+                  value={form.transportation_mode}
+                  onChange={(e) => update("transportation_mode", e.target.value as TransportationMode)}
+                  className="input"
+                >
+                  <option value="private">Private</option>
+                  <option value="public">Public (Meditiko)</option>
+                </select>
+              </Field>
+              {form.trip_type === "round-trip" && (
+                <Field label="Waiting hours">
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={form.waiting_hours}
+                    onChange={(e) => update("waiting_hours", e.target.value)}
+                    className="input"
+                  />
+                </Field>
+              )}
+              <Field label="Quick fare override (DOP, optional)" full>
                 <input
                   type="number"
                   min={0}
-                  value={deliveryFee}
-                  onChange={(e) => setDeliveryFee(e.target.value)}
+                  value={manualFare}
+                  onChange={(e) => setManualFare(e.target.value)}
+                  placeholder="Leave blank to calculate from distance/duration"
+                  className="input"
+                />
+              </Field>
+            </>
+          )}
+
+          {/* Equipment / fees section — always shown, label adapts */}
+          <fieldset className="flex flex-col gap-2 text-sm font-medium sm:col-span-2">
+            {isSubirBajar ? "Service fees" : "Additional fees"}
+            <div className="flex flex-col gap-2 text-sm font-normal">
+              <label className="flex items-center gap-2">
+                {isSubirBajar ? "Transportation fee (optional, DOP)" : "Transportation / Delivery (DOP)"}
+                <input
+                  type="number"
+                  min={0}
+                  value={transportFee}
+                  onChange={(e) => setTransportFee(e.target.value)}
                   className="input w-32"
                 />
               </label>
@@ -394,14 +412,18 @@ export default function NewTripPage() {
                 Wheelchair (+{formatDOP(350)})
               </label>
               <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={stairsElevator}
-                  onChange={(e) => setStairsElevator(e.target.checked)}
-                />
-                Stairs / Elevator (+{formatDOP(500)})
+                <input type="checkbox" checked={stairsElevator} onChange={(e) => setStairsElevator(e.target.checked)} />
+                Stair climber / Elevator (+{formatDOP(500)})
               </label>
             </div>
+
+            {/* Live total for Subir/Bajar */}
+            {isSubirBajar && (
+              <div className="mt-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
+                <p className="text-xs text-zinc-500">Total charge</p>
+                <p className="text-2xl font-bold">{formatDOP(subBajarTotal)}</p>
+              </div>
+            )}
           </fieldset>
 
           <Field label="Notes" full>
@@ -410,15 +432,18 @@ export default function NewTripPage() {
 
           {calcError && <p className="col-span-2 text-sm text-red-600">{calcError}</p>}
 
-          <div className="col-span-2">
-            <button
-              type="button"
-              onClick={handleCalculate}
-              className="rounded-full bg-zinc-800 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900"
-            >
-              Calculate fare
-            </button>
-          </div>
+          {/* Calculate fare button only for regular trips */}
+          {!isSubirBajar && (
+            <div className="col-span-2">
+              <button
+                type="button"
+                onClick={handleCalculate}
+                className="rounded-full bg-zinc-800 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-700 dark:bg-zinc-200 dark:text-zinc-900"
+              >
+                Calculate fare
+              </button>
+            </div>
+          )}
 
           {error && <p className="col-span-2 text-sm text-red-600">{error}</p>}
 
@@ -433,28 +458,29 @@ export default function NewTripPage() {
           </div>
         </form>
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-lg font-semibold">Fare breakdown</h2>
-          {breakdown ? (
-            <dl className="flex flex-col gap-2 text-sm">
-              <Row label="Base fare" value={formatDOP(breakdown.baseFare)} />
-              <Row label={`Distance (${breakdown.distanceKm} km)`} value={formatDOP(breakdown.distanceCost)} />
-              <Row label={`Duration (${breakdown.durationMinutes} min)`} value={formatDOP(breakdown.durationCost)} />
-              {breakdown.waitingCost > 0 && <Row label="Waiting time" value={formatDOP(breakdown.waitingCost)} />}
-              {breakdown.additionalFees > 0 && (
-                <Row label="Additional fees" value={formatDOP(breakdown.additionalFees)} />
-              )}
-              <div className="mt-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
-                <p className="text-sm text-zinc-500">Total fare</p>
-                <p className="text-3xl font-bold">{formatDOP(breakdown.totalFare)}</p>
-              </div>
-            </dl>
-          ) : (
-            <p className="text-sm text-zinc-500">
-              Fill in trip details and click &ldquo;Calculate fare&rdquo; to preview the total before saving.
-            </p>
-          )}
-        </div>
+        {/* Fare breakdown side panel — only for regular trips */}
+        {!isSubirBajar && (
+          <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 className="text-lg font-semibold">Fare breakdown</h2>
+            {breakdown ? (
+              <dl className="flex flex-col gap-2 text-sm">
+                <Row label="Base fare" value={formatDOP(breakdown.baseFare)} />
+                <Row label={`Distance (${breakdown.distanceKm} km)`} value={formatDOP(breakdown.distanceCost)} />
+                <Row label={`Duration (${breakdown.durationMinutes} min)`} value={formatDOP(breakdown.durationCost)} />
+                {breakdown.waitingCost > 0 && <Row label="Waiting time" value={formatDOP(breakdown.waitingCost)} />}
+                {breakdown.additionalFees > 0 && <Row label="Additional fees" value={formatDOP(breakdown.additionalFees)} />}
+                <div className="mt-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+                  <p className="text-sm text-zinc-500">Total fare</p>
+                  <p className="text-3xl font-bold">{formatDOP(breakdown.totalFare)}</p>
+                </div>
+              </dl>
+            ) : (
+              <p className="text-sm text-zinc-500">
+                Fill in trip details and click &ldquo;Calculate fare&rdquo; to preview the total before saving.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

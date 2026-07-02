@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatDOP } from "@/lib/fare";
 
 interface Option {
   id: string;
@@ -35,9 +36,25 @@ export default function EditTripForm({
     trip_type: trip.trip_type ?? "one-way",
     transportation_mode: trip.transportation_mode ?? "private",
     status: trip.status ?? "pending",
-    total_fare: trip.total_fare ?? "",
+    total_fare: trip.total_fare != null ? String(trip.total_fare) : "",
     notes: trip.notes ?? "",
   });
+
+  // Subir/Bajar fee helper state
+  const [transportFee, setTransportFee] = useState("0");
+  const [wheelchair, setWheelchair] = useState(false);
+  const [stairsElevator, setStairsElevator] = useState(false);
+
+  const selectedService = services.find((s) => s.id === form.service_id);
+  const isSubirBajar = selectedService?.name === "Subir/Bajar";
+
+  const subBajarTotal = (Number(transportFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 : 0);
+
+  // Keep total_fare in sync with fee calculator when in Subir/Bajar mode
+  function handleFeeChange(newTransport: string, newWheelchair: boolean, newStairs: boolean) {
+    const total = (Number(newTransport) || 0) + (newWheelchair ? 350 : 0) + (newStairs ? 500 : 0);
+    setForm((prev) => ({ ...prev, total_fare: total > 0 ? String(total) : prev.total_fare }));
+  }
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -82,12 +99,11 @@ export default function EditTripForm({
         <select value={form.service_id} onChange={(e) => update("service_id", e.target.value)} className="input">
           <option value="">Select service</option>
           {services.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
+            <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
       </label>
+
       <label className="flex flex-col gap-1 text-sm font-medium">
         Client name
         <input value={form.client_name} onChange={(e) => update("client_name", e.target.value)} className="input" />
@@ -96,50 +112,56 @@ export default function EditTripForm({
         Client phone
         <input value={form.client_phone} onChange={(e) => update("client_phone", e.target.value)} className="input" />
       </label>
+
+      {/* Pickup — always shown; label changes for Subir/Bajar */}
       <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
-        Pickup address
+        {isSubirBajar ? "Building / pickup address" : "Pickup address"}
         <input value={form.pickup_address} onChange={(e) => update("pickup_address", e.target.value)} className="input" />
       </label>
-      <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
-        Destination address
-        <input value={form.destination_address} onChange={(e) => update("destination_address", e.target.value)} className="input" />
-      </label>
+
+      {/* Destination — hidden for Subir/Bajar */}
+      {!isSubirBajar && (
+        <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
+          Destination address
+          <input value={form.destination_address} onChange={(e) => update("destination_address", e.target.value)} className="input" />
+        </label>
+      )}
+
       <label className="flex flex-col gap-1 text-sm font-medium">
         Driver
         <select value={form.driver_id} onChange={(e) => update("driver_id", e.target.value)} className="input">
           <option value="">Select driver</option>
-          {drivers.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
+          {drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </label>
       <label className="flex flex-col gap-1 text-sm font-medium">
         Vehicle
         <select value={form.vehicle_id} onChange={(e) => update("vehicle_id", e.target.value)} className="input">
           <option value="">Select vehicle</option>
-          {vehicles.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.name}
-            </option>
-          ))}
+          {vehicles.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Trip type
-        <select value={form.trip_type} onChange={(e) => update("trip_type", e.target.value)} className="input">
-          <option value="one-way">One-way</option>
-          <option value="round-trip">Round-trip</option>
-        </select>
-      </label>
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Mode
-        <select value={form.transportation_mode} onChange={(e) => update("transportation_mode", e.target.value)} className="input">
-          <option value="private">Private</option>
-          <option value="public">Public (Meditiko)</option>
-        </select>
-      </label>
+
+      {/* Trip type / mode — only for regular trips */}
+      {!isSubirBajar && (
+        <>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Trip type
+            <select value={form.trip_type} onChange={(e) => update("trip_type", e.target.value)} className="input">
+              <option value="one-way">One-way</option>
+              <option value="round-trip">Round-trip</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Mode
+            <select value={form.transportation_mode} onChange={(e) => update("transportation_mode", e.target.value)} className="input">
+              <option value="private">Private</option>
+              <option value="public">Public (Meditiko)</option>
+            </select>
+          </label>
+        </>
+      )}
+
       <label className="flex flex-col gap-1 text-sm font-medium">
         Status
         <select value={form.status} onChange={(e) => update("status", e.target.value)} className="input">
@@ -148,15 +170,87 @@ export default function EditTripForm({
           <option value="cancelled">Cancelled</option>
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Total fare (DOP)
-        <input
-          type="number"
-          value={form.total_fare}
-          onChange={(e) => update("total_fare", e.target.value)}
-          className="input"
-        />
-      </label>
+
+      {/* For regular trips: direct total fare input */}
+      {!isSubirBajar && (
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          Total fare (DOP)
+          <input
+            type="number"
+            value={form.total_fare}
+            onChange={(e) => update("total_fare", e.target.value)}
+            className="input"
+          />
+        </label>
+      )}
+
+      {/* For Subir/Bajar: fee calculator that sets total_fare */}
+      {isSubirBajar && (
+        <fieldset className="flex flex-col gap-2 text-sm font-medium md:col-span-2">
+          Service fees
+          <div className="flex flex-col gap-2 text-sm font-normal">
+            <label className="flex items-center gap-2">
+              Transportation fee (optional, DOP)
+              <input
+                type="number"
+                min={0}
+                value={transportFee}
+                onChange={(e) => {
+                  setTransportFee(e.target.value);
+                  handleFeeChange(e.target.value, wheelchair, stairsElevator);
+                }}
+                className="input w-32"
+              />
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={wheelchair}
+                onChange={(e) => {
+                  setWheelchair(e.target.checked);
+                  handleFeeChange(transportFee, e.target.checked, stairsElevator);
+                }}
+              />
+              Wheelchair (+{formatDOP(350)})
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={stairsElevator}
+                onChange={(e) => {
+                  setStairsElevator(e.target.checked);
+                  handleFeeChange(transportFee, wheelchair, e.target.checked);
+                }}
+              />
+              Stair climber / Elevator (+{formatDOP(500)})
+            </label>
+          </div>
+          <div className="mt-1 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
+            <p className="text-xs text-zinc-500">Total charge</p>
+            <p className="text-2xl font-bold">{formatDOP(Number(form.total_fare) || 0)}</p>
+            {subBajarTotal > 0 && subBajarTotal !== Number(form.total_fare) && (
+              <button
+                type="button"
+                onClick={() => update("total_fare", String(subBajarTotal))}
+                className="mt-1 text-xs text-blue-600 hover:underline"
+              >
+                Apply fee total ({formatDOP(subBajarTotal)})
+              </button>
+            )}
+          </div>
+          {/* Allow manual override */}
+          <label className="flex flex-col gap-1 text-sm font-normal">
+            Manual override (DOP)
+            <input
+              type="number"
+              value={form.total_fare}
+              onChange={(e) => update("total_fare", e.target.value)}
+              className="input"
+            />
+          </label>
+        </fieldset>
+      )}
+
       <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
         Notes
         <textarea value={form.notes} onChange={(e) => update("notes", e.target.value)} className="input" rows={3} />
