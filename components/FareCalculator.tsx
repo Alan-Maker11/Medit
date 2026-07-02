@@ -37,10 +37,14 @@ export default function FareCalculator() {
   const [calcError, setCalcError] = useState<string | null>(null);
 
   const isSubirBajar = serviceType === "Subir/Bajar";
+  const [subBajarRoundTrip, setSubBajarRoundTrip] = useState(false);
+  const subBajarMultiplier = subBajarRoundTrip ? 2 : 1;
 
   // For Subir/Bajar: live total from fees, no Calculate button needed
   const subBajarTotal =
-    (Number(deliveryFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 : 0);
+    (Number(deliveryFee) || 0) * subBajarMultiplier +
+    (wheelchair ? 350 * subBajarMultiplier : 0) +
+    (stairsElevator ? 500 * subBajarMultiplier : 0);
 
   useEffect(() => {
     if (!isSubirBajar) {
@@ -135,10 +139,10 @@ export default function FareCalculator() {
 
   const whatsappMessage = isSubirBajar
     ? encodeURIComponent(
-        `Hola, quisiera reservar un servicio Subir/Bajar Medit.\nEdificio/dirección: ${pickup}\nEquipo: ${[
-          wheelchair ? "Silla de ruedas" : "",
-          stairsElevator ? "Escalera/Ascensor" : "",
-          Number(deliveryFee) > 0 ? `Transporte (${formatDOP(Number(deliveryFee))})` : "",
+        `Hola, quisiera reservar un servicio Subir/Bajar Medit.\nEdificio/dirección: ${pickup}\nViaje: ${subBajarRoundTrip ? "Ida y vuelta (×2)" : "Un solo viaje"}\nEquipo: ${[
+          wheelchair ? `Silla de ruedas (${formatDOP(350 * subBajarMultiplier)})` : "",
+          stairsElevator ? `Escalera/Ascensor (${formatDOP(500 * subBajarMultiplier)})` : "",
+          Number(deliveryFee) > 0 ? `Transporte (${formatDOP(Number(deliveryFee) * subBajarMultiplier)})` : "",
         ]
           .filter(Boolean)
           .join(", ") || "Sin equipo adicional"}\nTotal estimado: ${breakdown ? formatDOP(breakdown.totalFare) : ""}\nNombre: ${name}\nTel: ${phone}`
@@ -273,8 +277,18 @@ export default function FareCalculator() {
         <fieldset className="flex flex-col gap-2 text-sm font-medium">
           {isSubirBajar ? "Service fees" : "Additional fees"}
           <div className="flex flex-col gap-2 text-sm font-normal">
+            {isSubirBajar && (
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={subBajarRoundTrip}
+                  onChange={(e) => setSubBajarRoundTrip(e.target.checked)}
+                />
+                Round-trip (×2 — client goes down and comes back up)
+              </label>
+            )}
             <label className="flex items-center gap-2">
-              {isSubirBajar ? "Transportation fee (optional, DOP)" : "Transportation / Delivery (DOP)"}
+              {isSubirBajar ? "Transportation fee per way (optional, DOP)" : "Transportation / Delivery (DOP)"}
               <input
                 type="number"
                 min={0}
@@ -282,14 +296,17 @@ export default function FareCalculator() {
                 onChange={(e) => setDeliveryFee(e.target.value)}
                 className="w-28 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
               />
+              {isSubirBajar && subBajarRoundTrip && Number(deliveryFee) > 0 && (
+                <span className="text-zinc-500">= {formatDOP(Number(deliveryFee) * 2)}</span>
+              )}
             </label>
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={wheelchair} onChange={(e) => setWheelchair(e.target.checked)} />
-              Wheelchair (+{formatDOP(350)})
+              Wheelchair (+{formatDOP(350)}{isSubirBajar && subBajarRoundTrip ? ` × 2 = ${formatDOP(700)}` : ""})
             </label>
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={stairsElevator} onChange={(e) => setStairsElevator(e.target.checked)} />
-              Stair climber / Elevator (+{formatDOP(500)})
+              Stair climber / Elevator (+{formatDOP(500)}{isSubirBajar && subBajarRoundTrip ? ` × 2 = ${formatDOP(1000)}` : ""})
             </label>
           </div>
         </fieldset>
@@ -340,10 +357,23 @@ export default function FareCalculator() {
                 </>
               )}
               {isSubirBajar && Number(deliveryFee) > 0 && (
-                <Row label="Transportation fee" value={formatDOP(Number(deliveryFee))} />
+                <Row
+                  label={subBajarRoundTrip ? `Transportation (${formatDOP(Number(deliveryFee))} × 2)` : "Transportation fee"}
+                  value={formatDOP(Number(deliveryFee) * subBajarMultiplier)}
+                />
               )}
-              {wheelchair && <Row label="Wheelchair" value={formatDOP(350)} />}
-              {stairsElevator && <Row label="Stair climber / Elevator" value={formatDOP(500)} />}
+              {wheelchair && (
+                <Row
+                  label={isSubirBajar && subBajarRoundTrip ? `Wheelchair (${formatDOP(350)} × 2)` : "Wheelchair"}
+                  value={formatDOP(350 * subBajarMultiplier)}
+                />
+              )}
+              {stairsElevator && (
+                <Row
+                  label={isSubirBajar && subBajarRoundTrip ? `Stair climber (${formatDOP(500)} × 2)` : "Stair climber / Elevator"}
+                  value={formatDOP(500 * subBajarMultiplier)}
+                />
+              )}
               {!isSubirBajar && breakdown.additionalFees > 0 && (
                 <Row label="Other fees" value={formatDOP(breakdown.additionalFees - (wheelchair ? 350 : 0) - (stairsElevator ? 500 : 0) - (Number(deliveryFee) || 0))} />
               )}

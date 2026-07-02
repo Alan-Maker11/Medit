@@ -44,15 +44,21 @@ export default function EditTripForm({
   const [transportFee, setTransportFee] = useState("0");
   const [wheelchair, setWheelchair] = useState(false);
   const [stairsElevator, setStairsElevator] = useState(false);
+  const [subBajarRoundTrip, setSubBajarRoundTrip] = useState(false);
 
   const selectedService = services.find((s) => s.id === form.service_id);
   const isSubirBajar = selectedService?.name === "Subir/Bajar";
 
-  const subBajarTotal = (Number(transportFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 : 0);
+  const subBajarMultiplier = subBajarRoundTrip ? 2 : 1;
+  const subBajarTotal =
+    (Number(transportFee) || 0) * subBajarMultiplier +
+    (wheelchair ? 350 * subBajarMultiplier : 0) +
+    (stairsElevator ? 500 * subBajarMultiplier : 0);
 
   // Keep total_fare in sync with fee calculator when in Subir/Bajar mode
   function handleFeeChange(newTransport: string, newWheelchair: boolean, newStairs: boolean) {
-    const total = (Number(newTransport) || 0) + (newWheelchair ? 350 : 0) + (newStairs ? 500 : 0);
+    const m = subBajarRoundTrip ? 2 : 1;
+    const total = (Number(newTransport) || 0) * m + (newWheelchair ? 350 * m : 0) + (newStairs ? 500 * m : 0);
     setForm((prev) => ({ ...prev, total_fare: total > 0 ? String(total) : prev.total_fare }));
   }
 
@@ -190,7 +196,21 @@ export default function EditTripForm({
           Service fees
           <div className="flex flex-col gap-2 text-sm font-normal">
             <label className="flex items-center gap-2">
-              Transportation fee (optional, DOP)
+              <input
+                type="checkbox"
+                checked={subBajarRoundTrip}
+                onChange={(e) => {
+                  setSubBajarRoundTrip(e.target.checked);
+                  // recalc with new multiplier
+                  const m = e.target.checked ? 2 : 1;
+                  const total = (Number(transportFee) || 0) * m + (wheelchair ? 350 * m : 0) + (stairsElevator ? 500 * m : 0);
+                  if (total > 0) setForm((prev) => ({ ...prev, total_fare: String(total) }));
+                }}
+              />
+              Round-trip (×2 — client goes down and comes back up)
+            </label>
+            <label className="flex items-center gap-2">
+              Transportation fee per way (optional, DOP)
               <input
                 type="number"
                 min={0}
@@ -201,6 +221,9 @@ export default function EditTripForm({
                 }}
                 className="input w-32"
               />
+              {subBajarRoundTrip && Number(transportFee) > 0 && (
+                <span className="text-sm text-zinc-500">= {formatDOP(Number(transportFee) * 2)}</span>
+              )}
             </label>
             <label className="flex items-center gap-2">
               <input
@@ -211,7 +234,7 @@ export default function EditTripForm({
                   handleFeeChange(transportFee, e.target.checked, stairsElevator);
                 }}
               />
-              Wheelchair (+{formatDOP(350)})
+              Wheelchair (+{formatDOP(350)}{subBajarRoundTrip ? ` × 2 = ${formatDOP(700)}` : ""})
             </label>
             <label className="flex items-center gap-2">
               <input
@@ -222,7 +245,7 @@ export default function EditTripForm({
                   handleFeeChange(transportFee, wheelchair, e.target.checked);
                 }}
               />
-              Stair climber / Elevator (+{formatDOP(500)})
+              Stair climber / Elevator (+{formatDOP(500)}{subBajarRoundTrip ? ` × 2 = ${formatDOP(1000)}` : ""})
             </label>
           </div>
           <div className="mt-1 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">

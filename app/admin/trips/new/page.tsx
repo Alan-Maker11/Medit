@@ -53,6 +53,7 @@ export default function NewTripPage() {
   const [transportFee, setTransportFee] = useState("0");
   const [wheelchair, setWheelchair] = useState(false);
   const [stairsElevator, setStairsElevator] = useState(false);
+  const [subBajarRoundTrip, setSubBajarRoundTrip] = useState(false);
   const [manualFare, setManualFare] = useState("");
   const [previousTrip, setPreviousTrip] = useState<Client | null>(null);
 
@@ -64,8 +65,11 @@ export default function NewTripPage() {
   const isSubirBajar = selectedService?.name === "Subir/Bajar";
 
   // For Subir/Bajar: auto-compute breakdown live from fees — no Calculate button needed
+  const subBajarMultiplier = subBajarRoundTrip ? 2 : 1;
   const subBajarTotal =
-    (Number(transportFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 : 0);
+    (Number(transportFee) || 0) * subBajarMultiplier +
+    (wheelchair ? 350 * subBajarMultiplier : 0) +
+    (stairsElevator ? 500 * subBajarMultiplier : 0);
 
   useEffect(() => {
     if (!isSubirBajar) {
@@ -397,8 +401,18 @@ export default function NewTripPage() {
           <fieldset className="flex flex-col gap-2 text-sm font-medium sm:col-span-2">
             {isSubirBajar ? "Service fees" : "Additional fees"}
             <div className="flex flex-col gap-2 text-sm font-normal">
+              {isSubirBajar && (
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={subBajarRoundTrip}
+                    onChange={(e) => setSubBajarRoundTrip(e.target.checked)}
+                  />
+                  Round-trip (×2 — client goes down and comes back up)
+                </label>
+              )}
               <label className="flex items-center gap-2">
-                {isSubirBajar ? "Transportation fee (optional, DOP)" : "Transportation / Delivery (DOP)"}
+                {isSubirBajar ? "Transportation fee per way (optional, DOP)" : "Transportation / Delivery (DOP)"}
                 <input
                   type="number"
                   min={0}
@@ -406,21 +420,24 @@ export default function NewTripPage() {
                   onChange={(e) => setTransportFee(e.target.value)}
                   className="input w-32"
                 />
+                {isSubirBajar && subBajarRoundTrip && Number(transportFee) > 0 && (
+                  <span className="text-zinc-500 text-sm">= {formatDOP(Number(transportFee) * 2)}</span>
+                )}
               </label>
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={wheelchair} onChange={(e) => setWheelchair(e.target.checked)} />
-                Wheelchair (+{formatDOP(350)})
+                Wheelchair (+{formatDOP(350)}{isSubirBajar && subBajarRoundTrip ? ` × 2 = ${formatDOP(700)}` : ""})
               </label>
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={stairsElevator} onChange={(e) => setStairsElevator(e.target.checked)} />
-                Stair climber / Elevator (+{formatDOP(500)})
+                Stair climber / Elevator (+{formatDOP(500)}{isSubirBajar && subBajarRoundTrip ? ` × 2 = ${formatDOP(1000)}` : ""})
               </label>
             </div>
 
             {/* Live total for Subir/Bajar */}
             {isSubirBajar && (
               <div className="mt-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
-                <p className="text-xs text-zinc-500">Total charge</p>
+                <p className="text-xs text-zinc-500">Total charge{subBajarRoundTrip ? " (round-trip)" : ""}</p>
                 <p className="text-2xl font-bold">{formatDOP(subBajarTotal)}</p>
               </div>
             )}
