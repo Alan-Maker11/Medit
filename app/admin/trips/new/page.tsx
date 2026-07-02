@@ -68,7 +68,7 @@ export default function NewTripPage() {
   const subBajarMultiplier = subBajarRoundTrip ? 2 : 1;
   const subBajarTotal =
     (Number(transportFee) || 0) * subBajarMultiplier +
-    (wheelchair ? 350 * subBajarMultiplier : 0) +
+    (wheelchair ? 350 : 0) +
     (stairsElevator ? 500 * subBajarMultiplier : 0);
 
   useEffect(() => {

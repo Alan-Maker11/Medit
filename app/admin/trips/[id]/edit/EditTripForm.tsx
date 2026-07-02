@@ -52,7 +52,7 @@ export default function EditTripForm({
   const subBajarMultiplier = subBajarRoundTrip ? 2 : 1;
   const subBajarTotal =
     (Number(transportFee) || 0) * subBajarMultiplier +
-    (wheelchair ? 350 * subBajarMultiplier : 0) +
+    (wheelchair ? 350 : 0) +
     (stairsElevator ? 500 * subBajarMultiplier : 0);
 
   // Keep total_fare in sync with fee calculator when in Subir/Bajar mode

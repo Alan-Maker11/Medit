@@ -43,7 +43,7 @@ export default function FareCalculator() {
   // For Subir/Bajar: live total from fees, no Calculate button needed
   const subBajarTotal =
     (Number(deliveryFee) || 0) * subBajarMultiplier +
-    (wheelchair ? 350 * subBajarMultiplier : 0) +
+    (wheelchair ? 350 : 0) +
     (stairsElevator ? 500 * subBajarMultiplier : 0);
 
   useEffect(() => {
@@ -140,7 +140,7 @@ export default function FareCalculator() {
   const whatsappMessage = isSubirBajar
     ? encodeURIComponent(
         `Hola, quisiera reservar un servicio Subir/Bajar Medit.\nEdificio/dirección: ${pickup}\nViaje: ${subBajarRoundTrip ? "Ida y vuelta (×2)" : "Un solo viaje"}\nEquipo: ${[
-          wheelchair ? `Silla de ruedas (${formatDOP(350 * subBajarMultiplier)})` : "",
+          wheelchair ? `Silla de ruedas (${formatDOP(350)})` : "",
           stairsElevator ? `Escalera/Ascensor (${formatDOP(500 * subBajarMultiplier)})` : "",
           Number(deliveryFee) > 0 ? `Transporte (${formatDOP(Number(deliveryFee) * subBajarMultiplier)})` : "",
         ]
@@ -363,10 +363,7 @@ export default function FareCalculator() {
                 />
               )}
               {wheelchair && (
-                <Row
-                  label={isSubirBajar && subBajarRoundTrip ? `Wheelchair (${formatDOP(350)} × 2)` : "Wheelchair"}
-                  value={formatDOP(350 * subBajarMultiplier)}
-                />
+                <Row label="Wheelchair (one-time rental)" value={formatDOP(350)} />
               )}
               {stairsElevator && (
                 <Row
