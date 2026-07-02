@@ -58,7 +58,7 @@ export default function EditTripForm({
   // Keep total_fare in sync with fee calculator when in Subir/Bajar mode
   function handleFeeChange(newTransport: string, newWheelchair: boolean, newStairs: boolean) {
     const m = subBajarRoundTrip ? 2 : 1;
-    const total = (Number(newTransport) || 0) * m + (newWheelchair ? 350 * m : 0) + (newStairs ? 500 * m : 0);
+    const total = (Number(newTransport) || 0) * m + (newWheelchair ? 350 : 0) + (newStairs ? 500 * m : 0);
     setForm((prev) => ({ ...prev, total_fare: total > 0 ? String(total) : prev.total_fare }));
   }
 
@@ -203,7 +203,7 @@ export default function EditTripForm({
                   setSubBajarRoundTrip(e.target.checked);
                   // recalc with new multiplier
                   const m = e.target.checked ? 2 : 1;
-                  const total = (Number(transportFee) || 0) * m + (wheelchair ? 350 * m : 0) + (stairsElevator ? 500 * m : 0);
+                  const total = (Number(transportFee) || 0) * m + (wheelchair ? 350 : 0) + (stairsElevator ? 500 * m : 0);
                   if (total > 0) setForm((prev) => ({ ...prev, total_fare: String(total) }));
                 }}
               />
@@ -234,7 +234,7 @@ export default function EditTripForm({
                   handleFeeChange(transportFee, e.target.checked, stairsElevator);
                 }}
               />
-              Wheelchair (+{formatDOP(350)}{subBajarRoundTrip ? ` × 2 = ${formatDOP(700)}` : ""})
+              Wheelchair (+{formatDOP(350)} — one-time rental)
             </label>
             <label className="flex items-center gap-2">
               <input
