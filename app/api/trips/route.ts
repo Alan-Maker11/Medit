@@ -50,18 +50,32 @@ export async function POST(request: Request) {
     notes,
   } = body;
 
-  if (!date || !pickup_address || !destination_address || distance_km == null || duration_minutes == null) {
+  if (!date || !pickup_address) {
     return NextResponse.json({ error: "Missing required trip fields" }, { status: 400 });
   }
 
-  const fare = calculateFare({
-    distanceKm: Number(distance_km),
-    durationMinutes: Number(duration_minutes),
-    tripType: trip_type,
-    mode: transportation_mode || "private",
-    waitingHours: Number(waiting_hours ?? 0),
-    additionalFees: Number(additional_fees ?? 0),
-  });
+  // Subir/Bajar trips have no destination or distance — total is just equipment/transport fees
+  const isSubirBajar = !destination_address || destination_address.trim() === "";
+
+  const fare = isSubirBajar
+    ? {
+        distanceKm: 0,
+        durationMinutes: 0,
+        baseFare: 0,
+        distanceCost: 0,
+        durationCost: 0,
+        waitingCost: 0,
+        additionalFees: Number(additional_fees ?? 0),
+        totalFare: Number(additional_fees ?? 0),
+      }
+    : calculateFare({
+        distanceKm: Number(distance_km),
+        durationMinutes: Number(duration_minutes),
+        tripType: trip_type,
+        mode: transportation_mode || "private",
+        waitingHours: Number(waiting_hours ?? 0),
+        additionalFees: Number(additional_fees ?? 0),
+      });
 
   const { data, error } = await supabase
     .from("trips")
