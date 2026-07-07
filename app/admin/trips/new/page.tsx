@@ -166,7 +166,8 @@ export default function NewTripPage() {
   }
 
   function regularAdditionalFees() {
-    return (Number(transportFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 : 0);
+    const stairsMultiplier = form.trip_type === "round-trip" ? 2 : 1;
+    return (Number(transportFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 * stairsMultiplier : 0);
   }
 
   function handleCalculate() {
@@ -437,7 +438,13 @@ export default function NewTripPage() {
               </label>
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={stairsElevator} onChange={(e) => setStairsElevator(e.target.checked)} />
-                Stair climber / Elevator (+{formatDOP(500)}{isSubirBajar && subBajarRoundTrip ? ` × 2 = ${formatDOP(1000)}` : ""})
+                Stair climber / Elevator (+{formatDOP(500)}{
+                  isSubirBajar && subBajarRoundTrip
+                    ? ` × 2 = ${formatDOP(1000)}`
+                    : !isSubirBajar && form.trip_type === "round-trip"
+                    ? ` × 2 = ${formatDOP(1000)}`
+                    : ""
+                })
               </label>
             </div>
 

@@ -10,6 +10,10 @@ export const PUBLIC_DISTANCE_RATE_PER_KM = 15;
 export const PUBLIC_DURATION_RATE_PER_MIN = 10;
 export const PUBLIC_WAITING_RATE_PER_HOUR = 100;
 
+// One-way price is anchored to round-trip-with-2hr-wait divided by 2.
+// This constant is the reference waiting hours used only for that anchor calculation.
+const ONE_WAY_REFERENCE_WAIT_HOURS = 2;
+
 export interface CalculateFareInput {
   distanceKm: number;
   durationMinutes: number;
@@ -35,6 +39,26 @@ export function calculateFare({
 }: CalculateFareInput): FareBreakdown {
   const isPublic = mode === "public";
   const isRoundTrip = tripType === "round-trip";
+
+  // Private one-way: price = (private round-trip with 2hr wait) / 2
+  if (!isPublic && !isRoundTrip) {
+    const baseFare = BASE_FARE;
+    const distanceCost = Math.round(distanceKm * DISTANCE_RATE_PER_KM);
+    const durationCost = Math.round(durationMinutes * DURATION_RATE_PER_MIN);
+    const refWaitCost = Math.round(ONE_WAY_REFERENCE_WAIT_HOURS * WAITING_RATE_PER_HOUR);
+    const halfTotal = Math.round((baseFare + distanceCost + durationCost + refWaitCost) / 2);
+    return {
+      distanceKm,
+      durationMinutes,
+      baseFare: Math.round(baseFare / 2),
+      distanceCost: Math.round(distanceCost / 2),
+      durationCost: Math.round(durationCost / 2),
+      waitingCost: Math.round(refWaitCost / 2),
+      additionalFees,
+      totalFare: halfTotal + additionalFees,
+    };
+  }
+
   // Public (Meditiko) round trips charge the one-way cost there and back;
   // private round trips only add waiting time on top of a single trip cost.
   const tripMultiplier = isPublic && isRoundTrip ? 2 : 1;
