@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import TripsByMonth from "./TripsByMonth";
+import TripsHeader from "./TripsHeader";
 
 export default async function TripsPage() {
   const supabase = await createClient();
@@ -11,15 +11,7 @@ export default async function TripsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Trips</h1>
-        <Link
-          href="/admin/trips/new"
-          className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-        >
-          Log new trip
-        </Link>
-      </div>
+      <TripsHeader />
       <TripsByMonth trips={(trips ?? []) as unknown as Parameters<typeof TripsByMonth>[0]["trips"]} />
     </div>
   );

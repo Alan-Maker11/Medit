@@ -3,21 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useAdminLang, ADMIN_T } from "@/lib/adminLang";
 
-interface NavItem {
-  href: string;
-  label: string;
-}
-
-export default function AdminSidebar({
-  navItems,
-  signOutSlot,
-}: {
-  navItems: NavItem[];
-  signOutSlot: React.ReactNode;
-}) {
+export default function AdminSidebar({ signOutSlot }: { signOutSlot: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { lang, toggleLang } = useAdminLang();
+  const t = ADMIN_T[lang];
+
+  const NAV_ITEMS = [
+    { href: "/admin", label: t.dashboard },
+    { href: "/admin/trips", label: t.trips },
+    { href: "/admin/expenses", label: t.expenses },
+    { href: "/admin/vehicles", label: t.vehicles },
+    { href: "/admin/drivers", label: t.drivers },
+    { href: "/admin/salary", label: t.salary },
+    { href: "/admin/reports", label: t.reports },
+  ];
 
   function linkClass(href: string) {
     const active = href === "/admin" ? pathname === href : pathname.startsWith(href);
@@ -28,8 +30,18 @@ export default function AdminSidebar({
     }`;
   }
 
+  const LangToggle = (
+    <button
+      onClick={toggleLang}
+      className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-left text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+    >
+      🌐 {t.toggleLabel}
+    </button>
+  );
+
   return (
     <>
+      {/* Mobile header */}
       <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900 md:hidden">
         <h2 className="text-lg font-bold">Medit Admin</h2>
         <button
@@ -43,6 +55,7 @@ export default function AdminSidebar({
         </button>
       </header>
 
+      {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
@@ -59,24 +72,31 @@ export default function AdminSidebar({
                 </svg>
               </button>
             </div>
-            {navItems.map((item) => (
+            {NAV_ITEMS.map((item) => (
               <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={linkClass(item.href)}>
                 {item.label}
               </Link>
             ))}
-            <div className="mt-auto px-2">{signOutSlot}</div>
+            <div className="mt-auto flex flex-col gap-2 px-0 pt-4">
+              {LangToggle}
+              {signOutSlot}
+            </div>
           </aside>
         </div>
       )}
 
+      {/* Desktop sidebar */}
       <aside className="hidden w-56 shrink-0 flex-col gap-1 border-r border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 md:flex">
         <h2 className="mb-4 px-2 text-lg font-bold">Medit Admin</h2>
-        {navItems.map((item) => (
+        {NAV_ITEMS.map((item) => (
           <Link key={item.href} href={item.href} className={linkClass(item.href)}>
             {item.label}
           </Link>
         ))}
-        <div className="mt-auto px-2">{signOutSlot}</div>
+        <div className="mt-auto flex flex-col gap-2">
+          {LangToggle}
+          {signOutSlot}
+        </div>
       </aside>
     </>
   );
