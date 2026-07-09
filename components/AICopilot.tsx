@@ -33,7 +33,9 @@ export default function AICopilot() {
         }),
       });
       const data = await res.json();
-      const reply = data.reply ?? data.error ?? "Error getting response.";
+      const reply =
+        data.reply ??
+        (data.error ? `${data.error}${data.details ? `\n${data.details}` : ""}` : "Error getting response.");
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Connection error. Try again." }]);
