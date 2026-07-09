@@ -3,10 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const { message, history } = await request.json();
-  if (!message) return NextResponse.json({ error: "No message" }, { status: 400 });
-
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "AI not configured" }, { status: 503 });
+  if (!message) return NextResponse.json({ error: "Message is required" }, { status: 400 });
 
   const supabase = await createClient();
 
@@ -53,31 +50,66 @@ Respond in the same language the user writes in (Spanish or English).
 COMPANY DATA:
 ${context}`;
 
-  const messages = [
-    ...(history ?? []),
-    { role: "user", content: message },
-  ];
+  const historyText = (history ?? [])
+    .map((m: { role: string; content: string }) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
+    .join("\n");
+  const prompt = `${systemPrompt}\n\n${historyText ? historyText + "\n" : ""}User: ${message}\nAssistant:`;
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "system", content: systemPrompt }, ...messages],
-      max_tokens: 600,
-      temperature: 0.4,
-    }),
-  });
+  // OLLAMA API endpoint (runs on localhost:11434 by default)
+  // For production, this should point at a persistent server running OLLAMA
+  const ollamaUrl = process.env.OLLAMA_API_URL || "http://localhost:11434/api/generate";
 
-  if (!response.ok) {
-    const err = await response.text();
-    return NextResponse.json({ error: err }, { status: 500 });
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
+    const response = await fetch(ollamaUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "mistral", // Can also use: 'llama2', 'neural-chat', 'orca-mini'
+        prompt,
+        stream: false,
+        temperature: 0.4,
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("OLLAMA Error:", errorData);
+      return NextResponse.json(
+        { error: "OLLAMA service error", details: errorData.error || "Unknown error" },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json({
+      reply: data.response || data.text || "No response generated",
+      model: "mistral",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("API Error:", error);
+    const err = error as Error;
+
+    if (err.name === "AbortError") {
+      return NextResponse.json({ error: "OLLAMA request timed out" }, { status: 504 });
+    }
+
+    if (err.message?.includes("ECONNREFUSED") || err.message?.includes("fetch failed")) {
+      return NextResponse.json(
+        {
+          error: "OLLAMA service not running",
+          message: "Make sure OLLAMA is running on your system. Download from https://ollama.ai",
+          help: "Run: ollama run mistral",
+        },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json({ error: "Internal server error", message: err.message }, { status: 500 });
   }
-
-  const json = await response.json();
-  const reply = json.choices?.[0]?.message?.content ?? "No response.";
-  return NextResponse.json({ reply });
 }
