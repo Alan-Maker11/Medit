@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   const { message, history } = await request.json();
   if (!message) return NextResponse.json({ error: "No message" }, { status: 400 });
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "AI not configured" }, { status: 503 });
 
   const supabase = await createClient();
@@ -58,14 +58,14 @@ ${context}`;
     { role: "user", content: message },
   ];
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "llama-3.3-70b-versatile",
       messages: [{ role: "system", content: systemPrompt }, ...messages],
       max_tokens: 600,
       temperature: 0.4,
