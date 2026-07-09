@@ -50,6 +50,7 @@ async function callHuggingFace(hfToken: string, messages: { role: string; conten
         messages,
         max_tokens: 800,
         temperature: 0.4,
+        stream: false,
       }),
       signal: controller.signal,
     });
@@ -130,17 +131,25 @@ Today is ${today}.
 BUSINESS METRICS:
 ${JSON.stringify(dbContext.metrics, null, 2)}
 
-${dbContext.trips.length > 0 ? `TRIPS (${dbContext.trips.length}):\n${JSON.stringify(dbContext.trips.slice(0, 100), null, 2)}` : ""}
-${dbContext.expenses.length > 0 ? `EXPENSES (${dbContext.expenses.length}):\n${JSON.stringify(dbContext.expenses.slice(0, 50), null, 2)}` : ""}
-${dbContext.vehicles.length > 0 ? `VEHICLES:\n${JSON.stringify(dbContext.vehicles, null, 2)}` : ""}
-${dbContext.drivers.length > 0 ? `DRIVERS:\n${JSON.stringify(dbContext.drivers, null, 2)}` : ""}
-${dbContext.services.length > 0 ? `SERVICES:\n${JSON.stringify(dbContext.services, null, 2)}` : ""}
+${dbContext.trips.length > 0 ? `TRIPS (showing ${Math.min(30, dbContext.trips.length)} of ${dbContext.trips.length}):\n${JSON.stringify(dbContext.trips.slice(0, 30))}` : ""}
+${dbContext.expenses.length > 0 ? `EXPENSES (showing ${Math.min(20, dbContext.expenses.length)} of ${dbContext.expenses.length}):\n${JSON.stringify(dbContext.expenses.slice(0, 20))}` : ""}
+${dbContext.vehicles.length > 0 ? `VEHICLES:\n${JSON.stringify(dbContext.vehicles)}` : ""}
+${dbContext.drivers.length > 0 ? `DRIVERS:\n${JSON.stringify(dbContext.drivers)}` : ""}
+${dbContext.services.length > 0 ? `SERVICES:\n${JSON.stringify(dbContext.services)}` : ""}
 `.trim();
 
+    const sanitizedHistory = Array.isArray(history)
+      ? history
+          .filter(
+            (m): m is { role: string; content: string } =>
+              m && typeof m.content === "string" && (m.role === "user" || m.role === "assistant")
+          )
+          .map((m) => ({ role: m.role, content: m.content }))
+      : [];
+
     const chatMessages = [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "system", content: `CURRENT BUSINESS DATA:\n${contextString}` },
-      ...((history ?? []) as { role: string; content: string }[]),
+      { role: "system", content: `${SYSTEM_PROMPT}\n\nCURRENT BUSINESS DATA:\n${contextString}` },
+      ...sanitizedHistory,
       { role: "user", content: message },
     ];
 
