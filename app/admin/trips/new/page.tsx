@@ -35,6 +35,7 @@ export default function NewTripPage() {
 
   const [form, setForm] = useState({
     date: todayLocalISO(),
+    pickup_time: "",
     service_id: "",
     client_name: "",
     client_phone: "",
@@ -218,6 +219,7 @@ export default function NewTripPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
+        time: form.pickup_time || undefined,
         additional_fees: isSubirBajar ? subBajarTotal : regularAdditionalFees(),
       }),
     });
@@ -227,6 +229,25 @@ export default function NewTripPage() {
       setError(data.error ?? "Failed to save trip");
       return;
     }
+
+    // Open Google Calendar with trip details pre-filled
+    if (form.pickup_time) {
+      const [h, m] = form.pickup_time.split(":").map(Number);
+      const dateStr = form.date.replace(/-/g, "");
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const startStr = `${dateStr}T${pad(h)}${pad(m)}00`;
+      const endH = h + Math.floor((m + (breakdown?.durationMinutes ?? 60)) / 60);
+      const endM = (m + (breakdown?.durationMinutes ?? 60)) % 60;
+      const endStr = `${dateStr}T${pad(endH % 24)}${pad(endM)}00`;
+      const title = encodeURIComponent(`Medit — ${form.client_name || "Trip"}`);
+      const details = encodeURIComponent(
+        `Cliente: ${form.client_name || "-"}\nTeléfono: ${form.client_phone || "-"}\nServicio: ${selectedService?.name || "-"}\nTarifa: ${breakdown ? formatDOP(isSubirBajar ? subBajarTotal : breakdown.totalFare) : "-"}\nNotas: ${form.notes || "-"}`
+      );
+      const location = encodeURIComponent(form.pickup_address || "");
+      const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+      window.open(calUrl, "_blank");
+    }
+
     router.push("/admin/trips");
   }
 
@@ -244,6 +265,14 @@ export default function NewTripPage() {
               required
               value={form.date}
               onChange={(e) => update("date", e.target.value)}
+              className="input"
+            />
+          </Field>
+          <Field label="Pickup time">
+            <input
+              type="time"
+              value={form.pickup_time}
+              onChange={(e) => update("pickup_time", e.target.value)}
               className="input"
             />
           </Field>
