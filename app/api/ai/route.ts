@@ -1,9 +1,27 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+interface HFResponse {
+  generated_text?: string;
+  text?: string;
+}
+
 export async function POST(request: Request) {
   const { message, history } = await request.json();
-  if (!message) return NextResponse.json({ error: "Message is required" }, { status: 400 });
+  if (!message || typeof message !== "string") {
+    return NextResponse.json({ error: "Message is required" }, { status: 400 });
+  }
+
+  const hfToken = process.env.HUGGINGFACE_API_KEY;
+  if (!hfToken) {
+    return NextResponse.json(
+      {
+        error: "Missing HUGGINGFACE_API_KEY environment variable",
+        details: "Add HUGGINGFACE_API_KEY to Vercel environment variables",
+      },
+      { status: 500 }
+    );
+  }
 
   const supabase = await createClient();
 
@@ -55,61 +73,50 @@ ${context}`;
     .join("\n");
   const prompt = `${systemPrompt}\n\n${historyText ? historyText + "\n" : ""}User: ${message}\nAssistant:`;
 
-  // OLLAMA API endpoint (runs on localhost:11434 by default)
-  // For production, this should point at a persistent server running OLLAMA
-  const ollamaUrl = process.env.OLLAMA_API_URL || "http://localhost:11434/api/generate";
-
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
-
-    const response = await fetch(ollamaUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "mistral", // Can also use: 'llama2', 'neural-chat', 'orca-mini'
-        prompt,
-        stream: false,
-        temperature: 0.4,
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
+      {
+        headers: {
+          Authorization: `Bearer ${hfToken}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_length: 1024,
+            temperature: 0.4,
+            top_p: 0.9,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("OLLAMA Error:", errorData);
-      return NextResponse.json(
-        { error: "OLLAMA service error", details: errorData.error || "Unknown error" },
-        { status: response.status }
-      );
+      const error = await response.text();
+      console.error("HF Error:", error);
+
+      if (response.status === 401) {
+        return NextResponse.json(
+          { error: "Invalid API key", details: "Check your HUGGINGFACE_API_KEY" },
+          { status: 401 }
+        );
+      }
+
+      return NextResponse.json({ error: "Hugging Face API error", details: error }, { status: response.status });
     }
 
-    const data = await response.json();
-    return NextResponse.json({
-      reply: data.response || data.text || "No response generated",
-      model: "mistral",
-      timestamp: new Date().toISOString(),
-    });
+    const result = (await response.json()) as HFResponse[];
+    const generatedText = result[0]?.generated_text || result[0]?.text || "No response";
+
+    // Strip the prompt from the model's echo, keep only the new reply
+    const cleanedResponse = generatedText.replace(prompt, "").trim();
+
+    return NextResponse.json({ reply: cleanedResponse || "Could not generate response" });
   } catch (error) {
-    console.error("API Error:", error);
-    const err = error as Error;
-
-    if (err.name === "AbortError") {
-      return NextResponse.json({ error: "OLLAMA request timed out" }, { status: 504 });
-    }
-
-    if (err.message?.includes("ECONNREFUSED") || err.message?.includes("fetch failed")) {
-      return NextResponse.json(
-        {
-          error: "OLLAMA service not running",
-          message: "Make sure OLLAMA is running on your system. Download from https://ollama.ai",
-          help: "Run: ollama run mistral",
-        },
-        { status: 503 }
-      );
-    }
-
-    return NextResponse.json({ error: "Internal server error", message: err.message }, { status: 500 });
+    console.error("Chat API Error:", error);
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: "Internal server error", details: errorMsg }, { status: 500 });
   }
 }
