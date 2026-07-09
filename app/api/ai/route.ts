@@ -1,9 +1,39 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import {
+  queryTrips,
+  queryExpenses,
+  queryVehicles,
+  queryDrivers,
+  queryServices,
+  getBusinessMetrics,
+} from "@/lib/database-queries";
 
 const HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct";
 const HF_ROUTER_URL = "https://router.huggingface.co/v1/chat/completions";
 const REQUEST_TIMEOUT_MS = 25000;
+
+const SYSTEM_PROMPT = `You are Medit AI, an intelligent business manager assistant for Medit Transportation Company in the Dominican Republic.
+
+You have access to real-time business data including:
+- Trips (bookings, fares, customers, routes)
+- Expenses (gas, maintenance, insurance, repairs)
+- Vehicles
+- Drivers (names, status, performance)
+- Services (Medical, Surgery, Airport, Therapy, Events, Subir/Bajar, etc.)
+
+IMPORTANT RULES:
+1. Always analyze the real data provided to you.
+2. Give specific numbers and facts from the data.
+3. Provide insights and recommendations based on patterns.
+4. Answer in Spanish or English — match the user's language.
+5. If asked about something not in the data, say so honestly.
+6. Format currency amounts in DOP (Dominican Pesos).
+7. Be professional but friendly and concise.
+8. Focus on helping optimize business operations.
+
+Available metrics you can analyze: revenue trends, expense patterns, driver performance,
+vehicle utilization, service popularity, profitability, average fare per trip, and
+revenue/expense breakdowns by category.`;
 
 async function callHuggingFace(hfToken: string, messages: { role: string; content: string }[]) {
   const controller = new AbortController();
@@ -18,7 +48,7 @@ async function callHuggingFace(hfToken: string, messages: { role: string; conten
       body: JSON.stringify({
         model: HF_MODEL,
         messages,
-        max_tokens: 700,
+        max_tokens: 800,
         temperature: 0.4,
       }),
       signal: controller.signal,
@@ -26,6 +56,51 @@ async function callHuggingFace(hfToken: string, messages: { role: string; conten
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function buildDataContext(userMessage: string) {
+  const upper = userMessage.toUpperCase();
+  const needsTrips = /TRIP|REVENUE|FARE|BOOKING|VIAJE|INGRESO|TARIFA/.test(upper);
+  const needsExpenses = /EXPENSE|COST|GAS|MAINTENANCE|GASTO|COSTO|MANTENIMIENTO/.test(upper);
+  const needsVehicles = /VEHICLE|CAR|VEHÍCULO|CARRO/.test(upper);
+  const needsDrivers = /DRIVER|STAFF|PERFORMANCE|CONDUCTOR|CHOFER/.test(upper);
+  const needsServices = /SERVICE|MEDICAL|AIRPORT|THERAPY|SERVICIO/.test(upper);
+
+  let trips: Awaited<ReturnType<typeof queryTrips>> = [];
+  let expenses: Awaited<ReturnType<typeof queryExpenses>> = [];
+  let vehicles: Awaited<ReturnType<typeof queryVehicles>> = [];
+  let drivers: Awaited<ReturnType<typeof queryDrivers>> = [];
+  let services: Awaited<ReturnType<typeof queryServices>> = [];
+  let metrics: Awaited<ReturnType<typeof getBusinessMetrics>> = {
+    totalRevenue: 0,
+    totalExpenses: 0,
+    totalProfit: 0,
+    profitMargin: 0,
+    totalTrips: 0,
+    averageFarePerTrip: 0,
+    vehicleCount: 0,
+    driverCount: 0,
+    revenueByService: {},
+    revenueByVehicle: {},
+    revenueByDriver: {},
+    expensesByCategory: {},
+  };
+
+  try {
+    [trips, expenses, vehicles, drivers, services, metrics] = await Promise.all([
+      needsTrips ? queryTrips() : Promise.resolve([]),
+      needsExpenses ? queryExpenses() : Promise.resolve([]),
+      needsVehicles ? queryVehicles() : Promise.resolve([]),
+      needsDrivers ? queryDrivers() : Promise.resolve([]),
+      needsServices ? queryServices() : Promise.resolve([]),
+      getBusinessMetrics(),
+    ]);
+  } catch (dbError) {
+    console.error("AI copilot: failed to load Supabase context", dbError);
+    // Continue with whatever partial data we have rather than failing the whole request
+  }
+
+  return { trips, expenses, vehicles, drivers, services, metrics };
 }
 
 export async function POST(request: Request) {
@@ -46,66 +121,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fetch a snapshot of recent data to give the AI context.
-    // Guarded independently so a Supabase hiccup doesn't take down the whole chat.
-    let trips: unknown[] = [];
-    let drivers: unknown[] = [];
-    let expenses: unknown[] = [];
-    let clients: unknown[] = [];
-    try {
-      const supabase = await createClient();
-      const [tripsRes, driversRes, expensesRes, clientsRes] = await Promise.all([
-        supabase
-          .from("trips")
-          .select("date, client_name, trip_type, status, total_fare, services(name), drivers(name), vehicles(name)")
-          .order("date", { ascending: false })
-          .limit(100),
-        supabase.from("drivers").select("name, status").order("name"),
-        supabase
-          .from("expenses")
-          .select("date, category, amount, description")
-          .order("date", { ascending: false })
-          .limit(50),
-        supabase.from("clients").select("name, phone, last_trip_date, last_total_fare").order("last_trip_date", { ascending: false }).limit(50),
-      ]);
-      trips = tripsRes.data ?? [];
-      drivers = driversRes.data ?? [];
-      expenses = expensesRes.data ?? [];
-      clients = clientsRes.data ?? [];
-    } catch (dbError) {
-      console.error("AI copilot: failed to load Supabase context", dbError);
-      // Continue without company data rather than failing the whole request
-    }
-
+    const dbContext = await buildDataContext(message);
     const today = new Date().toISOString().slice(0, 10);
-    const context = `
+
+    const contextString = `
 Today is ${today}.
 
-RECENT TRIPS (last 100):
-${JSON.stringify(trips, null, 2)}
+BUSINESS METRICS:
+${JSON.stringify(dbContext.metrics, null, 2)}
 
-DRIVERS:
-${JSON.stringify(drivers, null, 2)}
-
-RECENT EXPENSES (last 50):
-${JSON.stringify(expenses, null, 2)}
-
-RECENT CLIENTS (last 50):
-${JSON.stringify(clients, null, 2)}
+${dbContext.trips.length > 0 ? `TRIPS (${dbContext.trips.length}):\n${JSON.stringify(dbContext.trips.slice(0, 100), null, 2)}` : ""}
+${dbContext.expenses.length > 0 ? `EXPENSES (${dbContext.expenses.length}):\n${JSON.stringify(dbContext.expenses.slice(0, 50), null, 2)}` : ""}
+${dbContext.vehicles.length > 0 ? `VEHICLES:\n${JSON.stringify(dbContext.vehicles, null, 2)}` : ""}
+${dbContext.drivers.length > 0 ? `DRIVERS:\n${JSON.stringify(dbContext.drivers, null, 2)}` : ""}
+${dbContext.services.length > 0 ? `SERVICES:\n${JSON.stringify(dbContext.services, null, 2)}` : ""}
 `.trim();
 
-    const systemPrompt = `You are a helpful AI assistant for Medit, a medical transportation company in the Dominican Republic.
-You have access to the company's operational data provided below.
-Answer questions about trips, revenue, drivers, clients, and expenses.
-Be concise, friendly, and professional. Use DOP (Dominican pesos) for currency.
-If asked something you don't know from the data, say so honestly.
-Respond in the same language the user writes in (Spanish or English).
-
-COMPANY DATA:
-${context}`;
-
     const chatMessages = [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: `CURRENT BUSINESS DATA:\n${contextString}` },
       ...((history ?? []) as { role: string; content: string }[]),
       { role: "user", content: message },
     ];
@@ -139,7 +173,6 @@ ${context}`;
           { status: 401 }
         );
       }
-
       if (response.status === 404) {
         return NextResponse.json(
           {
@@ -149,14 +182,12 @@ ${context}`;
           { status: 502 }
         );
       }
-
       if (response.status === 503) {
         return NextResponse.json(
           { error: "Model is loading, please try again in a few seconds", details: errorText },
           { status: 503 }
         );
       }
-
       return NextResponse.json({ error: "Hugging Face API error", details: errorText }, { status: response.status });
     }
 
@@ -173,7 +204,17 @@ ${context}`;
     }
 
     const reply = result.choices?.[0]?.message?.content?.trim();
-    return NextResponse.json({ reply: reply || "Could not generate response" });
+
+    return NextResponse.json({
+      reply: reply || "Could not generate response",
+      dataUsed: {
+        tripsIncluded: dbContext.trips.length > 0,
+        expensesIncluded: dbContext.expenses.length > 0,
+        vehiclesIncluded: dbContext.vehicles.length > 0,
+        driversIncluded: dbContext.drivers.length > 0,
+        servicesIncluded: dbContext.services.length > 0,
+      },
+    });
   } catch (error) {
     console.error("Chat API Error:", error);
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
