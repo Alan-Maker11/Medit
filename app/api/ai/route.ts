@@ -1,9 +1,31 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-interface HFResponse {
-  generated_text?: string;
-  text?: string;
+const HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct";
+const HF_ROUTER_URL = "https://router.huggingface.co/v1/chat/completions";
+const REQUEST_TIMEOUT_MS = 25000;
+
+async function callHuggingFace(hfToken: string, messages: { role: string; content: string }[]) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(HF_ROUTER_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${hfToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: HF_MODEL,
+        messages,
+        max_tokens: 700,
+        temperature: 0.4,
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function POST(request: Request) {
@@ -82,35 +104,29 @@ Respond in the same language the user writes in (Spanish or English).
 COMPANY DATA:
 ${context}`;
 
-    const historyText = (history ?? [])
-      .map((m: { role: string; content: string }) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
-      .join("\n");
-    const prompt = `${systemPrompt}\n\n${historyText ? historyText + "\n" : ""}User: ${message}\nAssistant:`;
+    const chatMessages = [
+      { role: "system", content: systemPrompt },
+      ...((history ?? []) as { role: string; content: string }[]),
+      { role: "user", content: message },
+    ];
 
     let response: Response;
     try {
-      response = await fetch("https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta", {
-        headers: {
-          Authorization: `Bearer ${hfToken}`,
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_length: 1024,
-            temperature: 0.4,
-            top_p: 0.9,
-          },
-        }),
-      });
+      response = await callHuggingFace(hfToken, chatMessages);
     } catch (fetchError) {
-      console.error("AI copilot: Hugging Face request failed to send", fetchError);
-      const msg = fetchError instanceof Error ? fetchError.message : "Unknown network error";
-      return NextResponse.json(
-        { error: "Could not reach Hugging Face", details: msg },
-        { status: 502 }
-      );
+      console.error("AI copilot: Hugging Face request failed, retrying once", fetchError);
+      try {
+        response = await callHuggingFace(hfToken, chatMessages);
+      } catch (retryError) {
+        console.error("AI copilot: Hugging Face retry also failed", retryError);
+        const isAbort = retryError instanceof Error && retryError.name === "AbortError";
+        const msg = isAbort
+          ? `Request timed out after ${REQUEST_TIMEOUT_MS / 1000}s`
+          : retryError instanceof Error
+          ? retryError.message
+          : "Unknown network error";
+        return NextResponse.json({ error: "Could not reach Hugging Face", details: msg }, { status: 502 });
+      }
     }
 
     if (!response.ok) {
@@ -128,8 +144,7 @@ ${context}`;
         return NextResponse.json(
           {
             error: "AI model unavailable",
-            details:
-              "Hugging Face returned 404 for HuggingFaceH4/zephyr-7b-beta. This model may no longer be served on the free Inference API — try a different model or provider.",
+            details: `Hugging Face returned 404 for ${HF_MODEL}. It may not be served by any provider right now — try a different model.`,
           },
           { status: 502 }
         );
@@ -145,7 +160,7 @@ ${context}`;
       return NextResponse.json({ error: "Hugging Face API error", details: errorText }, { status: response.status });
     }
 
-    let result: HFResponse[] | HFResponse;
+    let result: { choices?: { message?: { content?: string } }[] };
     try {
       result = await response.json();
     } catch (parseError) {
@@ -157,13 +172,8 @@ ${context}`;
       );
     }
 
-    const first = Array.isArray(result) ? result[0] : result;
-    const generatedText = first?.generated_text || first?.text || "";
-
-    // Strip the prompt from the model's echo, keep only the new reply
-    const cleanedResponse = generatedText.replace(prompt, "").trim();
-
-    return NextResponse.json({ reply: cleanedResponse || "Could not generate response" });
+    const reply = result.choices?.[0]?.message?.content?.trim();
+    return NextResponse.json({ reply: reply || "Could not generate response" });
   } catch (error) {
     console.error("Chat API Error:", error);
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
