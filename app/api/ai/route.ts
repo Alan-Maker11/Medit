@@ -13,6 +13,7 @@ import {
   generateRecommendations,
   generateReport,
   calculateDriverSalary,
+  calculateDriverTermSalary,
   findDriverIdByName,
 } from "@/lib/advanced-queries";
 
@@ -28,7 +29,18 @@ CAPABILITIES:
 3. Predictive analytics (revenue forecasting)
 4. Anomaly detection (unusual revenue/expense patterns)
 5. Recommendation engine (business optimization suggestions)
-6. Driver salary calculations (base salary + overtime + dieta + elevator fees)
+6. Driver salary calculations
+
+IMPORTANT — HOW MEDIT DRIVER PAY ACTUALLY WORKS:
+Drivers are paid TWICE per month, in two terms:
+  - 1st term: days 1-15 of the month
+  - 2nd term: day 16 to the end of the month
+Each term's pay = HALF of the driver's base monthly salary + that term's overtime hours (× hourly rate)
++ that term's dieta (meal allowance) entries + that term's Ascensor/Bajador (elevator/stair-climber) fee entries.
+Overtime hours, dieta, and elevator fees are logged per-day and only count toward whichever term their date falls in.
+When asked "how much is the next salary" or "cuánto es el próximo salario" for a driver, this means the CURRENT,
+still-accruing term (the one containing today's date) — that is the payment coming up next, based on entries logged so far.
+Do NOT just add up the full monthly base salary — always use the half-base-per-term structure above.
 
 RULES:
 1. Always analyze the real data provided to you — never invent numbers.
@@ -153,31 +165,44 @@ async function executeAdvancedTask(userMessage: string): Promise<{ contextString
       return { contextString: `BUSINESS RECOMMENDATIONS:\n${JSON.stringify(recs)}`, capability: "recommendation" };
     }
 
-    if (/SALARY|PAYROLL|SALARIO|N[OÓ]MINA/.test(upper)) {
-      // Try to find "for <name>" / "de <name>" and a YYYY-MM month in the message
-      const monthMatch = userMessage.match(/\b(\d{4}-\d{2})\b/);
-      const month = monthMatch ? monthMatch[1] : new Date().toISOString().slice(0, 7);
-      const nameMatch = userMessage.match(/(?:for|de|driver|conductor)\s+([A-ZÁÉÍÓÚÑa-záéíóúñ][\w'\-. ]{2,40})/i);
-      const driverName = nameMatch ? nameMatch[1].trim() : null;
+    if (/SALARY|PAYROLL|SALARIO|N[OÓ]MINA|SUELDO/.test(upper)) {
+      const asksNext = /NEXT|UPCOMING|CURRENT|PR[OÓ]XIMO|SIGUIENTE|ACTUAL/.test(upper);
 
-      if (!driverName) {
-        return {
-          contextString:
-            "SALARY REQUEST: The user asked about salary/payroll but did not specify a driver name. Ask them which driver and which month (YYYY-MM) they mean.",
-          capability: "salary",
-        };
+      // Try "for <name>" / "de <name>" first, then fall back to matching against real driver names
+      const nameMatch = userMessage.match(/(?:for|de|driver|conductor)\s+([A-ZÁÉÍÓÚÑa-záéíóúñ][\w'\-. ]{2,40})/i);
+      let driverName = nameMatch ? nameMatch[1].trim() : null;
+      let driverId = driverName ? await findDriverIdByName(driverName) : null;
+
+      if (!driverId) {
+        const allDrivers = await queryDrivers();
+        const found = allDrivers.find((d) => {
+          const first = d.name.split(" ")[0];
+          return userMessage.toLowerCase().includes(d.name.toLowerCase()) || userMessage.toLowerCase().includes(first.toLowerCase());
+        });
+        if (found) {
+          driverId = found.id;
+          driverName = found.name;
+        }
       }
 
-      const driverId = await findDriverIdByName(driverName);
       if (!driverId) {
         return {
-          contextString: `SALARY REQUEST: No driver found matching "${driverName}". Tell the user this driver name wasn't found.`,
+          contextString:
+            "SALARY REQUEST: The user asked about salary/payroll but no matching driver name was found. Ask them which driver they mean.",
           capability: "salary",
         };
       }
 
-      const salary = await calculateDriverSalary(driverId, month);
-      return { contextString: `DRIVER SALARY CALCULATION:\n${JSON.stringify(salary)}`, capability: "salary" };
+      // "next/current" salary → the still-accruing term (half-base + that term's overtime/dieta/elevator)
+      if (asksNext || !/\b\d{4}-\d{2}\b/.test(userMessage)) {
+        const termSalary = await calculateDriverTermSalary(driverId);
+        return { contextString: `DRIVER NEXT (CURRENT TERM) SALARY:\n${JSON.stringify(termSalary)}`, capability: "salary" };
+      }
+
+      const monthMatch = userMessage.match(/\b(\d{4}-\d{2})\b/);
+      const month = monthMatch ? monthMatch[1] : new Date().toISOString().slice(0, 7);
+      const fullMonthSalary = await calculateDriverSalary(driverId, month);
+      return { contextString: `DRIVER FULL-MONTH SALARY:\n${JSON.stringify(fullMonthSalary)}`, capability: "salary" };
     }
 
     return null;

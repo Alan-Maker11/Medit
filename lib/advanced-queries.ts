@@ -269,6 +269,110 @@ export async function calculateDriverSalary(driverId: string, month: string) {
   };
 }
 
+// ============ TERM-BASED SALARY (matches the real pay cycle: paid twice a month) ============
+// Medit pays drivers HALF the base monthly salary per term:
+//   Term 1 = days 1-15, Term 2 = days 16-end of month.
+// Each term also includes that term's own overtime hours, dieta, and elevator/stair-climber fees
+// (from overtime_entries dated within that term). This matches app/admin/salary/DriverSalaryCard.tsx exactly.
+
+function termOf(dateStr: string): 1 | 2 {
+  const day = Number(dateStr.slice(8, 10));
+  return day <= 15 ? 1 : 2;
+}
+
+function lastDayOfMonth(year: number, month1to12: number) {
+  return new Date(year, month1to12, 0).getDate();
+}
+
+function termDateRange(year: number, month1to12: number, term: 1 | 2) {
+  const mm = String(month1to12).padStart(2, "0");
+  if (term === 1) {
+    return { start: `${year}-${mm}-01`, end: `${year}-${mm}-15` };
+  }
+  const lastDay = String(lastDayOfMonth(year, month1to12)).padStart(2, "0");
+  return { start: `${year}-${mm}-16`, end: `${year}-${mm}-${lastDay}` };
+}
+
+export interface TermSalary {
+  driverName: string;
+  year: number;
+  month: number;
+  term: 1 | 2;
+  termLabel: string;
+  periodStart: string;
+  periodEnd: string;
+  halfBaseSalary: number;
+  termHours: number;
+  termOvertimePay: number;
+  termDieta: number;
+  termElevator: number;
+  termTotal: number;
+  entryCount: number;
+  isPaid: boolean; // true if the period has already fully ended
+}
+
+/**
+ * Calculates the pay for one specific term (half-month) — this is how Medit actually pays drivers.
+ * Defaults to the term containing `referenceDate` (i.e. the CURRENT, still-accruing term — the "next salary" due).
+ */
+export async function calculateDriverTermSalary(driverId: string, referenceDate?: string): Promise<TermSalary> {
+  const supabase = await createClient();
+
+  const { data: driver, error: driverError } = await supabase.from("drivers").select("*").eq("id", driverId).single();
+  if (driverError) throw driverError;
+
+  const ref = referenceDate ?? new Date().toISOString().slice(0, 10);
+  const year = Number(ref.slice(0, 4));
+  const month = Number(ref.slice(5, 7));
+  const term = termOf(ref);
+  const { start, end } = termDateRange(year, month, term);
+
+  const { data: entries, error: entriesError } = await supabase
+    .from("overtime_entries")
+    .select("*")
+    .eq("driver_id", driverId)
+    .gte("date", start)
+    .lte("date", end);
+  if (entriesError) throw entriesError;
+
+  const baseSalary = driver.base_monthly_salary ?? 0;
+  const halfBaseSalary = baseSalary / 2;
+  const rate = driver.overtime_hourly_rate ?? 0;
+
+  let termHours = 0;
+  let termOvertimePay = 0;
+  let termDieta = 0;
+  let termElevator = 0;
+  for (const e of entries ?? []) {
+    const hours = Number(e.hours) || 0;
+    termHours += hours;
+    termOvertimePay += hours * rate;
+    termDieta += Number(e.dieta_amount) || 0;
+    termElevator += Number(e.elevator_amount) || 0;
+  }
+
+  const termTotal = halfBaseSalary + termOvertimePay + termDieta + termElevator;
+  const todayISO = new Date().toISOString().slice(0, 10);
+
+  return {
+    driverName: driver.name,
+    year,
+    month,
+    term,
+    termLabel: term === 1 ? "1st term (1-15)" : "2nd term (16-end)",
+    periodStart: start,
+    periodEnd: end,
+    halfBaseSalary: Number(halfBaseSalary.toFixed(2)),
+    termHours,
+    termOvertimePay: Number(termOvertimePay.toFixed(2)),
+    termDieta: Number(termDieta.toFixed(2)),
+    termElevator: Number(termElevator.toFixed(2)),
+    termTotal: Number(termTotal.toFixed(2)),
+    entryCount: (entries ?? []).length,
+    isPaid: end < todayISO,
+  };
+}
+
 export async function findDriverIdByName(name: string) {
   const supabase = await createClient();
   const { data } = await supabase.from("drivers").select("id, name").ilike("name", `%${name}%`).limit(1).maybeSingle();
