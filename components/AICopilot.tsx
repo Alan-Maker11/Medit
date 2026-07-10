@@ -5,7 +5,37 @@ import { useRef, useState } from "react";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  dataUsed?: Record<string, boolean>;
 }
+
+const CAPABILITY_LABELS: Record<string, string> = {
+  report: "📊 Report",
+  prediction: "🔮 Prediction",
+  anomaly: "🚨 Anomaly check",
+  recommendation: "💡 Recommendations",
+  salary: "💰 Salary calc",
+  tripsIncluded: "🚗 Trips data",
+  expensesIncluded: "💸 Expenses data",
+  vehiclesIncluded: "🚙 Vehicles data",
+  driversIncluded: "🧑‍✈️ Drivers data",
+  servicesIncluded: "🏷️ Services data",
+};
+
+const CAPABILITIES = [
+  { icon: "📊", label: "Reports" },
+  { icon: "🔮", label: "Predictions" },
+  { icon: "🚨", label: "Anomalies" },
+  { icon: "💡", label: "Recommendations" },
+  { icon: "💰", label: "Salary" },
+];
+
+const QUICK_PROMPTS = [
+  "What's this month's revenue?",
+  "Generate a weekly report",
+  "Predict next week's revenue",
+  "Any anomalies in expenses?",
+  "Give me business recommendations",
+];
 
 export default function AICopilot() {
   const [open, setOpen] = useState(false);
@@ -36,7 +66,7 @@ export default function AICopilot() {
       const reply =
         data.reply ??
         (data.error ? `${data.error}${data.details ? `\n${data.details}` : ""}` : "Error getting response.");
-      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: reply, dataUsed: data.dataUsed }]);
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Connection error. Try again." }]);
     } finally {
@@ -85,9 +115,21 @@ export default function AICopilot() {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">Medit AI Copilot</p>
-              <p className="text-xs text-blue-100">Ask about trips, revenue, drivers…</p>
+              <p className="text-sm font-semibold text-white">Medit AI Manager</p>
+              <p className="text-xs text-blue-100">Enterprise business intelligence</p>
             </div>
+          </div>
+
+          {/* Capability chips */}
+          <div className="flex flex-wrap gap-1.5 border-b border-zinc-200 px-3 py-2 dark:border-zinc-700">
+            {CAPABILITIES.map((c) => (
+              <span
+                key={c.label}
+                className="rounded-full bg-zinc-100 px-2 py-1 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+              >
+                {c.icon} {c.label}
+              </span>
+            ))}
           </div>
 
           {/* Messages */}
@@ -95,7 +137,7 @@ export default function AICopilot() {
             {messages.length === 0 && (
               <div className="flex flex-col gap-2 text-sm text-zinc-500">
                 <p className="font-medium text-zinc-700 dark:text-zinc-200">👋 Hola! I can help you with:</p>
-                {["How many trips this month?", "Who is the top driver?", "What's today's revenue?", "List recent clients"].map((q) => (
+                {QUICK_PROMPTS.map((q) => (
                   <button
                     key={q}
                     onClick={() => { setInput(q); }}
@@ -106,20 +148,37 @@ export default function AICopilot() {
                 ))}
               </div>
             )}
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
-                    msg.role === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
-                  }`}
-                  style={{ whiteSpace: "pre-wrap" }}
-                >
-                  {msg.content}
+            {messages.map((msg, i) => {
+              const usedLabels = msg.dataUsed
+                ? Object.entries(msg.dataUsed)
+                    .filter(([, v]) => v)
+                    .map(([k]) => CAPABILITY_LABELS[k])
+                    .filter(Boolean)
+                : [];
+              return (
+                <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+                      msg.role === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
+                    }`}
+                    style={{ whiteSpace: "pre-wrap" }}
+                  >
+                    {msg.content}
+                  </div>
+                  {usedLabels.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {usedLabels.map((label) => (
+                        <span key={label} className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {loading && (
               <div className="flex justify-start">
                 <div className="rounded-2xl bg-zinc-100 px-4 py-2 text-sm text-zinc-400 dark:bg-zinc-800">

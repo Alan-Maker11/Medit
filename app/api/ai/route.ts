@@ -7,33 +7,37 @@ import {
   queryServices,
   getBusinessMetrics,
 } from "@/lib/database-queries";
+import {
+  predictNextWeekRevenue,
+  detectAnomalies,
+  generateRecommendations,
+  generateReport,
+  calculateDriverSalary,
+  findDriverIdByName,
+} from "@/lib/advanced-queries";
 
 const HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct";
 const HF_ROUTER_URL = "https://router.huggingface.co/v1/chat/completions";
 const REQUEST_TIMEOUT_MS = 25000;
 
-const SYSTEM_PROMPT = `You are Medit AI, an intelligent business manager assistant for Medit Transportation Company in the Dominican Republic.
+const SYSTEM_PROMPT = `You are Medit AI — an enterprise business intelligence assistant for Medit, a medical transportation company in the Dominican Republic.
 
-You have access to real-time business data including:
-- Trips (bookings, fares, customers, routes)
-- Expenses (gas, maintenance, insurance, repairs)
-- Vehicles
-- Drivers (names, status, performance)
-- Services (Medical, Surgery, Airport, Therapy, Events, Subir/Bajar, etc.)
+CAPABILITIES:
+1. Natural language queries about trips, revenue, expenses, drivers, vehicles, services
+2. Report generation (daily/weekly/monthly)
+3. Predictive analytics (revenue forecasting)
+4. Anomaly detection (unusual revenue/expense patterns)
+5. Recommendation engine (business optimization suggestions)
+6. Driver salary calculations (base salary + overtime + dieta + elevator fees)
 
-IMPORTANT RULES:
-1. Always analyze the real data provided to you.
-2. Give specific numbers and facts from the data.
-3. Provide insights and recommendations based on patterns.
-4. Answer in Spanish or English — match the user's language.
-5. If asked about something not in the data, say so honestly.
-6. Format currency amounts in DOP (Dominican Pesos).
-7. Be professional but friendly and concise.
-8. Focus on helping optimize business operations.
-
-Available metrics you can analyze: revenue trends, expense patterns, driver performance,
-vehicle utilization, service popularity, profitability, average fare per trip, and
-revenue/expense breakdowns by category.`;
+RULES:
+1. Always analyze the real data provided to you — never invent numbers.
+2. Give specific figures and cite the data.
+3. Answer in Spanish or English, matching the user's language.
+4. If asked about something not in the provided data, say so honestly.
+5. Format currency as RD$ (Dominican Pesos).
+6. Be professional, concise, and actionable.
+7. If the user asks to schedule/book a trip, tell them to use the "Log new trip" page in the admin panel — you can help them figure out the fare and details, but you do not create bookings directly.`;
 
 async function callHuggingFace(hfToken: string, messages: { role: string; content: string }[]) {
   const controller = new AbortController();
@@ -59,7 +63,7 @@ async function callHuggingFace(hfToken: string, messages: { role: string; conten
   }
 }
 
-async function buildDataContext(userMessage: string) {
+async function buildGeneralDataContext(userMessage: string) {
   const upper = userMessage.toUpperCase();
   const needsTrips = /TRIP|REVENUE|FARE|BOOKING|VIAJE|INGRESO|TARIFA/.test(upper);
   const needsExpenses = /EXPENSE|COST|GAS|MAINTENANCE|GASTO|COSTO|MANTENIMIENTO/.test(upper);
@@ -98,10 +102,92 @@ async function buildDataContext(userMessage: string) {
     ]);
   } catch (dbError) {
     console.error("AI copilot: failed to load Supabase context", dbError);
-    // Continue with whatever partial data we have rather than failing the whole request
   }
 
-  return { trips, expenses, vehicles, drivers, services, metrics };
+  const contextString = `
+BUSINESS METRICS:
+${JSON.stringify(metrics)}
+
+${trips.length > 0 ? `TRIPS (showing ${Math.min(30, trips.length)} of ${trips.length}):\n${JSON.stringify(trips.slice(0, 30))}` : ""}
+${expenses.length > 0 ? `EXPENSES (showing ${Math.min(20, expenses.length)} of ${expenses.length}):\n${JSON.stringify(expenses.slice(0, 20))}` : ""}
+${vehicles.length > 0 ? `VEHICLES:\n${JSON.stringify(vehicles)}` : ""}
+${drivers.length > 0 ? `DRIVERS:\n${JSON.stringify(drivers)}` : ""}
+${services.length > 0 ? `SERVICES:\n${JSON.stringify(services)}` : ""}
+`.trim();
+
+  return {
+    contextString,
+    dataUsed: {
+      tripsIncluded: trips.length > 0,
+      expensesIncluded: expenses.length > 0,
+      vehiclesIncluded: vehicles.length > 0,
+      driversIncluded: drivers.length > 0,
+      servicesIncluded: services.length > 0,
+    },
+  };
+}
+
+/** Detects a specific analytics/report/salary intent and computes real numbers for it. Returns null for general queries. */
+async function executeAdvancedTask(userMessage: string): Promise<{ contextString: string; capability: string } | null> {
+  const upper = userMessage.toUpperCase();
+
+  try {
+    if (/REPORT|REPORTE/.test(upper)) {
+      const reportType = /DAILY|DIARIO/.test(upper) ? "daily" : /WEEKLY|SEMANAL/.test(upper) ? "weekly" : "monthly";
+      const report = await generateReport(reportType);
+      return { contextString: `GENERATED ${reportType.toUpperCase()} REPORT:\n${JSON.stringify(report)}`, capability: "report" };
+    }
+
+    if (/PREDICT|FORECAST|PRONÓSTICO|PROYECT/.test(upper)) {
+      const prediction = await predictNextWeekRevenue();
+      return { contextString: `REVENUE PREDICTION:\n${JSON.stringify(prediction)}`, capability: "prediction" };
+    }
+
+    if (/ANOMAL|UNUSUAL|INUSUAL/.test(upper)) {
+      const anomalies = await detectAnomalies("revenue");
+      return { contextString: `ANOMALY DETECTION:\n${JSON.stringify(anomalies)}`, capability: "anomaly" };
+    }
+
+    if (/RECOMMEND|IMPROVE|OPTIMI[ZS]E|RECOMIEND|MEJORAR/.test(upper)) {
+      const recs = await generateRecommendations();
+      return { contextString: `BUSINESS RECOMMENDATIONS:\n${JSON.stringify(recs)}`, capability: "recommendation" };
+    }
+
+    if (/SALARY|PAYROLL|SALARIO|N[OÓ]MINA/.test(upper)) {
+      // Try to find "for <name>" / "de <name>" and a YYYY-MM month in the message
+      const monthMatch = userMessage.match(/\b(\d{4}-\d{2})\b/);
+      const month = monthMatch ? monthMatch[1] : new Date().toISOString().slice(0, 7);
+      const nameMatch = userMessage.match(/(?:for|de|driver|conductor)\s+([A-ZÁÉÍÓÚÑa-záéíóúñ][\w'\-. ]{2,40})/i);
+      const driverName = nameMatch ? nameMatch[1].trim() : null;
+
+      if (!driverName) {
+        return {
+          contextString:
+            "SALARY REQUEST: The user asked about salary/payroll but did not specify a driver name. Ask them which driver and which month (YYYY-MM) they mean.",
+          capability: "salary",
+        };
+      }
+
+      const driverId = await findDriverIdByName(driverName);
+      if (!driverId) {
+        return {
+          contextString: `SALARY REQUEST: No driver found matching "${driverName}". Tell the user this driver name wasn't found.`,
+          capability: "salary",
+        };
+      }
+
+      const salary = await calculateDriverSalary(driverId, month);
+      return { contextString: `DRIVER SALARY CALCULATION:\n${JSON.stringify(salary)}`, capability: "salary" };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("AI copilot: advanced task execution failed", error);
+    return {
+      contextString: `An error occurred while computing this: ${error instanceof Error ? error.message : "unknown error"}. Tell the user briefly and suggest they try again.`,
+      capability: "error",
+    };
+  }
 }
 
 export async function POST(request: Request) {
@@ -122,21 +208,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const dbContext = await buildDataContext(message);
     const today = new Date().toISOString().slice(0, 10);
 
-    const contextString = `
-Today is ${today}.
+    const advancedResult = await executeAdvancedTask(message);
+    const dataUsed: Record<string, boolean> = {};
+    let dataContext: string;
 
-BUSINESS METRICS:
-${JSON.stringify(dbContext.metrics, null, 2)}
-
-${dbContext.trips.length > 0 ? `TRIPS (showing ${Math.min(30, dbContext.trips.length)} of ${dbContext.trips.length}):\n${JSON.stringify(dbContext.trips.slice(0, 30))}` : ""}
-${dbContext.expenses.length > 0 ? `EXPENSES (showing ${Math.min(20, dbContext.expenses.length)} of ${dbContext.expenses.length}):\n${JSON.stringify(dbContext.expenses.slice(0, 20))}` : ""}
-${dbContext.vehicles.length > 0 ? `VEHICLES:\n${JSON.stringify(dbContext.vehicles)}` : ""}
-${dbContext.drivers.length > 0 ? `DRIVERS:\n${JSON.stringify(dbContext.drivers)}` : ""}
-${dbContext.services.length > 0 ? `SERVICES:\n${JSON.stringify(dbContext.services)}` : ""}
-`.trim();
+    if (advancedResult) {
+      dataContext = advancedResult.contextString;
+      dataUsed[advancedResult.capability] = true;
+    } else {
+      const general = await buildGeneralDataContext(message);
+      dataContext = general.contextString;
+      Object.assign(dataUsed, general.dataUsed);
+    }
 
     const sanitizedHistory = Array.isArray(history)
       ? history
@@ -148,7 +233,10 @@ ${dbContext.services.length > 0 ? `SERVICES:\n${JSON.stringify(dbContext.service
       : [];
 
     const chatMessages = [
-      { role: "system", content: `${SYSTEM_PROMPT}\n\nCURRENT BUSINESS DATA:\n${contextString}` },
+      {
+        role: "system",
+        content: `${SYSTEM_PROMPT}\n\nToday is ${today}.\n\nCURRENT BUSINESS DATA:\n${dataContext}`,
+      },
       ...sanitizedHistory,
       { role: "user", content: message },
     ];
@@ -216,13 +304,7 @@ ${dbContext.services.length > 0 ? `SERVICES:\n${JSON.stringify(dbContext.service
 
     return NextResponse.json({
       reply: reply || "Could not generate response",
-      dataUsed: {
-        tripsIncluded: dbContext.trips.length > 0,
-        expensesIncluded: dbContext.expenses.length > 0,
-        vehiclesIncluded: dbContext.vehicles.length > 0,
-        driversIncluded: dbContext.drivers.length > 0,
-        servicesIncluded: dbContext.services.length > 0,
-      },
+      dataUsed,
     });
   } catch (error) {
     console.error("Chat API Error:", error);
