@@ -309,6 +309,8 @@ export interface TermSalary {
   termTotal: number;
   entryCount: number;
   isPaid: boolean; // true if the period has already fully ended
+  overtimeRate: number;
+  entries: { date: string; hours: number; overtimePay: number; dieta: number; elevator: number }[];
 }
 
 /**
@@ -343,13 +345,19 @@ export async function calculateDriverTermSalary(driverId: string, referenceDate?
   let termOvertimePay = 0;
   let termDieta = 0;
   let termElevator = 0;
+  const dayEntries: TermSalary["entries"] = [];
   for (const e of entries ?? []) {
     const hours = Number(e.hours) || 0;
+    const dieta = Number(e.dieta_amount) || 0;
+    const elevator = Number(e.elevator_amount) || 0;
+    const overtimePay = hours * rate;
     termHours += hours;
-    termOvertimePay += hours * rate;
-    termDieta += Number(e.dieta_amount) || 0;
-    termElevator += Number(e.elevator_amount) || 0;
+    termOvertimePay += overtimePay;
+    termDieta += dieta;
+    termElevator += elevator;
+    dayEntries.push({ date: e.date, hours, overtimePay: Number(overtimePay.toFixed(2)), dieta, elevator });
   }
+  dayEntries.sort((a, b) => a.date.localeCompare(b.date));
 
   const termTotal = halfBaseSalary + termOvertimePay + termDieta + termElevator;
   const todayISO = new Date().toISOString().slice(0, 10);
@@ -370,6 +378,8 @@ export async function calculateDriverTermSalary(driverId: string, referenceDate?
     termTotal: Number(termTotal.toFixed(2)),
     entryCount: (entries ?? []).length,
     isPaid: end < todayISO,
+    overtimeRate: rate,
+    entries: dayEntries,
   };
 }
 

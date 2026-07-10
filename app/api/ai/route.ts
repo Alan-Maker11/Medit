@@ -15,7 +15,77 @@ import {
   calculateDriverSalary,
   calculateDriverTermSalary,
   findDriverIdByName,
+  type TermSalary,
 } from "@/lib/advanced-queries";
+import { formatDOP } from "@/lib/fare";
+
+const ES_HINTS = /[ñáéíóúÁÉÍÓÚÑ]|cu[aá]nto|pr[oó]ximo|siguiente|conductor|salario|sueldo|d[ií]a|mes|ascensor|dieta/i;
+function detectLang(message: string): "es" | "en" {
+  return ES_HINTS.test(message) ? "es" : "en";
+}
+
+const MONTH_NAMES: Record<"es" | "en", string[]> = {
+  es: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+};
+
+/**
+ * Builds the salary reply directly from calculateDriverTermSalary's real numbers.
+ * We do NOT let the LLM restate these figures — a small model has been observed
+ * fabricating numbers instead of faithfully reading the provided JSON, which is
+ * unacceptable for pay calculations.
+ */
+function formatTermSalaryReply(ts: TermSalary, lang: "es" | "en"): string {
+  const isEs = lang === "es";
+  const monthName = MONTH_NAMES[lang][ts.month - 1];
+  const periodLabel = ts.term === 1 ? (isEs ? "1ra quincena (1-15)" : "1st term (1-15)") : isEs ? "2da quincena (16-fin)" : "2nd term (16-end)";
+  const statusLabel = ts.isPaid ? "" : isEs ? " — en curso" : " — in progress";
+
+  const lines: string[] = [];
+  lines.push(
+    isEs
+      ? `💰 Salario de ${ts.driverName} — ${monthName} ${ts.year}, ${periodLabel}${statusLabel}`
+      : `💰 ${ts.driverName}'s salary — ${monthName} ${ts.year}, ${periodLabel}${statusLabel}`
+  );
+  lines.push("");
+  lines.push(isEs ? `• Base (mitad del salario mensual): ${formatDOP(ts.halfBaseSalary)}` : `• Base (half of monthly salary): ${formatDOP(ts.halfBaseSalary)}`);
+  lines.push(
+    isEs
+      ? `• Horas extra: ${ts.termHours}h × ${formatDOP(ts.overtimeRate)}/h = ${formatDOP(ts.termOvertimePay)}`
+      : `• Overtime: ${ts.termHours}h × ${formatDOP(ts.overtimeRate)}/h = ${formatDOP(ts.termOvertimePay)}`
+  );
+  lines.push(isEs ? `• Dieta: ${formatDOP(ts.termDieta)}` : `• Meal allowance (dieta): ${formatDOP(ts.termDieta)}`);
+  lines.push(isEs ? `• Ascensor/Bajador: ${formatDOP(ts.termElevator)}` : `• Elevator/stair-climber fees: ${formatDOP(ts.termElevator)}`);
+  lines.push("");
+  lines.push(isEs ? `**Total a pagar: ${formatDOP(ts.termTotal)}**` : `**Total to pay: ${formatDOP(ts.termTotal)}**`);
+
+  const extraDays = ts.entries.filter((e) => e.hours > 0 || e.dieta > 0 || e.elevator > 0);
+  if (extraDays.length > 0) {
+    lines.push("");
+    lines.push(isEs ? "Detalle por día (ingresos extra):" : "Day-by-day breakdown (extra income):");
+    for (const e of extraDays) {
+      const parts: string[] = [];
+      if (e.hours > 0) parts.push(isEs ? `${e.hours}h extra (${formatDOP(e.overtimePay)})` : `${e.hours}h overtime (${formatDOP(e.overtimePay)})`);
+      if (e.dieta > 0) parts.push(`dieta ${formatDOP(e.dieta)}`);
+      if (e.elevator > 0) parts.push(`ascensor/bajador ${formatDOP(e.elevator)}`);
+      lines.push(`  - ${e.date}: ${parts.join(", ")}`);
+    }
+  } else {
+    lines.push("");
+    lines.push(isEs ? "No hay ingresos extra registrados en este período aparte de la base." : "No extra income logged for this period besides the base.");
+  }
+
+  if (!ts.isPaid) {
+    lines.push("");
+    lines.push(
+      isEs
+        ? "Este período todavía está en curso — el total puede subir si se agregan más entradas antes de que termine."
+        : "This period is still in progress — the total may increase if more entries are added before it ends."
+    );
+  }
+
+  return lines.join("\n");
+}
 
 const HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct";
 const HF_ROUTER_URL = "https://router.huggingface.co/v1/chat/completions";
@@ -140,7 +210,9 @@ ${services.length > 0 ? `SERVICES:\n${JSON.stringify(services)}` : ""}
 }
 
 /** Detects a specific analytics/report/salary intent and computes real numbers for it. Returns null for general queries. */
-async function executeAdvancedTask(userMessage: string): Promise<{ contextString: string; capability: string } | null> {
+async function executeAdvancedTask(
+  userMessage: string
+): Promise<{ contextString: string; capability: string; deterministicReply?: string } | null> {
   const upper = userMessage.toUpperCase();
 
   try {
@@ -193,10 +265,16 @@ async function executeAdvancedTask(userMessage: string): Promise<{ contextString
         };
       }
 
+      const lang = detectLang(userMessage);
+
       // "next/current" salary → the still-accruing term (half-base + that term's overtime/dieta/elevator)
       if (asksNext || !/\b\d{4}-\d{2}\b/.test(userMessage)) {
         const termSalary = await calculateDriverTermSalary(driverId);
-        return { contextString: `DRIVER NEXT (CURRENT TERM) SALARY:\n${JSON.stringify(termSalary)}`, capability: "salary" };
+        return {
+          contextString: `DRIVER NEXT (CURRENT TERM) SALARY:\n${JSON.stringify(termSalary)}`,
+          capability: "salary",
+          deterministicReply: formatTermSalaryReply(termSalary, lang),
+        };
       }
 
       const monthMatch = userMessage.match(/\b(\d{4}-\d{2})\b/);
@@ -222,6 +300,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
+    const today = new Date().toISOString().slice(0, 10);
+
+    const advancedResult = await executeAdvancedTask(message);
+
+    // Salary (and other) figures are computed deterministically from real data — return them
+    // directly without letting the LLM restate the numbers, since that's where it hallucinates.
+    if (advancedResult?.deterministicReply) {
+      return NextResponse.json({
+        reply: advancedResult.deterministicReply,
+        dataUsed: { [advancedResult.capability]: true },
+      });
+    }
+
     const hfToken = process.env.HUGGINGFACE_API_KEY?.trim();
     if (!hfToken) {
       return NextResponse.json(
@@ -233,9 +324,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const today = new Date().toISOString().slice(0, 10);
-
-    const advancedResult = await executeAdvancedTask(message);
     const dataUsed: Record<string, boolean> = {};
     let dataContext: string;
 
