@@ -20,6 +20,9 @@ import {
   type TermSalary,
 } from "@/lib/advanced-queries";
 import { formatDOP } from "@/lib/fare";
+import { parseIntent } from "@/lib/intent-recognizer";
+import { handleUncertainIntent } from "@/lib/confirmation-handler";
+import { formatRevenueResponse, formatExpenseResponse, formatProfitResponse } from "@/lib/data-formatter";
 
 const ES_HINTS = /[ñáéíóúÁÉÍÓÚÑ]|cu[aá]nto|pr[oó]ximo|siguiente|conductor|salario|sueldo|d[ií]a|mes|ascensor|dieta/i;
 function detectLang(message: string): "es" | "en" {
@@ -86,158 +89,6 @@ function formatTermSalaryReply(ts: TermSalary, lang: "es" | "en"): string {
     );
   }
 
-  return lines.join("\n");
-}
-
-const MONTHS_ES_MAP: Record<string, number> = {
-  enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
-  julio: 7, agosto: 8, septiembre: 9, setiembre: 9, octubre: 10, noviembre: 11, diciembre: 12,
-};
-const MONTHS_EN_MAP: Record<string, number> = {
-  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
-  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
-};
-
-function pad2(n: number) {
-  return String(n).padStart(2, "0");
-}
-
-function isoDate(year: number, month: number, day: number) {
-  return `${year}-${pad2(month)}-${pad2(day)}`;
-}
-
-function startOfWeek(d: Date) {
-  const copy = new Date(d);
-  copy.setDate(copy.getDate() - copy.getDay());
-  return copy;
-}
-
-/** Parses a date range out of a natural-language message (Spanish or English). Returns null if none found. */
-function parseDateRange(message: string, todayISO: string): { start: string; end: string; label: string } | null {
-  const today = new Date(`${todayISO}T00:00:00`);
-  const yearMatch = message.match(/\b(20\d{2})\b/);
-  const explicitYear = yearMatch ? Number(yearMatch[1]) : today.getFullYear();
-
-  // "del 6 de julio al 12 de julio" / "6 de julio al 12 de julio"
-  const esRange = message.match(
-    /(\d{1,2})\s+de\s+([a-zA-ZñÑáéíóú]+)\s*(?:al|a|-)\s*(\d{1,2})\s+de\s+([a-zA-ZñÑáéíóú]+)/i
-  );
-  if (esRange) {
-    const [, d1, mon1, d2, mon2] = esRange;
-    const m1 = MONTHS_ES_MAP[mon1.toLowerCase()];
-    const m2 = MONTHS_ES_MAP[mon2.toLowerCase()];
-    if (m1 && m2) {
-      const start = isoDate(explicitYear, m1, Number(d1));
-      const end = isoDate(explicitYear, m2, Number(d2));
-      return { start, end, label: `${d1} de ${mon1} - ${d2} de ${mon2} ${explicitYear}` };
-    }
-  }
-
-  // "July 6 to July 12" / "July 6-12"
-  const enRange = message.match(
-    /([a-zA-Z]+)\s+(\d{1,2})(?:st|nd|rd|th)?\s*(?:to|through|-)\s*(?:([a-zA-Z]+)\s+)?(\d{1,2})(?:st|nd|rd|th)?/i
-  );
-  if (enRange) {
-    const [, mon1, d1, mon2, d2] = enRange;
-    const m1 = MONTHS_EN_MAP[mon1.toLowerCase()];
-    const m2 = mon2 ? MONTHS_EN_MAP[mon2.toLowerCase()] : m1;
-    if (m1 && m2) {
-      const start = isoDate(explicitYear, m1, Number(d1));
-      const end = isoDate(explicitYear, m2, Number(d2));
-      return { start, end, label: `${mon1} ${d1} - ${mon2 ?? mon1} ${d2}, ${explicitYear}` };
-    }
-  }
-
-  // A single explicit date, e.g. "el 6 de julio" — treat as a one-day range
-  const esSingle = message.match(/(\d{1,2})\s+de\s+([a-zA-ZñÑáéíóú]+)/i);
-  if (esSingle && !esRange) {
-    const [, d1, mon1] = esSingle;
-    const m1 = MONTHS_ES_MAP[mon1.toLowerCase()];
-    if (m1) {
-      const date = isoDate(explicitYear, m1, Number(d1));
-      return { start: date, end: date, label: `${d1} de ${mon1} ${explicitYear}` };
-    }
-  }
-
-  // Bare month name, no day number — "total income of January", "gastos de junio", "en enero"
-  const bareMonth = message.match(
-    /\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)\b/i
-  );
-  if (bareMonth) {
-    const raw = bareMonth[1].toLowerCase();
-    const monthNum = MONTHS_ES_MAP[raw] ?? MONTHS_EN_MAP[raw];
-    if (monthNum) {
-      let year = explicitYear;
-      // If that guess lands in the future, it's more likely the user means last time that month occurred
-      if (isoDate(year, monthNum, 1) > todayISO) year -= 1;
-      const lastDay = new Date(year, monthNum, 0).getDate();
-      return { start: isoDate(year, monthNum, 1), end: isoDate(year, monthNum, lastDay), label: `${raw} ${year}` };
-    }
-  }
-
-  // Relative phrases
-  const lower = message.toLowerCase();
-  if (/esta semana|this week/.test(lower)) {
-    const start = startOfWeek(today);
-    return { start: start.toISOString().slice(0, 10), end: todayISO, label: "this week" };
-  }
-  if (/semana pasada|última semana|last week/.test(lower)) {
-    const thisWeekStart = startOfWeek(today);
-    const lastWeekStart = new Date(thisWeekStart);
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    const lastWeekEnd = new Date(thisWeekStart);
-    lastWeekEnd.setDate(lastWeekEnd.getDate() - 1);
-    return { start: lastWeekStart.toISOString().slice(0, 10), end: lastWeekEnd.toISOString().slice(0, 10), label: "last week" };
-  }
-  if (/este mes|this month/.test(lower)) {
-    const start = isoDate(today.getFullYear(), today.getMonth() + 1, 1);
-    return { start, end: todayISO, label: "this month" };
-  }
-  if (/mes pasado|último mes|last month/.test(lower)) {
-    const m = today.getMonth() === 0 ? 12 : today.getMonth();
-    const y = today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear();
-    const lastDay = new Date(y, m, 0).getDate();
-    return { start: isoDate(y, m, 1), end: isoDate(y, m, lastDay), label: "last month" };
-  }
-  if (/\bhoy\b|\btoday\b/.test(lower)) {
-    return { start: todayISO, end: todayISO, label: "today" };
-  }
-  if (/\bayer\b|\byesterday\b/.test(lower)) {
-    const y = new Date(today);
-    y.setDate(y.getDate() - 1);
-    const d = y.toISOString().slice(0, 10);
-    return { start: d, end: d, label: "yesterday" };
-  }
-
-  return null;
-}
-
-function formatPeriodRevenueReply(
-  range: { start: string; end: string; label: string },
-  revenue: number,
-  expenses: number,
-  tripCount: number,
-  lang: "es" | "en"
-): string {
-  const isEs = lang === "es";
-  const profit = revenue - expenses;
-  const lines: string[] = [];
-  lines.push(
-    isEs
-      ? `📊 Del ${range.start} al ${range.end}:`
-      : `📊 From ${range.start} to ${range.end}:`
-  );
-  lines.push("");
-  lines.push(isEs ? `• Viajes completados: ${tripCount}` : `• Completed trips: ${tripCount}`);
-  lines.push(isEs ? `• Ingresos generados: ${formatDOP(revenue)}` : `• Revenue generated: ${formatDOP(revenue)}`);
-  if (expenses > 0) {
-    lines.push(isEs ? `• Gastos: ${formatDOP(expenses)}` : `• Expenses: ${formatDOP(expenses)}`);
-    lines.push(isEs ? `• Ganancia: ${formatDOP(profit)}` : `• Profit: ${formatDOP(profit)}`);
-  }
-  if (tripCount === 0) {
-    lines.push("");
-    lines.push(isEs ? "No hay viajes completados registrados en este período." : "No completed trips are logged for this period.");
-  }
   return lines.join("\n");
 }
 
@@ -371,26 +222,63 @@ async function executeAdvancedTask(
   const today = new Date().toISOString().slice(0, 10);
 
   try {
-    // A question about revenue/income/expenses for a SPECIFIC period ("la semana del 6 al 12 de julio",
-    // "this month", "ayer", etc.) — compute it directly instead of dumping unfiltered totals at the LLM.
-    const mentionsMoney = /REVENUE|INCOME|INGRESO|GENER[OÓ]|GANANC|FACTUR|EXPENSE|GASTO|COSTO|PROFIT|GANANCIA/.test(upper);
-    if (mentionsMoney) {
-      const range = parseDateRange(userMessage, today);
-      if (range) {
-        const [tripAnalytics, expenseAnalytics] = await Promise.all([
-          getTripAnalytics(range.start, range.end),
-          getExpenseAnalytics(range.start, range.end),
-        ]);
-        const revenue = tripAnalytics?.totalRevenue ?? 0;
-        const expenses = expenseAnalytics?.totalExpenses ?? 0;
-        const tripCount = tripAnalytics?.totalTrips ?? 0;
-        const lang = detectLang(userMessage);
+    // Comprehensive financial-intent recognition: catches EVERY revenue/expense/profit/comparison/
+    // forecast/analysis phrasing and EVERY date-format variation, with confidence scoring. If uncertain,
+    // it asks a clarifying question instead of ever letting the LLM guess at numbers.
+    const intent = parseIntent(userMessage, today);
+    if (intent.category === "financial") {
+      const lang = detectLang(userMessage);
+      const confirmation = handleUncertainIntent(intent, lang);
+
+      if (!confirmation.shouldProceed) {
+        const parts = [confirmation.clarificationMessage ?? ""];
+        if (confirmation.suggestedInterpretations?.length) {
+          parts.push("", ...confirmation.suggestedInterpretations);
+        }
         return {
-          contextString: `PERIOD REVENUE (${range.start} to ${range.end}): trips=${tripCount}, revenue=${revenue}, expenses=${expenses}`,
-          capability: "report",
-          deterministicReply: formatPeriodRevenueReply(range, revenue, expenses, tripCount, lang),
+          contextString: `CLARIFICATION NEEDED: confidence=${intent.confidence}, subType=${intent.subType}, timeframe=${intent.timeframe.type}`,
+          capability: "clarification",
+          deterministicReply: parts.join("\n"),
         };
       }
+
+      const { startDate, endDate } = intent.timeframe;
+      const [tripAnalytics, expenseAnalytics] = await Promise.all([
+        getTripAnalytics(startDate, endDate),
+        getExpenseAnalytics(startDate, endDate),
+      ]);
+      const revenue = tripAnalytics?.totalRevenue ?? 0;
+      const expenses = expenseAnalytics?.totalExpenses ?? 0;
+
+      let deterministicReply: string;
+      switch (intent.subType) {
+        case "expense":
+          deterministicReply = expenseAnalytics
+            ? formatExpenseResponse(expenseAnalytics, intent.timeframe, lang)
+            : lang === "es"
+            ? `No hay gastos registrados para ${intent.timeframe.displayName}.`
+            : `No expenses found for ${intent.timeframe.displayName}.`;
+          break;
+        case "profit":
+          deterministicReply = formatProfitResponse(revenue, expenses, intent.timeframe, lang);
+          break;
+        case "revenue":
+        case "comparison":
+        case "forecast":
+        case "analysis":
+        default:
+          deterministicReply = tripAnalytics
+            ? formatRevenueResponse(tripAnalytics, intent.timeframe, lang)
+            : lang === "es"
+            ? `No hay viajes completados registrados para ${intent.timeframe.displayName}.`
+            : `No completed trips found for ${intent.timeframe.displayName}.`;
+      }
+
+      return {
+        contextString: `FINANCIAL INTENT (${intent.subType}, ${intent.timeframe.displayName}): revenue=${revenue}, expenses=${expenses}, confidence=${intent.confidence}`,
+        capability: intent.subType,
+        deterministicReply,
+      };
     }
 
     if (/REPORT|REPORTE/.test(upper)) {
