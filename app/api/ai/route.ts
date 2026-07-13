@@ -20,7 +20,7 @@ import {
   type TermSalary,
 } from "@/lib/advanced-queries";
 import { formatDOP } from "@/lib/fare";
-import { parseIntent } from "@/lib/intent-recognizer";
+import { parseIntent, extractDateRange, type FinancialSubType, type TimeframeResult } from "@/lib/intent-recognizer";
 import { handleUncertainIntent } from "@/lib/confirmation-handler";
 import { formatRevenueResponse, formatExpenseResponse, formatProfitResponse } from "@/lib/data-formatter";
 
@@ -214,9 +214,58 @@ ${services.length > 0 ? `SERVICES:\n${JSON.stringify(services)}` : ""}
   };
 }
 
+/** Infers which financial subtype a prior deterministic reply was about, from its known header format. */
+function inferSubTypeFromPriorReply(text: string): FinancialSubType | null {
+  if (/^💰\s*(Revenue|Ingresos)/i.test(text)) return "revenue";
+  if (/^💸\s*(Expenses|Gastos)/i.test(text)) return "expense";
+  if (/^📊\s*(Profit|Ganancia)/i.test(text)) return "profit";
+  return null;
+}
+
+async function computeFinancialReply(
+  subType: FinancialSubType,
+  timeframe: TimeframeResult,
+  lang: "es" | "en"
+): Promise<{ deterministicReply: string; revenue: number; expenses: number }> {
+  const { startDate, endDate } = timeframe;
+  const [tripAnalytics, expenseAnalytics] = await Promise.all([
+    getTripAnalytics(startDate, endDate),
+    getExpenseAnalytics(startDate, endDate),
+  ]);
+  const revenue = tripAnalytics?.totalRevenue ?? 0;
+  const expenses = expenseAnalytics?.totalExpenses ?? 0;
+
+  let deterministicReply: string;
+  switch (subType) {
+    case "expense":
+      deterministicReply = expenseAnalytics
+        ? formatExpenseResponse(expenseAnalytics, timeframe, lang)
+        : lang === "es"
+        ? `No hay gastos registrados para ${timeframe.displayName}.`
+        : `No expenses found for ${timeframe.displayName}.`;
+      break;
+    case "profit":
+      deterministicReply = formatProfitResponse(revenue, expenses, timeframe, lang);
+      break;
+    case "revenue":
+    case "comparison":
+    case "forecast":
+    case "analysis":
+    default:
+      deterministicReply = tripAnalytics
+        ? formatRevenueResponse(tripAnalytics, timeframe, lang)
+        : lang === "es"
+        ? `No hay viajes completados registrados para ${timeframe.displayName}.`
+        : `No completed trips found for ${timeframe.displayName}.`;
+  }
+
+  return { deterministicReply, revenue, expenses };
+}
+
 /** Detects a specific analytics/report/salary intent and computes real numbers for it. Returns null for general queries. */
 async function executeAdvancedTask(
-  userMessage: string
+  userMessage: string,
+  history: { role: string; content: string }[]
 ): Promise<{ contextString: string; capability: string; deterministicReply?: string } | null> {
   const upper = userMessage.toUpperCase();
   const today = new Date().toISOString().slice(0, 10);
@@ -242,43 +291,30 @@ async function executeAdvancedTask(
         };
       }
 
-      const { startDate, endDate } = intent.timeframe;
-      const [tripAnalytics, expenseAnalytics] = await Promise.all([
-        getTripAnalytics(startDate, endDate),
-        getExpenseAnalytics(startDate, endDate),
-      ]);
-      const revenue = tripAnalytics?.totalRevenue ?? 0;
-      const expenses = expenseAnalytics?.totalExpenses ?? 0;
-
-      let deterministicReply: string;
-      switch (intent.subType) {
-        case "expense":
-          deterministicReply = expenseAnalytics
-            ? formatExpenseResponse(expenseAnalytics, intent.timeframe, lang)
-            : lang === "es"
-            ? `No hay gastos registrados para ${intent.timeframe.displayName}.`
-            : `No expenses found for ${intent.timeframe.displayName}.`;
-          break;
-        case "profit":
-          deterministicReply = formatProfitResponse(revenue, expenses, intent.timeframe, lang);
-          break;
-        case "revenue":
-        case "comparison":
-        case "forecast":
-        case "analysis":
-        default:
-          deterministicReply = tripAnalytics
-            ? formatRevenueResponse(tripAnalytics, intent.timeframe, lang)
-            : lang === "es"
-            ? `No hay viajes completados registrados para ${intent.timeframe.displayName}.`
-            : `No completed trips found for ${intent.timeframe.displayName}.`;
-      }
-
+      const { deterministicReply, revenue, expenses } = await computeFinancialReply(intent.subType, intent.timeframe, lang);
       return {
         contextString: `FINANCIAL INTENT (${intent.subType}, ${intent.timeframe.displayName}): revenue=${revenue}, expenses=${expenses}, confidence=${intent.confidence}`,
         capability: intent.subType,
         deterministicReply,
       };
+    }
+
+    // Follow-up with no financial keyword but a parseable period, e.g. "what about May?" right after
+    // a revenue/expense/profit answer — continue the SAME subtype instead of falling through to the LLM,
+    // which would otherwise hallucinate numbers while mimicking this exact reply format from history.
+    const lastAssistantMessage = [...history].reverse().find((m) => m.role === "assistant")?.content;
+    const priorSubType = lastAssistantMessage ? inferSubTypeFromPriorReply(lastAssistantMessage) : null;
+    if (priorSubType) {
+      const timeframe = extractDateRange(userMessage, today);
+      if (timeframe.type !== "unknown") {
+        const lang = detectLang(userMessage);
+        const { deterministicReply, revenue, expenses } = await computeFinancialReply(priorSubType, timeframe, lang);
+        return {
+          contextString: `FOLLOW-UP FINANCIAL INTENT (${priorSubType}, ${timeframe.displayName}): revenue=${revenue}, expenses=${expenses}`,
+          capability: priorSubType,
+          deterministicReply,
+        };
+      }
     }
 
     if (/REPORT|REPORTE/.test(upper)) {
@@ -367,7 +403,16 @@ export async function POST(request: Request) {
 
     const today = new Date().toISOString().slice(0, 10);
 
-    const advancedResult = await executeAdvancedTask(message);
+    const sanitizedHistory = Array.isArray(history)
+      ? history
+          .filter(
+            (m): m is { role: string; content: string } =>
+              m && typeof m.content === "string" && (m.role === "user" || m.role === "assistant")
+          )
+          .map((m) => ({ role: m.role, content: m.content }))
+      : [];
+
+    const advancedResult = await executeAdvancedTask(message, sanitizedHistory);
 
     // Salary (and other) figures are computed deterministically from real data — return them
     // directly without letting the LLM restate the numbers, since that's where it hallucinates.
@@ -400,15 +445,6 @@ export async function POST(request: Request) {
       dataContext = general.contextString;
       Object.assign(dataUsed, general.dataUsed);
     }
-
-    const sanitizedHistory = Array.isArray(history)
-      ? history
-          .filter(
-            (m): m is { role: string; content: string } =>
-              m && typeof m.content === "string" && (m.role === "user" || m.role === "assistant")
-          )
-          .map((m) => ({ role: m.role, content: m.content }))
-      : [];
 
     const chatMessages = [
       {
