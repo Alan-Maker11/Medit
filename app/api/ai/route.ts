@@ -317,6 +317,57 @@ async function executeAdvancedTask(
       }
     }
 
+    // Trip-status questions ("pending trips today", "cuántos viajes pendientes hoy") — compute
+    // directly from real rows instead of letting the LLM invent trip IDs and totals from memory.
+    const statusMatch = upper.match(/PENDING|PENDIENTE|COMPLETED|COMPLETADO|CANCELLED|CANCELADO/);
+    if (statusMatch && /TRIP|VIAJE/.test(upper)) {
+      const status = /PENDING|PENDIENTE/.test(statusMatch[0])
+        ? "pending"
+        : /COMPLETED|COMPLETADO/.test(statusMatch[0])
+        ? "completed"
+        : "cancelled";
+      const lang = detectLang(userMessage);
+      const timeframe = extractDateRange(userMessage, today);
+
+      if (timeframe.type === "unknown") {
+        return {
+          contextString: `TRIP STATUS CLARIFICATION NEEDED: status=${status}`,
+          capability: "trips",
+          deterministicReply:
+            lang === "es"
+              ? `¿Para qué período? (por ejemplo: "hoy", "esta semana", "julio")`
+              : `For which period? (e.g. "today", "this week", "July")`,
+        };
+      }
+
+      const trips = await queryTrips({ status, startDate: timeframe.startDate, endDate: timeframe.endDate });
+      const total = trips.reduce((sum: number, t: { total_fare: number | null }) => sum + (t.total_fare ?? 0), 0);
+
+      const statusLabelEs = status === "pending" ? "pendientes" : status === "completed" ? "completados" : "cancelados";
+      const statusLabelEn = status === "pending" ? "pending" : status === "completed" ? "completed" : "cancelled";
+
+      const lines: string[] = [];
+      lines.push(
+        lang === "es"
+          ? `Hay ${trips.length} viaje${trips.length === 1 ? "" : "s"} ${statusLabelEs} para ${timeframe.displayName}.`
+          : `There ${trips.length === 1 ? "is" : "are"} ${trips.length} ${statusLabelEn} trip${trips.length === 1 ? "" : "s"} for ${timeframe.displayName}.`
+      );
+      if (trips.length > 0) {
+        lines.push("");
+        for (const t of trips as { client_name: string | null; services?: { name: string } | null; total_fare: number | null }[]) {
+          lines.push(`  - ${t.client_name ?? "-"} (${t.services?.name ?? "-"}): ${formatDOP(t.total_fare ?? 0)}`);
+        }
+        lines.push("");
+        lines.push(lang === "es" ? `Total: ${formatDOP(total)}` : `Total: ${formatDOP(total)}`);
+      }
+
+      return {
+        contextString: `TRIP STATUS (${status}, ${timeframe.displayName}): count=${trips.length}, total=${total}`,
+        capability: "trips",
+        deterministicReply: lines.join("\n"),
+      };
+    }
+
     if (/REPORT|REPORTE/.test(upper)) {
       const reportType = /DAILY|DIARIO/.test(upper) ? "daily" : /WEEKLY|SEMANAL/.test(upper) ? "weekly" : "monthly";
       const report = await generateReport(reportType);
