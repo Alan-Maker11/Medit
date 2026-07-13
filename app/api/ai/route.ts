@@ -159,6 +159,22 @@ function parseDateRange(message: string, todayISO: string): { start: string; end
     }
   }
 
+  // Bare month name, no day number — "total income of January", "gastos de junio", "en enero"
+  const bareMonth = message.match(
+    /\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)\b/i
+  );
+  if (bareMonth) {
+    const raw = bareMonth[1].toLowerCase();
+    const monthNum = MONTHS_ES_MAP[raw] ?? MONTHS_EN_MAP[raw];
+    if (monthNum) {
+      let year = explicitYear;
+      // If that guess lands in the future, it's more likely the user means last time that month occurred
+      if (isoDate(year, monthNum, 1) > todayISO) year -= 1;
+      const lastDay = new Date(year, monthNum, 0).getDate();
+      return { start: isoDate(year, monthNum, 1), end: isoDate(year, monthNum, lastDay), label: `${raw} ${year}` };
+    }
+  }
+
   // Relative phrases
   const lower = message.toLowerCase();
   if (/esta semana|this week/.test(lower)) {
@@ -357,7 +373,7 @@ async function executeAdvancedTask(
   try {
     // A question about revenue/income/expenses for a SPECIFIC period ("la semana del 6 al 12 de julio",
     // "this month", "ayer", etc.) — compute it directly instead of dumping unfiltered totals at the LLM.
-    const mentionsMoney = /REVENUE|INGRESO|GENER[OÓ]|GANANC|FACTUR|EXPENSE|GASTO|COSTO|PROFIT|GANANCIA/.test(upper);
+    const mentionsMoney = /REVENUE|INCOME|INGRESO|GENER[OÓ]|GANANC|FACTUR|EXPENSE|GASTO|COSTO|PROFIT|GANANCIA/.test(upper);
     if (mentionsMoney) {
       const range = parseDateRange(userMessage, today);
       if (range) {
