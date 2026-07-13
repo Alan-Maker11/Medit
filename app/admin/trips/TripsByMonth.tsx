@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { formatDOP } from "@/lib/fare";
 import { useAdminLang, ADMIN_T } from "@/lib/adminLang";
+import { formatDateWithDay, formatDateWithDayEnglish } from "@/lib/date-utils";
 
 interface TripRow {
   id: string;
@@ -120,7 +121,7 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                   <tbody>
                     {monthTrips.map((trip) => (
                       <tr key={trip.id} className="group relative border-b border-zinc-100 dark:border-zinc-800">
-                        <td className="px-4 py-3">{trip.date}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{lang === "es" ? formatDateWithDay(trip.date) : formatDateWithDayEnglish(trip.date)}</td>
                         <td className="px-4 py-3">{trip.services?.name ?? "-"}</td>
                         <td className="px-4 py-3">{trip.client_name ?? "-"}</td>
                         <td className="px-4 py-3">{trip.drivers?.name ?? "-"}</td>

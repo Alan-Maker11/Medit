@@ -6,6 +6,7 @@ import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { createClient } from "@/lib/supabase/client";
 import { calculateFare, formatDOP } from "@/lib/fare";
 import { todayLocalISO } from "@/lib/date";
+import { formatDateWithDay } from "@/lib/date-utils";
 import { SERVICE_TYPES, type FareBreakdown, type TransportationMode, type TripType } from "@/lib/types";
 import ClientAutocomplete from "./ClientAutocomplete";
 import type { Client } from "@/lib/types";
@@ -132,7 +133,7 @@ export default function NewTripPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function handleSelectClient(client: Client) {
+  async function handleSelectClient(client: Client) {
     setForm((prev) => ({
       ...prev,
       client_name: client.name,
@@ -140,6 +141,25 @@ export default function NewTripPage() {
       service_id: client.last_service_id ?? prev.service_id,
     }));
     setPreviousTrip(client);
+
+    // Auto-fill pickup address, driver, vehicle, and fare from this client's most recent trip
+    try {
+      const res = await fetch(`/api/clients/history?name=${encodeURIComponent(client.name)}`);
+      if (!res.ok) return;
+      const history = await res.json();
+      if (!history) return;
+      setForm((prev) => ({
+        ...prev,
+        client_phone: history.client_phone ?? prev.client_phone,
+        pickup_address: history.pickup_address ?? prev.pickup_address,
+        driver_id: history.driver_id ?? prev.driver_id,
+        vehicle_id: history.vehicle_id ?? prev.vehicle_id,
+        service_id: history.service_id ?? prev.service_id,
+      }));
+      if (history.total_fare != null) setManualFare(String(history.total_fare));
+    } catch {
+      // Auto-fill is a convenience — silently skip if it fails
+    }
   }
 
   async function fetchDistance() {
@@ -267,6 +287,7 @@ export default function NewTripPage() {
               onChange={(e) => update("date", e.target.value)}
               className="input"
             />
+            {form.date && <span className="text-xs text-zinc-500">{formatDateWithDay(form.date)}</span>}
           </Field>
           <Field label="Pickup time">
             <input

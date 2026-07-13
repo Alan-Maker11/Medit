@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDOP } from "@/lib/fare";
+import { formatDateWithDay } from "@/lib/date-utils";
 
 interface Option {
   id: string;
@@ -26,6 +27,7 @@ export default function EditTripForm({
 
   const [form, setForm] = useState({
     date: trip.date ?? "",
+    pickup_time: trip.time ?? "",
     service_id: trip.service_id ?? "",
     client_name: trip.client_name ?? "",
     client_phone: trip.client_phone ?? "",
@@ -75,6 +77,7 @@ export default function EditTripForm({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
+        time: form.pickup_time || undefined,
         service_id: form.service_id || null,
         driver_id: form.driver_id || null,
         vehicle_id: form.vehicle_id || null,
@@ -94,11 +97,16 @@ export default function EditTripForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid max-w-2xl gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 md:grid-cols-2"
+      className="grid max-w-2xl gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-2"
     >
       <label className="flex flex-col gap-1 text-sm font-medium">
         Date
         <input type="date" required value={form.date} onChange={(e) => update("date", e.target.value)} className="input" />
+        {form.date && <span className="text-xs text-zinc-500">{formatDateWithDay(form.date)}</span>}
+      </label>
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        Pickup time
+        <input type="time" value={form.pickup_time} onChange={(e) => update("pickup_time", e.target.value)} className="input" />
       </label>
       <label className="flex flex-col gap-1 text-sm font-medium">
         Service type
