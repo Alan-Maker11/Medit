@@ -88,7 +88,11 @@ export default function AICopilot() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="AI Copilot"
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
+        className="fixed z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
+        style={{
+          bottom: "calc(1.25rem + env(safe-area-inset-bottom))",
+          right: "calc(1.25rem + env(safe-area-inset-right))",
+        }}
       >
         {open ? (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -106,7 +110,16 @@ export default function AICopilot() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-5 z-50 flex w-80 flex-col rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 sm:w-96">
+        <div
+          className="fixed z-50 flex w-[calc(100vw-1.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 sm:w-96"
+          style={{
+            bottom: "calc(5.5rem + env(safe-area-inset-bottom))",
+            right: "calc(0.75rem + env(safe-area-inset-right))",
+            left: "0.75rem",
+            marginLeft: "auto",
+            maxHeight: "calc(100vh - 8rem - env(safe-area-inset-bottom))",
+          }}
+        >
           {/* Header */}
           <div className="flex items-center gap-2 rounded-t-2xl border-b border-zinc-200 bg-blue-600 px-4 py-3 dark:border-zinc-700">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
@@ -133,7 +146,7 @@ export default function AICopilot() {
           </div>
 
           {/* Messages */}
-          <div className="flex max-h-80 flex-col gap-3 overflow-y-auto p-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
             {messages.length === 0 && (
               <div className="flex flex-col gap-2 text-sm text-zinc-500">
                 <p className="font-medium text-zinc-700 dark:text-zinc-200">👋 Hola! I can help you with:</p>

@@ -336,6 +336,7 @@ function BreakdownTable({ title, data }: { title: string; data: Record<string, n
   return (
     <div>
       <h3 className="mb-2 text-sm font-semibold">{title}</h3>
+      <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <tbody>
           {entries.map(([key, value]) => (
@@ -351,6 +352,7 @@ function BreakdownTable({ title, data }: { title: string; data: Record<string, n
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
