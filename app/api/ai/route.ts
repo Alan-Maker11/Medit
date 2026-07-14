@@ -20,6 +20,7 @@ import {
   type TermSalary,
 } from "@/lib/advanced-queries";
 import { formatDOP } from "@/lib/fare";
+import { getServerTodayISO } from "@/lib/date";
 import { parseIntent, extractDateRange, type FinancialSubType, type TimeframeResult } from "@/lib/intent-recognizer";
 import { handleUncertainIntent } from "@/lib/confirmation-handler";
 import { formatRevenueResponse, formatExpenseResponse, formatProfitResponse } from "@/lib/data-formatter";
@@ -241,8 +242,8 @@ async function computeFinancialReply(
       deterministicReply = expenseAnalytics
         ? formatExpenseResponse(expenseAnalytics, timeframe, lang)
         : lang === "es"
-        ? `No hay gastos registrados para ${timeframe.displayName}.`
-        : `No expenses found for ${timeframe.displayName}.`;
+        ? `💸 Gastos — ${timeframe.displayName}\n\nNo hay gastos registrados para este período.`
+        : `💸 Expenses — ${timeframe.displayName}\n\nNo expenses found for this period.`;
       break;
     case "profit":
       deterministicReply = formatProfitResponse(revenue, expenses, timeframe, lang);
@@ -255,8 +256,8 @@ async function computeFinancialReply(
       deterministicReply = tripAnalytics
         ? formatRevenueResponse(tripAnalytics, timeframe, lang)
         : lang === "es"
-        ? `No hay viajes completados registrados para ${timeframe.displayName}.`
-        : `No completed trips found for ${timeframe.displayName}.`;
+        ? `💰 Ingresos — ${timeframe.displayName}\n\nNo hay viajes completados registrados para este período.`
+        : `💰 Revenue — ${timeframe.displayName}\n\nNo completed trips found for this period.`;
   }
 
   return { deterministicReply, revenue, expenses };
@@ -268,7 +269,7 @@ async function executeAdvancedTask(
   history: { role: string; content: string }[]
 ): Promise<{ contextString: string; capability: string; deterministicReply?: string } | null> {
   const upper = userMessage.toUpperCase();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getServerTodayISO();
 
   try {
     // Comprehensive financial-intent recognition: catches EVERY revenue/expense/profit/comparison/
@@ -299,13 +300,32 @@ async function executeAdvancedTask(
       };
     }
 
-    // Follow-up with no financial keyword but a parseable period, e.g. "what about May?" right after
-    // a revenue/expense/profit answer — continue the SAME subtype instead of falling through to the LLM,
-    // which would otherwise hallucinate numbers while mimicking this exact reply format from history.
-    const lastAssistantMessage = [...history].reverse().find((m) => m.role === "assistant")?.content;
-    const priorSubType = lastAssistantMessage ? inferSubTypeFromPriorReply(lastAssistantMessage) : null;
+    // Follow-up with no financial keyword but a parseable period, e.g. "what about May?" or "today is
+    // July 13" right after a revenue/expense/profit answer — continue the SAME subtype instead of
+    // falling through to the LLM, which would otherwise hallucinate numbers while mimicking this exact
+    // reply format from history. "from trips"/"de viajes" explicitly forces the trips-table (revenue)
+    // interpretation, since that's the user telling us which table they mean.
+    const explicitTableOverride = /FROM TRIPS|DE VIAJES|DESDE VIAJES|TRIPS TABLE/.test(upper) ? ("revenue" as const) : null;
+    const priorSubType =
+      explicitTableOverride ??
+      [...history]
+        .reverse()
+        .map((m) => (m.role === "assistant" ? inferSubTypeFromPriorReply(m.content) : null))
+        .find((s): s is FinancialSubType => s !== null) ??
+      null;
+
     if (priorSubType) {
-      const timeframe = extractDateRange(userMessage, today);
+      let timeframe = extractDateRange(userMessage, today);
+      if (timeframe.type === "unknown") {
+        // No date in this message — recover the last period the user actually specified
+        const recovered = [...history]
+          .reverse()
+          .filter((m) => m.role === "user")
+          .map((m) => extractDateRange(m.content, today))
+          .find((tf) => tf.type !== "unknown");
+        if (recovered) timeframe = recovered;
+      }
+
       if (timeframe.type !== "unknown") {
         const lang = detectLang(userMessage);
         const { deterministicReply, revenue, expenses } = await computeFinancialReply(priorSubType, timeframe, lang);
@@ -452,7 +472,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getServerTodayISO();
 
     const sanitizedHistory = Array.isArray(history)
       ? history

@@ -146,6 +146,23 @@ export function extractDateRange(message: string, todayISO: string): TimeframeRe
     }
   }
 
+  // PATTERN 2b: English single date, no "de"/range word — "July 13", "13 July" — must win over a
+  // bare "today" appearing elsewhere in the same message (e.g. "today is July 13" means July 13, not today).
+  const monthNamesEn = "january|february|march|april|may|june|july|august|september|october|november|december";
+  const enMonthDayPattern = new RegExp(`\\b(${monthNamesEn})\\s+(\\d{1,2})(?:st|nd|rd|th)?\\b`, "i");
+  const enDayMonthPattern = new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(${monthNamesEn})\\b`, "i");
+  const enMonthDayMatch = message.match(enMonthDayPattern);
+  const enDayMonthMatch = message.match(enDayMonthPattern);
+  if (enMonthDayMatch || enDayMonthMatch) {
+    const [, monthName, day] = enMonthDayMatch ?? [enDayMonthMatch![0], enDayMonthMatch![2], enDayMonthMatch![1]];
+    const m = getMonthNumber(monthName);
+    if (m) {
+      const y = today.getFullYear();
+      const date = isoDate(y, m, Number(day));
+      return { type: "specific-range", startDate: date, endDate: date, displayName: `${monthName} ${day}, ${y}`, detectedFormat: "single-date-en" };
+    }
+  }
+
   // PATTERN 3: relative periods
   if (/esta semana|this week/.test(msg)) {
     const start = startOfWeek(today);
