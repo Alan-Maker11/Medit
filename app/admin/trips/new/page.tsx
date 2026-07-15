@@ -234,6 +234,8 @@ export default function NewTripPage() {
       return;
     }
     setSubmitting(true);
+    const overrideFare = Number(manualFare);
+    const hasManualOverride = !isSubirBajar && manualFare !== "" && !Number.isNaN(overrideFare) && overrideFare > 0;
     const res = await fetch("/api/trips", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -241,6 +243,7 @@ export default function NewTripPage() {
         ...form,
         time: form.pickup_time || undefined,
         additional_fees: isSubirBajar ? subBajarTotal : regularAdditionalFees(),
+        manual_total_fare: hasManualOverride ? overrideFare + regularAdditionalFees() : undefined,
       }),
     });
     setSubmitting(false);

@@ -47,6 +47,7 @@ export async function POST(request: Request) {
     transportation_mode,
     waiting_hours,
     additional_fees,
+    manual_total_fare,
     notes,
   } = body;
 
@@ -56,26 +57,44 @@ export async function POST(request: Request) {
 
   // Subir/Bajar trips have no destination or distance — total is just equipment/transport fees
   const isSubirBajar = !destination_address || destination_address.trim() === "";
+  const hasManualOverride = manual_total_fare != null && manual_total_fare !== "" && !Number.isNaN(Number(manual_total_fare));
 
-  const fare = isSubirBajar
-    ? {
-        distanceKm: 0,
-        durationMinutes: 0,
-        baseFare: 0,
-        distanceCost: 0,
-        durationCost: 0,
-        waitingCost: 0,
-        additionalFees: Number(additional_fees ?? 0),
-        totalFare: Number(additional_fees ?? 0),
-      }
-    : calculateFare({
-        distanceKm: Number(distance_km),
-        durationMinutes: Number(duration_minutes),
-        tripType: trip_type,
-        mode: transportation_mode || "private",
-        waitingHours: Number(waiting_hours ?? 0),
-        additionalFees: Number(additional_fees ?? 0),
-      });
+  let fare;
+  if (isSubirBajar) {
+    fare = {
+      distanceKm: 0,
+      durationMinutes: 0,
+      baseFare: 0,
+      distanceCost: 0,
+      durationCost: 0,
+      waitingCost: 0,
+      additionalFees: Number(additional_fees ?? 0),
+      totalFare: Number(additional_fees ?? 0),
+    };
+  } else if (hasManualOverride) {
+    // A manually entered total takes priority over any distance/duration-based calculation
+    const total = Number(manual_total_fare);
+    const fees = Number(additional_fees ?? 0);
+    fare = {
+      distanceKm: Number(distance_km) || 0,
+      durationMinutes: Number(duration_minutes) || 0,
+      baseFare: total - fees,
+      distanceCost: 0,
+      durationCost: 0,
+      waitingCost: 0,
+      additionalFees: fees,
+      totalFare: total,
+    };
+  } else {
+    fare = calculateFare({
+      distanceKm: Number(distance_km),
+      durationMinutes: Number(duration_minutes),
+      tripType: trip_type,
+      mode: transportation_mode || "private",
+      waitingHours: Number(waiting_hours ?? 0),
+      additionalFees: Number(additional_fees ?? 0),
+    });
+  }
 
   const { data, error } = await supabase
     .from("trips")
