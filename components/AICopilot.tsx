@@ -39,10 +39,16 @@ const QUICK_PROMPTS = [
 
 export default function AICopilot() {
   const [open, setOpen] = useState(false);
+  const [everOpened, setEverOpened] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  function toggleOpen() {
+    setOpen((o) => !o);
+    setEverOpened(true);
+  }
 
   async function send() {
     const text = input.trim();
@@ -86,7 +92,7 @@ export default function AICopilot() {
     <>
       {/* Floating button */}
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggleOpen}
         aria-label="AI Copilot"
         className="fixed z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
         style={{
@@ -109,15 +115,19 @@ export default function AICopilot() {
       </button>
 
       {/* Chat panel */}
-      {open && (
+      {everOpened && (
         <div
-          className="fixed z-50 flex w-[calc(100vw-1.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 sm:w-96"
+          className={`fixed z-50 flex w-[calc(100vw-1.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl transition-[opacity,transform] duration-200 dark:border-zinc-700 dark:bg-zinc-900 sm:w-96 ${
+            open ? "pointer-events-auto scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"
+          }`}
           style={{
             bottom: "calc(5.5rem + env(safe-area-inset-bottom))",
             right: "calc(0.75rem + env(safe-area-inset-right))",
             left: "0.75rem",
             marginLeft: "auto",
             maxHeight: "calc(100vh - 8rem - env(safe-area-inset-bottom))",
+            transformOrigin: "bottom right",
+            transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)",
           }}
         >
           {/* Header */}
@@ -168,8 +178,12 @@ export default function AICopilot() {
                     .map(([k]) => CAPABILITY_LABELS[k])
                     .filter(Boolean)
                 : [];
+              const isLast = i === messages.length - 1;
               return (
-                <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                <div
+                  key={i}
+                  className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} ${isLast ? "animate-fade-in-up" : ""}`}
+                >
                   <div
                     className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                       msg.role === "user"
@@ -214,7 +228,7 @@ export default function AICopilot() {
             <button
               onClick={send}
               disabled={loading || !input.trim()}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white transition-transform duration-150 ease-out hover:bg-blue-700 active:scale-95 disabled:opacity-40 disabled:active:scale-100"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />

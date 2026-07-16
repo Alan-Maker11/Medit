@@ -439,7 +439,7 @@ export default function FareCalculator() {
         {!isSubirBajar && (
           <button
             onClick={handleCalculate}
-            className="mt-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+            className="mt-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-blue-700 active:scale-[0.98]"
           >
             {t.calculate}
           </button>
@@ -454,7 +454,7 @@ export default function FareCalculator() {
       <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <h2 className="text-lg font-semibold">{t.estimatedFare}</h2>
         {breakdown ? (
-          <>
+          <div key={breakdown.totalFare + breakdown.distanceKm + breakdown.durationMinutes} className="animate-fade-in-up">
             <dl className="flex flex-col gap-2 text-sm">
               {!isSubirBajar && (
                 <>
@@ -492,11 +492,11 @@ export default function FareCalculator() {
               href={`https://wa.me/?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 rounded-full bg-green-600 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-green-700"
+              className="mt-4 rounded-full bg-green-600 px-5 py-3 text-center text-sm font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-green-700 active:scale-[0.98]"
             >
               {t.confirmWhatsApp}
             </a>
-          </>
+          </div>
         ) : (
           <p className="text-sm text-zinc-500">
             {isSubirBajar ? t.selectEquipment : t.fillDetails}

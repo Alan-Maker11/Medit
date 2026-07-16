@@ -103,7 +103,11 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                 <span>{isOpen ? "▲" : "▼"}</span>
               </span>
             </button>
-            {isOpen && (
+            <div
+              className="grid transition-[grid-template-rows] duration-200 ease-out"
+              style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+            >
+              <div className="overflow-hidden">
               <div className="overflow-x-auto border-t border-zinc-200 dark:border-zinc-800">
                 <table className="w-full text-sm">
                   <thead>
@@ -150,7 +154,8 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                   </tbody>
                 </table>
               </div>
-            )}
+              </div>
+            </div>
           </div>
         );
       })}

@@ -293,7 +293,7 @@ export default function EditTripForm({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:bg-blue-700 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
         >
           {submitting ? "Saving..." : "Save changes"}
         </button>

@@ -7,7 +7,13 @@ import { useAdminLang, ADMIN_T } from "@/lib/adminLang";
 
 export default function AdminSidebar({ signOutSlot }: { signOutSlot: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [everOpened, setEverOpened] = useState(false);
   const pathname = usePathname();
+
+  function openDrawer() {
+    setOpen(true);
+    setEverOpened(true);
+  }
   const { lang, toggleLang } = useAdminLang();
   const t = ADMIN_T[lang];
 
@@ -45,7 +51,7 @@ export default function AdminSidebar({ signOutSlot }: { signOutSlot: React.React
       <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900 md:hidden">
         <h2 className="text-lg font-bold">Medit Admin</h2>
         <button
-          onClick={() => setOpen(true)}
+          onClick={openDrawer}
           aria-label="Open menu"
           className="rounded-lg p-2 text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
         >
@@ -56,10 +62,18 @@ export default function AdminSidebar({ signOutSlot }: { signOutSlot: React.React
       </header>
 
       {/* Mobile drawer */}
-      {open && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <aside className="absolute left-0 top-0 flex h-full w-64 max-w-[80vw] flex-col gap-1 overflow-y-auto bg-white p-4 shadow-xl dark:bg-zinc-900">
+      {everOpened && (
+        <div className={`fixed inset-0 z-40 md:hidden ${open ? "pointer-events-auto" : "pointer-events-none"}`}>
+          <div
+            className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ease-out ${open ? "opacity-100" : "opacity-0"}`}
+            onClick={() => setOpen(false)}
+          />
+          <aside
+            className={`absolute left-0 top-0 flex h-full w-64 max-w-[80vw] flex-col gap-1 overflow-y-auto bg-white p-4 shadow-xl transition-transform duration-[250ms] dark:bg-zinc-900 ${
+              open ? "translate-x-0" : "-translate-x-full"
+            }`}
+            style={{ transitionTimingFunction: "cubic-bezier(0.32, 0.72, 0, 1)" }}
+          >
             <div className="mb-4 flex items-center justify-between px-2">
               <h2 className="text-lg font-bold">Medit Admin</h2>
               <button
