@@ -142,7 +142,7 @@ export default function NewTripPage() {
     }));
     setPreviousTrip(client);
 
-    // Auto-fill pickup address, driver, vehicle, and fare from this client's most recent trip
+    // Auto-fill address, driver, vehicle, trip type, mode, and fare from this client's most recent trip
     try {
       const res = await fetch(`/api/clients/history?name=${encodeURIComponent(client.name)}`);
       if (!res.ok) return;
@@ -152,13 +152,44 @@ export default function NewTripPage() {
         ...prev,
         client_phone: history.client_phone ?? prev.client_phone,
         pickup_address: history.pickup_address ?? prev.pickup_address,
+        destination_address: history.destination_address ?? prev.destination_address,
         driver_id: history.driver_id ?? prev.driver_id,
         vehicle_id: history.vehicle_id ?? prev.vehicle_id,
         service_id: history.service_id ?? prev.service_id,
+        trip_type: history.trip_type ?? prev.trip_type,
+        transportation_mode: history.transportation_mode ?? prev.transportation_mode,
+        waiting_hours: history.waiting_hours != null ? String(history.waiting_hours) : prev.waiting_hours,
       }));
+      // The previous trip's REAL total (whether manually typed or calculated) — never recompute it from distance
       if (history.total_fare != null) setManualFare(String(history.total_fare));
     } catch {
       // Auto-fill is a convenience — silently skip if it fails
+    }
+  }
+
+  /** Copies the client's most recent trip entirely (all fields + real fare) onto today, for repeat visits like therapy. */
+  async function handleDuplicatePreviousTrip() {
+    if (!form.client_name.trim()) return;
+    try {
+      const res = await fetch(`/api/clients/history?name=${encodeURIComponent(form.client_name.trim())}`);
+      if (!res.ok) return;
+      const history = await res.json();
+      if (!history) return;
+      setForm((prev) => ({
+        ...prev,
+        date: todayLocalISO(),
+        pickup_address: history.pickup_address ?? prev.pickup_address,
+        destination_address: history.destination_address ?? prev.destination_address,
+        driver_id: history.driver_id ?? prev.driver_id,
+        vehicle_id: history.vehicle_id ?? prev.vehicle_id,
+        service_id: history.service_id ?? prev.service_id,
+        trip_type: history.trip_type ?? prev.trip_type,
+        transportation_mode: history.transportation_mode ?? prev.transportation_mode,
+        waiting_hours: history.waiting_hours != null ? String(history.waiting_hours) : prev.waiting_hours,
+      }));
+      if (history.total_fare != null) setManualFare(String(history.total_fare));
+    } catch {
+      // Duplicate is a convenience — silently skip if it fails
     }
   }
 
@@ -341,6 +372,13 @@ export default function NewTripPage() {
                   Use this amount
                 </button>
               )}
+              <button
+                type="button"
+                onClick={handleDuplicatePreviousTrip}
+                className="ml-2 text-blue-600 hover:underline"
+              >
+                Duplicate this trip for today (repeat visit)
+              </button>
             </p>
           )}
 

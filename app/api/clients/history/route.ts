@@ -12,7 +12,9 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from("trips")
-    .select("pickup_address, driver_id, vehicle_id, service_id, total_fare, client_phone")
+    .select(
+      "pickup_address, destination_address, driver_id, vehicle_id, service_id, total_fare, client_phone, trip_type, transportation_mode, waiting_hours, additional_fees"
+    )
     .ilike("client_name", name.trim())
     .order("date", { ascending: false })
     .limit(1)
