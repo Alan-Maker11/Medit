@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function updateSession(request: NextRequest) {
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
   const isLoginRoute = request.nextUrl.pathname.startsWith("/login");
+  const isDriverRoute = request.nextUrl.pathname.startsWith("/driver") && !request.nextUrl.pathname.startsWith("/driver/login");
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -52,12 +53,23 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
+    if (isDriverRoute && !data.user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/driver/login";
+      return NextResponse.redirect(url);
+    }
+
     return supabaseResponse;
   } catch (error) {
     console.error("Supabase middleware auth check failed:", error);
     if (isAdminRoute) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    if (isDriverRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/driver/login";
       return NextResponse.redirect(url);
     }
     return NextResponse.next({ request });
