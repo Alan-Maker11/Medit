@@ -187,7 +187,20 @@ export default function NewTripPage() {
         transportation_mode: history.transportation_mode ?? prev.transportation_mode,
         waiting_hours: history.waiting_hours != null ? String(history.waiting_hours) : prev.waiting_hours,
       }));
-      if (history.total_fare != null) setManualFare(String(history.total_fare));
+      if (history.total_fare != null) {
+        setManualFare(String(history.total_fare));
+        // Set the breakdown directly so Save is usable immediately — no extra "Calculate" click needed
+        setBreakdown({
+          distanceKm: Number(history.distance_km) || 0,
+          durationMinutes: Number(history.duration_minutes) || 0,
+          baseFare: Number(history.total_fare),
+          distanceCost: 0,
+          durationCost: 0,
+          waitingCost: 0,
+          additionalFees: 0,
+          totalFare: Number(history.total_fare),
+        });
+      }
     } catch {
       // Duplicate is a convenience — silently skip if it fails
     }
@@ -363,15 +376,6 @@ export default function NewTripPage() {
             <p className="text-xs text-zinc-500 sm:col-span-2">
               Previous trip: {previousTrip.last_trip_date ?? "-"} · {previousTrip.last_service_name ?? "no service"} ·{" "}
               {previousTrip.last_total_fare != null ? formatDOP(previousTrip.last_total_fare) : "-"}
-              {previousTrip.last_total_fare != null && (
-                <button
-                  type="button"
-                  onClick={() => setManualFare(String(previousTrip.last_total_fare))}
-                  className="ml-2 text-blue-600 hover:underline"
-                >
-                  Use this amount
-                </button>
-              )}
               <button
                 type="button"
                 onClick={handleDuplicatePreviousTrip}
