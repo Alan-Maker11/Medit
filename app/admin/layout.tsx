@@ -13,6 +13,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/login");
   }
 
+  // Being authenticated is not enough — driver accounts must never reach the staff admin panel.
+  const { data: driverAccount } = await supabase
+    .from("driver_accounts")
+    .select("id")
+    .eq("user_id", data.user!.id)
+    .maybeSingle();
+
+  if (driverAccount) {
+    redirect("/driver/dashboard");
+  }
+
   return (
     <AdminLangProvider>
       <div className="flex flex-1 flex-col md:flex-row">

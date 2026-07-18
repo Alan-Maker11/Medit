@@ -47,16 +47,32 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    if (isLoginRoute && data.user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin";
-      return NextResponse.redirect(url);
-    }
-
     if (isDriverRoute && !data.user) {
       const url = request.nextUrl.clone();
       url.pathname = "/driver/login";
       return NextResponse.redirect(url);
+    }
+
+    // A logged-in user who is ALSO a driver-account (i.e. a driver, not staff) must never
+    // reach the admin panel — being authenticated is not enough, staff access must be explicit.
+    if (data.user && (isAdminRoute || isLoginRoute)) {
+      const { data: driverAccount } = await supabase
+        .from("driver_accounts")
+        .select("id")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+
+      if (driverAccount) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/driver/dashboard";
+        return NextResponse.redirect(url);
+      }
+
+      if (isLoginRoute) {
+        const adminUrl = request.nextUrl.clone();
+        adminUrl.pathname = "/admin";
+        return NextResponse.redirect(adminUrl);
+      }
     }
 
     return supabaseResponse;
