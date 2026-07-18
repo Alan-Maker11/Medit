@@ -75,12 +75,20 @@ export default function DriverDashboard() {
             <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Welcome, {session.driver.name}</h1>
             <p className="text-sm text-zinc-500">Medit Driver Portal</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:bg-red-700 active:scale-[0.98]"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push("/driver/salary")}
+              className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:bg-blue-700 active:scale-[0.98]"
+            >
+              My Salary
+            </button>
+            <button
+              onClick={handleLogout}
+              className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:bg-red-700 active:scale-[0.98]"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
