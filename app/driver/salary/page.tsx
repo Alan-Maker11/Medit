@@ -6,8 +6,8 @@ import { getCurrentDriver, type DriverSession } from "@/lib/driver-auth";
 import { formatDOP } from "@/lib/fare";
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 
 interface SalaryEntry {
@@ -58,7 +58,7 @@ export default function DriverSalaryPage() {
     fetch(`/api/driver/salary?month=${month}`)
       .then(async (res) => {
         const json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? "Failed to load salary");
+        if (!res.ok) throw new Error(json.error ?? "No se pudo cargar el salario");
         setData(json);
       })
       .catch((e) => setError(e.message))
@@ -91,7 +91,7 @@ export default function DriverSalaryPage() {
         const termTotal = halfBaseSalary + termOvertimePay + termDieta + termElevator;
         return {
           term,
-          label: term === 1 ? "1st term (1-15)" : "2nd term (16-end)",
+          label: term === 1 ? "1er quincena (1-15)" : "2da quincena (16-fin)",
           entries: termEntries,
           halfBaseSalary,
           termHours,
@@ -112,7 +112,7 @@ export default function DriverSalaryPage() {
   }
 
   if (!session) {
-    return <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">Loading...</div>;
+    return <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">Cargando...</div>;
   }
 
   return (
@@ -120,14 +120,14 @@ export default function DriverSalaryPage() {
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-5 sm:py-6">
           <div>
-            <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">My Salary</h1>
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Mi Salario</h1>
             <p className="text-sm text-zinc-500">{session.driver.name}</p>
           </div>
           <button
             onClick={() => router.push("/driver/dashboard")}
             className="rounded-full bg-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
           >
-            Back
+            Volver
           </button>
         </div>
       </header>
@@ -138,29 +138,29 @@ export default function DriverSalaryPage() {
             onClick={() => shiftMonth(-1)}
             className="rounded-full bg-white px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-800"
           >
-            ← Prev
+            ← Anterior
           </button>
           <p className="font-semibold text-zinc-900 dark:text-white">{monthLabel}</p>
           <button
             onClick={() => shiftMonth(1)}
             className="rounded-full bg-white px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-800"
           >
-            Next →
+            Siguiente →
           </button>
         </div>
 
-        {loading && <p className="text-sm text-zinc-500">Loading...</p>}
+        {loading && <p className="text-sm text-zinc-500">Cargando...</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {!loading && !error && data && (
           <div className="flex flex-col gap-4">
             <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-              Base monthly salary {formatDOP(data.driver.baseMonthlySalary)} · Overtime rate{" "}
+              Salario base mensual {formatDOP(data.driver.baseMonthlySalary)} · Tarifa hora extra{" "}
               {formatDOP(data.driver.overtimeHourlyRate)}/hr
             </div>
 
             {termGroups.length === 0 && (
-              <p className="text-sm text-zinc-500">No overtime entries recorded for {monthLabel}.</p>
+              <p className="text-sm text-zinc-500">No hay registros de horas extra para {monthLabel}.</p>
             )}
 
             {termGroups.map((group) => {
@@ -176,7 +176,7 @@ export default function DriverSalaryPage() {
                       {group.label}
                       {isCurrent && (
                         <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                          In progress
+                          En curso
                         </span>
                       )}
                     </span>
@@ -191,8 +191,8 @@ export default function DriverSalaryPage() {
                   >
                     <div className="overflow-hidden">
                       <div className="grid grid-cols-2 gap-3 border-t border-zinc-200 p-4 dark:border-zinc-800 sm:grid-cols-4">
-                        <Stat label="Half base salary" value={formatDOP(group.halfBaseSalary)} />
-                        <Stat label="Overtime" value={`${group.termHours}h / ${formatDOP(group.termOvertimePay)}`} />
+                        <Stat label="Mitad del salario base" value={formatDOP(group.halfBaseSalary)} />
+                        <Stat label="Horas extras" value={`${group.termHours}h / ${formatDOP(group.termOvertimePay)}`} />
                         <Stat label="Dieta" value={formatDOP(group.termDieta)} />
                         <Stat label="Ascensor/Bajador" value={formatDOP(group.termElevator)} />
                       </div>
@@ -200,9 +200,9 @@ export default function DriverSalaryPage() {
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
-                              <th className="px-4 py-2">Date</th>
-                              <th className="px-4 py-2">Hours</th>
-                              <th className="px-4 py-2">Overtime pay</th>
+                              <th className="px-4 py-2">Fecha</th>
+                              <th className="px-4 py-2">Horas</th>
+                              <th className="px-4 py-2">Pago hora extra</th>
                               <th className="px-4 py-2">Dieta</th>
                               <th className="px-4 py-2">Ascensor/Bajador</th>
                             </tr>

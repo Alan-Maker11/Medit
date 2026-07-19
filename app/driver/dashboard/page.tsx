@@ -34,7 +34,7 @@ export default function DriverDashboard() {
         const trips = await getDriverTodayTrips(current.driver.id);
         setTodayTrips(trips as unknown as TripRow[]);
       } catch {
-        setError("Failed to load driver data");
+        setError("No se pudieron cargar tus datos");
       } finally {
         setLoading(false);
       }
@@ -48,19 +48,19 @@ export default function DriverDashboard() {
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">Loading...</div>;
+    return <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">Cargando...</div>;
   }
 
   if (error || !session) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
         <div className="text-center">
-          <p className="mb-4 text-red-600">{error ?? "Failed to load data"}</p>
+          <p className="mb-4 text-red-600">{error ?? "No se pudieron cargar los datos"}</p>
           <button
             onClick={() => router.push("/driver/login")}
             className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           >
-            Back to Login
+            Volver a iniciar sesión
           </button>
         </div>
       </div>
@@ -72,21 +72,21 @@ export default function DriverDashboard() {
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-5 sm:py-6">
           <div>
-            <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Welcome, {session.driver.name}</h1>
-            <p className="text-sm text-zinc-500">Medit Driver Portal</p>
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Bienvenido, {session.driver.name}</h1>
+            <p className="text-sm text-zinc-500">Portal del Conductor Medit</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push("/driver/salary")}
               className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:bg-blue-700 active:scale-[0.98]"
             >
-              My Salary
+              Mi Salario
             </button>
             <button
               onClick={handleLogout}
               className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:bg-red-700 active:scale-[0.98]"
             >
-              Logout
+              Salir
             </button>
           </div>
         </div>

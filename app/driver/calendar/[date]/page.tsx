@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getCurrentDriver, getDriverTripsForDate } from "@/lib/driver-auth";
-import { formatDateWithDayEnglish } from "@/lib/date-utils";
+import { formatDateWithDay } from "@/lib/date-utils";
 
 interface TripRow {
   id: string;
@@ -18,6 +18,12 @@ const STATUS_STYLES: Record<string, string> = {
   completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
   pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
   cancelled: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  completed: "completado",
+  pending: "pendiente",
+  cancelled: "cancelado",
 };
 
 export default function DateTripsPage() {
@@ -40,7 +46,7 @@ export default function DateTripsPage() {
         const data = await getDriverTripsForDate(current.driver.id, dateStr);
         setTrips(data as unknown as TripRow[]);
       } catch {
-        setError("Failed to load trips");
+        setError("No se pudieron cargar los viajes");
       } finally {
         setLoading(false);
       }
@@ -48,7 +54,7 @@ export default function DateTripsPage() {
   }, [dateStr, router]);
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">Loading...</div>;
+    return <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">Cargando...</div>;
   }
 
   return (
@@ -56,9 +62,9 @@ export default function DateTripsPage() {
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mx-auto max-w-3xl px-4 py-6">
           <button onClick={() => router.push("/driver/dashboard")} className="mb-3 text-sm font-medium text-blue-600 hover:text-blue-800">
-            ← Back to Dashboard
+            ← Volver al Panel
           </button>
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">{formatDateWithDayEnglish(dateStr)}</h1>
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">{formatDateWithDay(dateStr)}</h1>
         </div>
       </header>
 
@@ -66,7 +72,7 @@ export default function DateTripsPage() {
         {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
         {trips.length === 0 ? (
           <div className="rounded-2xl border border-blue-200 bg-blue-50 p-8 text-center dark:border-blue-900 dark:bg-blue-950/30">
-            <p className="text-lg font-medium text-blue-900 dark:text-blue-300">No trips for this day</p>
+            <p className="text-lg font-medium text-blue-900 dark:text-blue-300">No hay viajes para este día</p>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -79,16 +85,16 @@ export default function DateTripsPage() {
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{trip.client_name ?? "-"}</h3>
-                    <p className="mt-1 text-sm text-zinc-500">Service: {trip.services?.name ?? "-"}</p>
+                    <p className="mt-1 text-sm text-zinc-500">Servicio: {trip.services?.name ?? "-"}</p>
                   </div>
                   <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
                     {trip.time?.slice(0, 5)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-zinc-500">Click to view full details</p>
+                  <p className="text-sm text-zinc-500">Toca para ver los detalles</p>
                   <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
-                    {trip.status}
+                    {STATUS_LABELS[trip.status] ?? trip.status}
                   </span>
                 </div>
               </Link>

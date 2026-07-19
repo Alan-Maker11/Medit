@@ -58,14 +58,14 @@ export default function DriverCalendar({
 
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <h2 className="mb-6 text-lg font-bold text-zinc-900 dark:text-white">My Schedule</h2>
+      <h2 className="mb-6 text-lg font-bold text-zinc-900 dark:text-white">Mi Itinerario</h2>
 
       <div className="mb-6 flex items-center justify-between">
         <button
           onClick={() => onSelectMonth(new Date(year, month - 1, 1))}
           className="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
         >
-          ← Previous
+          ← Anterior
         </button>
         <h3 className="text-base font-bold text-zinc-900 dark:text-white">
           {MONTH_NAMES[month]} {year}
@@ -74,7 +74,7 @@ export default function DriverCalendar({
           onClick={() => onSelectMonth(new Date(year, month + 1, 1))}
           className="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
         >
-          Next →
+          Siguiente →
         </button>
       </div>
 
@@ -99,14 +99,14 @@ export default function DriverCalendar({
             >
               <div className="text-sm sm:text-base">{day}</div>
               {tripsByDay.has(day) && (
-                <div className="text-[10px]">{tripsByDay.get(day)} trip{tripsByDay.get(day) !== 1 ? "s" : ""}</div>
+                <div className="text-[10px]">{tripsByDay.get(day)} viaje{tripsByDay.get(day) !== 1 ? "s" : ""}</div>
               )}
             </Link>
           )
         )}
       </div>
 
-      {loading && <p className="mt-4 text-center text-sm text-zinc-500">Loading trips...</p>}
+      {loading && <p className="mt-4 text-center text-sm text-zinc-500">Cargando viajes...</p>}
     </div>
   );
 }

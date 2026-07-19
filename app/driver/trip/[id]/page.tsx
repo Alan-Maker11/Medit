@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getCurrentDriver, getTripDetails } from "@/lib/driver-auth";
-import { formatDateWithDayEnglish } from "@/lib/date-utils";
+import { formatDateWithDay } from "@/lib/date-utils";
 
 interface TripDetail {
   id: string;
@@ -27,6 +27,17 @@ const STATUS_STYLES: Record<string, string> = {
   completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
   pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
   cancelled: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  completed: "completado",
+  pending: "pendiente",
+  cancelled: "cancelado",
+};
+
+const TRIP_TYPE_LABELS: Record<string, string> = {
+  "one-way": "solo ida",
+  "round-trip": "ida y vuelta",
 };
 
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
@@ -73,12 +84,12 @@ export default function TripDetailsPage() {
         }
         const tripData = (await getTripDetails(tripId)) as unknown as TripDetail;
         if (tripData.driver_id !== current.driver.id) {
-          setError("Unauthorized: this trip is not assigned to you");
+          setError("No autorizado: este viaje no está asignado a ti");
           return;
         }
         setTrip(tripData);
       } catch {
-        setError("Failed to load trip details");
+        setError("No se pudieron cargar los detalles del viaje");
       } finally {
         setLoading(false);
       }
@@ -96,29 +107,29 @@ export default function TripDetailsPage() {
         body: JSON.stringify({ status: nextStatus }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to update trip");
+      if (!res.ok) throw new Error(data.error ?? "No se pudo actualizar el viaje");
       setTrip(data.trip);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to update trip status");
+      setError(e instanceof Error ? e.message : "No se pudo actualizar el estado del viaje");
     } finally {
       setUpdating(false);
     }
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">Loading...</div>;
+    return <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">Cargando...</div>;
   }
 
   if (error || !trip) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
         <div className="text-center">
-          <p className="mb-4 text-red-600">{error ?? "Trip not found"}</p>
+          <p className="mb-4 text-red-600">{error ?? "Viaje no encontrado"}</p>
           <button
             onClick={() => router.push("/driver/dashboard")}
             className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           >
-            Back to Dashboard
+            Volver al Panel
           </button>
         </div>
       </div>
@@ -132,9 +143,9 @@ export default function TripDetailsPage() {
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mx-auto max-w-3xl px-4 py-6">
           <button onClick={() => router.push("/driver/dashboard")} className="mb-3 text-sm font-medium text-blue-600 hover:text-blue-800">
-            ← Back to Dashboard
+            ← Volver al Panel
           </button>
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Trip Details</h1>
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Detalles del Viaje</h1>
         </div>
       </header>
 
@@ -142,22 +153,22 @@ export default function TripDetailsPage() {
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <span className={`rounded-full px-4 py-2 text-sm font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
-              {trip.status.toUpperCase()}
+              {(STATUS_LABELS[trip.status] ?? trip.status).toUpperCase()}
             </span>
           </div>
 
           {hasEquipment && (
             <div className="mb-6 rounded-xl border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
-              <p className="mb-2 text-sm font-semibold text-amber-800 dark:text-amber-300">Bring with you</p>
+              <p className="mb-2 text-sm font-semibold text-amber-800 dark:text-amber-300">Debes llevar</p>
               <div className="flex flex-wrap gap-2">
                 {trip.needs_wheelchair && (
                   <span className="rounded-full bg-amber-200 px-3 py-1.5 text-sm font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-200">
-                    ♿ Wheelchair
+                    ♿ Silla de ruedas
                   </span>
                 )}
                 {trip.needs_stair_climber && (
                   <span className="rounded-full bg-amber-200 px-3 py-1.5 text-sm font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-200">
-                    🪜 Stair climber
+                    🪜 Subidor/Bajador de escaleras
                   </span>
                 )}
               </div>
@@ -165,22 +176,22 @@ export default function TripDetailsPage() {
           )}
 
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-            <ReadOnlyField label="Date" value={formatDateWithDayEnglish(trip.date)} />
-            <ReadOnlyField label="Time" value={trip.time?.slice(0, 5) ?? "-"} />
+            <ReadOnlyField label="Fecha" value={formatDateWithDay(trip.date)} />
+            <ReadOnlyField label="Hora" value={trip.time?.slice(0, 5) ?? "-"} />
           </div>
 
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-            <ReadOnlyField label="Service Type" value={trip.services?.name ?? "-"} />
-            <ReadOnlyField label="Trip Type" value={trip.trip_type ?? "N/A"} />
+            <ReadOnlyField label="Tipo de Servicio" value={trip.services?.name ?? "-"} />
+            <ReadOnlyField label="Tipo de Viaje" value={TRIP_TYPE_LABELS[trip.trip_type] ?? trip.trip_type ?? "N/A"} />
           </div>
 
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-            <ReadOnlyField label="Client Name" value={trip.client_name ?? "-"} />
-            <ReadOnlyField label="Client Phone" value={trip.client_phone ?? "N/A"} />
+            <ReadOnlyField label="Nombre del Cliente" value={trip.client_name ?? "-"} />
+            <ReadOnlyField label="Teléfono del Cliente" value={trip.client_phone ?? "N/A"} />
           </div>
 
           <div className="mb-6">
-            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Pickup Address</label>
+            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Dirección de Recogida</label>
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
@@ -192,14 +203,14 @@ export default function TripDetailsPage() {
                 onClick={() => openMap(trip.pickup_address)}
                 className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-transform duration-150 ease-out hover:bg-blue-700 active:scale-[0.98]"
               >
-                📍 Open Map
+                📍 Abrir Mapa
               </button>
             </div>
           </div>
 
           {trip.destination_address && (
             <div className="mb-6">
-              <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Destination Address</label>
+              <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Dirección de Destino</label>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   type="text"
@@ -211,18 +222,18 @@ export default function TripDetailsPage() {
                   onClick={() => openMap(trip.destination_address)}
                   className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-transform duration-150 ease-out hover:bg-blue-700 active:scale-[0.98]"
                 >
-                  📍 Open Map
+                  📍 Abrir Mapa
                 </button>
               </div>
             </div>
           )}
 
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-            <ReadOnlyField label="Waiting Hours" value={String(trip.waiting_hours ?? 0)} />
+            <ReadOnlyField label="Horas de Espera" value={String(trip.waiting_hours ?? 0)} />
           </div>
 
           <div className="mb-6">
-            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Notes</label>
+            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Notas</label>
             <textarea
               value={trip.notes ?? ""}
               disabled
@@ -240,16 +251,16 @@ export default function TripDetailsPage() {
               }`}
             >
               {updating
-                ? "Updating..."
+                ? "Actualizando..."
                 : trip.status === "completed"
-                ? "Mark as Pending"
-                : "✓ Mark as Completed"}
+                ? "Marcar como Pendiente"
+                : "✓ Marcar como Completado"}
             </button>
           )}
 
           <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              ℹ️ Update the status once you finish the trip. Contact your manager if you have questions.
+              ℹ️ Actualiza el estado cuando termines el viaje. Contacta a tu supervisor si tienes preguntas.
             </p>
           </div>
         </div>

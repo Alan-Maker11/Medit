@@ -16,15 +16,21 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  completed: "completado",
+  pending: "pendiente",
+  cancelled: "cancelado",
+};
+
 export default function TodayTrips({ trips }: { trips: TripRow[] }) {
   return (
     <div className="sticky top-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <h3 className="mb-4 text-base font-bold text-zinc-900 dark:text-white">Today&apos;s Trips</h3>
+      <h3 className="mb-4 text-base font-bold text-zinc-900 dark:text-white">Viajes de Hoy</h3>
 
       {trips.length === 0 ? (
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-center dark:border-blue-900 dark:bg-blue-950/30">
-          <p className="font-medium text-blue-900 dark:text-blue-300">No trips scheduled</p>
-          <p className="mt-1 text-sm text-blue-700 dark:text-blue-400">Enjoy your day off!</p>
+          <p className="font-medium text-blue-900 dark:text-blue-300">No hay viajes programados</p>
+          <p className="mt-1 text-sm text-blue-700 dark:text-blue-400">¡Disfruta tu día libre!</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -43,7 +49,7 @@ export default function TodayTrips({ trips }: { trips: TripRow[] }) {
               <div className="flex items-center justify-between">
                 <p className="text-sm text-zinc-500">{trip.services?.name ?? "-"}</p>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
-                  {trip.status}
+                  {STATUS_LABELS[trip.status] ?? trip.status}
                 </span>
               </div>
             </Link>
@@ -53,7 +59,7 @@ export default function TodayTrips({ trips }: { trips: TripRow[] }) {
 
       <div className="mt-6 border-t border-zinc-200 pt-4 text-sm dark:border-zinc-800">
         <p className="text-zinc-500">
-          <span className="font-medium text-zinc-900 dark:text-white">{trips.length}</span> trip{trips.length !== 1 ? "s" : ""} scheduled
+          <span className="font-medium text-zinc-900 dark:text-white">{trips.length}</span> viaje{trips.length !== 1 ? "s" : ""} programado{trips.length !== 1 ? "s" : ""}
         </p>
       </div>
     </div>
