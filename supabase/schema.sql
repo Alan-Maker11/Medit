@@ -197,6 +197,38 @@ create table if not exists clients (
 );
 create index if not exists idx_clients_name on clients(lower(name));
 
+-- Migration: driver_accounts links a Supabase auth user to a driver row so the
+-- driver can log in to the read-only/status-only Driver Portal instead of /admin
+create table if not exists driver_accounts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid unique references auth.users(id) on delete cascade,
+  driver_id uuid unique references drivers(id) on delete cascade,
+  status varchar(20) not null default 'active' check (status in ('active', 'inactive', 'on_leave')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table driver_accounts enable row level security;
+-- Note: these driver_accounts/trips/services policies were already applied to production via
+-- supabase/migrations/driver_portal_phase1.sql and driver_trip_status_policy.sql. This block
+-- documents the full intended state for a fresh database; re-running "create policy" on an
+-- existing database will error if the policy already exists — drop it first if you need to reapply.
+create policy "drivers_can_view_own_account" on driver_accounts
+  for select using (auth.uid() = user_id);
+create policy "drivers_can_view_own_trips" on trips
+  for select using (
+    driver_id = (select driver_id from driver_accounts where user_id = auth.uid())
+  );
+create policy "drivers_can_update_own_trip_status" on trips
+  for update using (
+    driver_id = (select driver_id from driver_accounts where user_id = auth.uid())
+  ) with check (
+    driver_id = (select driver_id from driver_accounts where user_id = auth.uid())
+  );
+create policy "drivers_can_view_services" on services
+  for select using (
+    exists (select 1 from driver_accounts where user_id = auth.uid())
+  );
+
 -- Migration: persist wheelchair/stair-climber equipment needs on trips (driver portal "what to bring")
 alter table trips add column if not exists needs_wheelchair boolean not null default false;
 alter table trips add column if not exists needs_stair_climber boolean not null default false;

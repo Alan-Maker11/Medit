@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 const ALLOWED_STATUSES = ["pending", "completed"] as const;
 
@@ -32,17 +31,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "This trip is not assigned to you" }, { status: 403 });
   }
 
-  let admin;
-  try {
-    admin = createAdminClient();
-  } catch {
-    return NextResponse.json(
-      { error: "SUPABASE_SERVICE_ROLE_KEY is not configured on the server" },
-      { status: 500 }
-    );
-  }
-
-  const { data: updated, error: updateError } = await admin
+  const { data: updated, error: updateError } = await supabase
     .from("trips")
     .update({ status })
     .eq("id", id)
