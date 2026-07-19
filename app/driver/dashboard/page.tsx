@@ -10,7 +10,7 @@ interface TripRow {
   id: string;
   time: string;
   client_name: string | null;
-  total_fare: number | null;
+  status: string;
   services: { name: string } | null;
 }
 

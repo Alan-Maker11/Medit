@@ -197,6 +197,10 @@ create table if not exists clients (
 );
 create index if not exists idx_clients_name on clients(lower(name));
 
+-- Migration: persist wheelchair/stair-climber equipment needs on trips (driver portal "what to bring")
+alter table trips add column if not exists needs_wheelchair boolean not null default false;
+alter table trips add column if not exists needs_stair_climber boolean not null default false;
+
 -- Migration: create overtime_entries for existing databases
 create table if not exists overtime_entries (
   id uuid primary key default gen_random_uuid(),

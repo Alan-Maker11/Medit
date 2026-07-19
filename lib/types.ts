@@ -100,6 +100,8 @@ export interface Trip {
   total_fare: number | null;
   status: TripStatus;
   notes: string | null;
+  needs_wheelchair: boolean;
+  needs_stair_climber: boolean;
 }
 
 export interface Client {

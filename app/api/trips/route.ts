@@ -49,6 +49,8 @@ export async function POST(request: Request) {
     additional_fees,
     manual_total_fare,
     notes,
+    needs_wheelchair,
+    needs_stair_climber,
   } = body;
 
   if (!date || !pickup_address) {
@@ -120,6 +122,8 @@ export async function POST(request: Request) {
       additional_fees: fare.additionalFees,
       total_fare: fare.totalFare,
       notes,
+      needs_wheelchair: Boolean(needs_wheelchair),
+      needs_stair_climber: Boolean(needs_stair_climber),
     })
     .select()
     .single();

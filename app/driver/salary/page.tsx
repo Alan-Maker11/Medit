@@ -34,6 +34,11 @@ export default function DriverSalaryPage() {
   const [data, setData] = useState<SalaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openTerm, setOpenTerm] = useState<1 | 2 | null>(null);
+
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const currentMonth = todayISO.slice(0, 7);
+  const currentTerm = termOf(todayISO);
 
   useEffect(() => {
     (async () => {
@@ -59,6 +64,10 @@ export default function DriverSalaryPage() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [session, month]);
+
+  useEffect(() => {
+    setOpenTerm(month === currentMonth ? currentTerm : null);
+  }, [month, currentMonth, currentTerm]);
 
   const termGroups = useMemo(() => {
     if (!data) return [];
@@ -154,44 +163,68 @@ export default function DriverSalaryPage() {
               <p className="text-sm text-zinc-500">No overtime entries recorded for {monthLabel}.</p>
             )}
 
-            {termGroups.map((group) => (
-              <div key={group.term} className="rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-                  <p className="font-semibold text-zinc-900 dark:text-white">{group.label}</p>
-                  <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{formatDOP(group.termTotal)}</p>
+            {termGroups.map((group) => {
+              const isOpen = openTerm === group.term;
+              const isCurrent = month === currentMonth && group.term === currentTerm;
+              return (
+                <div key={group.term} className="rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                  <button
+                    onClick={() => setOpenTerm(isOpen ? null : group.term)}
+                    className="flex w-full flex-wrap items-baseline justify-between gap-2 px-4 py-3 text-left"
+                  >
+                    <span className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
+                      {group.label}
+                      {isCurrent && (
+                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                          In progress
+                        </span>
+                      )}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-blue-700 dark:text-blue-300">{formatDOP(group.termTotal)}</span>
+                      <span className={`text-zinc-400 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}>▾</span>
+                    </span>
+                  </button>
+                  <div
+                    className="grid transition-[grid-template-rows] duration-200 ease-out"
+                    style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="grid grid-cols-2 gap-3 border-t border-zinc-200 p-4 dark:border-zinc-800 sm:grid-cols-4">
+                        <Stat label="Half base salary" value={formatDOP(group.halfBaseSalary)} />
+                        <Stat label="Overtime" value={`${group.termHours}h / ${formatDOP(group.termOvertimePay)}`} />
+                        <Stat label="Dieta" value={formatDOP(group.termDieta)} />
+                        <Stat label="Ascensor/Bajador" value={formatDOP(group.termElevator)} />
+                      </div>
+                      <div className="overflow-x-auto border-t border-zinc-200 dark:border-zinc-800">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
+                              <th className="px-4 py-2">Date</th>
+                              <th className="px-4 py-2">Hours</th>
+                              <th className="px-4 py-2">Overtime pay</th>
+                              <th className="px-4 py-2">Dieta</th>
+                              <th className="px-4 py-2">Ascensor/Bajador</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {group.entries.map((entry) => (
+                              <tr key={entry.date} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+                                <td className="px-4 py-2">{entry.date}</td>
+                                <td className="px-4 py-2">{entry.hours}</td>
+                                <td className="px-4 py-2">{formatDOP(Number(entry.hours) * data.driver.overtimeHourlyRate)}</td>
+                                <td className="px-4 py-2">{formatDOP(entry.dieta_amount)}</td>
+                                <td className="px-4 py-2">{entry.elevator_amount ? formatDOP(entry.elevator_amount) : "-"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
-                  <Stat label="Half base salary" value={formatDOP(group.halfBaseSalary)} />
-                  <Stat label="Overtime" value={`${group.termHours}h / ${formatDOP(group.termOvertimePay)}`} />
-                  <Stat label="Dieta" value={formatDOP(group.termDieta)} />
-                  <Stat label="Ascensor/Bajador" value={formatDOP(group.termElevator)} />
-                </div>
-                <div className="overflow-x-auto border-t border-zinc-200 dark:border-zinc-800">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
-                        <th className="px-4 py-2">Date</th>
-                        <th className="px-4 py-2">Hours</th>
-                        <th className="px-4 py-2">Overtime pay</th>
-                        <th className="px-4 py-2">Dieta</th>
-                        <th className="px-4 py-2">Ascensor/Bajador</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {group.entries.map((entry) => (
-                        <tr key={entry.date} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
-                          <td className="px-4 py-2">{entry.date}</td>
-                          <td className="px-4 py-2">{entry.hours}</td>
-                          <td className="px-4 py-2">{formatDOP(Number(entry.hours) * data.driver.overtimeHourlyRate)}</td>
-                          <td className="px-4 py-2">{formatDOP(entry.dieta_amount)}</td>
-                          <td className="px-4 py-2">{entry.elevator_amount ? formatDOP(entry.elevator_amount) : "-"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

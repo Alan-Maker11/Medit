@@ -288,6 +288,8 @@ export default function NewTripPage() {
         time: form.pickup_time || undefined,
         additional_fees: isSubirBajar ? subBajarTotal : regularAdditionalFees(),
         manual_total_fare: hasManualOverride ? overrideFare + regularAdditionalFees() : undefined,
+        needs_wheelchair: wheelchair,
+        needs_stair_climber: stairsElevator,
       }),
     });
     setSubmitting(false);

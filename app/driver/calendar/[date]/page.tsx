@@ -4,17 +4,21 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getCurrentDriver, getDriverTripsForDate } from "@/lib/driver-auth";
-import { formatDOP } from "@/lib/fare";
 import { formatDateWithDayEnglish } from "@/lib/date-utils";
 
 interface TripRow {
   id: string;
   time: string;
   client_name: string | null;
-  total_fare: number | null;
   status: string;
   services: { name: string } | null;
 }
+
+const STATUS_STYLES: Record<string, string> = {
+  completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+  cancelled: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300",
+};
 
 export default function DateTripsPage() {
   const params = useParams<{ date: string }>();
@@ -83,7 +87,9 @@ export default function DateTripsPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-zinc-500">Click to view full details</p>
-                  <p className="font-bold text-green-600">{formatDOP(trip.total_fare ?? 0)}</p>
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
+                    {trip.status}
+                  </span>
                 </div>
               </Link>
             ))}

@@ -36,6 +36,8 @@ const TRIP_COLUMNS = [
   "total_fare",
   "status",
   "notes",
+  "needs_wheelchair",
+  "needs_stair_climber",
 ] as const;
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {

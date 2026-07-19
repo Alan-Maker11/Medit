@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getCurrentDriver, getTripDetails } from "@/lib/driver-auth";
-import { formatDOP } from "@/lib/fare";
 import { formatDateWithDayEnglish } from "@/lib/date-utils";
 
 interface TripDetail {
@@ -17,10 +16,10 @@ interface TripDetail {
   destination_address: string;
   trip_type: string;
   waiting_hours: number;
-  additional_fees: number;
-  total_fare: number | null;
   status: string;
   notes: string | null;
+  needs_wheelchair: boolean;
+  needs_stair_climber: boolean;
   services: { name: string } | null;
 }
 
@@ -62,6 +61,7 @@ export default function TripDetailsPage() {
   const [trip, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -85,6 +85,26 @@ export default function TripDetailsPage() {
     })();
   }, [tripId, router]);
 
+  async function toggleStatus() {
+    if (!trip) return;
+    const nextStatus = trip.status === "completed" ? "pending" : "completed";
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/driver/trips/${trip.id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to update trip");
+      setTrip(data.trip);
+    } catch {
+      setError("Failed to update trip status");
+    } finally {
+      setUpdating(false);
+    }
+  }
+
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">Loading...</div>;
   }
@@ -105,6 +125,8 @@ export default function TripDetailsPage() {
     );
   }
 
+  const hasEquipment = trip.needs_wheelchair || trip.needs_stair_climber;
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
@@ -118,11 +140,29 @@ export default function TripDetailsPage() {
 
       <main className="mx-auto max-w-3xl px-4 py-6 sm:py-8">
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
-          <div className="mb-6">
+          <div className="mb-6 flex flex-wrap items-center gap-3">
             <span className={`rounded-full px-4 py-2 text-sm font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
               {trip.status.toUpperCase()}
             </span>
           </div>
+
+          {hasEquipment && (
+            <div className="mb-6 rounded-xl border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
+              <p className="mb-2 text-sm font-semibold text-amber-800 dark:text-amber-300">Bring with you</p>
+              <div className="flex flex-wrap gap-2">
+                {trip.needs_wheelchair && (
+                  <span className="rounded-full bg-amber-200 px-3 py-1.5 text-sm font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-200">
+                    ♿ Wheelchair
+                  </span>
+                )}
+                {trip.needs_stair_climber && (
+                  <span className="rounded-full bg-amber-200 px-3 py-1.5 text-sm font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-200">
+                    🪜 Stair climber
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
             <ReadOnlyField label="Date" value={formatDateWithDayEnglish(trip.date)} />
@@ -179,7 +219,6 @@ export default function TripDetailsPage() {
 
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
             <ReadOnlyField label="Waiting Hours" value={String(trip.waiting_hours ?? 0)} />
-            <ReadOnlyField label="Additional Fees" value={formatDOP(trip.additional_fees ?? 0)} />
           </div>
 
           <div className="mb-6">
@@ -192,14 +231,25 @@ export default function TripDetailsPage() {
             />
           </div>
 
-          <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/30">
-            <p className="mb-1 text-sm text-blue-700 dark:text-blue-400">Total Trip Cost</p>
-            <p className="text-3xl font-bold text-blue-900 dark:text-blue-300">{formatDOP(trip.total_fare ?? 0)}</p>
-          </div>
+          {trip.status !== "cancelled" && (
+            <button
+              onClick={toggleStatus}
+              disabled={updating}
+              className={`w-full rounded-xl px-5 py-3 text-base font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.98] disabled:opacity-50 ${
+                trip.status === "completed" ? "bg-zinc-600 hover:bg-zinc-700" : "bg-green-600 hover:bg-green-700"
+              }`}
+            >
+              {updating
+                ? "Updating..."
+                : trip.status === "completed"
+                ? "Mark as Pending"
+                : "✓ Mark as Completed"}
+            </button>
+          )}
 
           <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              ℹ️ This is a read-only view of your trip details. Contact your manager if you have questions.
+              ℹ️ Update the status once you finish the trip. Contact your manager if you have questions.
             </p>
           </div>
         </div>
