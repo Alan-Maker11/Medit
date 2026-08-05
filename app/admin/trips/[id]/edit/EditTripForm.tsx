@@ -42,10 +42,12 @@ export default function EditTripForm({
     notes: trip.notes ?? "",
   });
 
+  // Equipment flags — shown for every trip type so the driver knows what to bring
+  const [wheelchair, setWheelchair] = useState(Boolean(trip.needs_wheelchair));
+  const [stairsElevator, setStairsElevator] = useState(Boolean(trip.needs_stair_climber));
+
   // Subir/Bajar fee helper state
   const [transportFee, setTransportFee] = useState("0");
-  const [wheelchair, setWheelchair] = useState(false);
-  const [stairsElevator, setStairsElevator] = useState(false);
   const [subBajarRoundTrip, setSubBajarRoundTrip] = useState(false);
 
   const selectedService = services.find((s) => s.id === form.service_id);
@@ -82,6 +84,8 @@ export default function EditTripForm({
         driver_id: form.driver_id || null,
         vehicle_id: form.vehicle_id || null,
         total_fare: form.total_fare === "" ? null : Number(form.total_fare),
+        needs_wheelchair: wheelchair,
+        needs_stair_climber: stairsElevator,
       }),
     });
     setSubmitting(false);
@@ -185,17 +189,32 @@ export default function EditTripForm({
         </select>
       </label>
 
-      {/* For regular trips: direct total fare input */}
+      {/* For regular trips: direct total fare input + equipment flags for the driver */}
       {!isSubirBajar && (
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Total fare (DOP)
-          <input
-            type="number"
-            value={form.total_fare}
-            onChange={(e) => update("total_fare", e.target.value)}
-            className="input"
-          />
-        </label>
+        <>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Total fare (DOP)
+            <input
+              type="number"
+              value={form.total_fare}
+              onChange={(e) => update("total_fare", e.target.value)}
+              className="input"
+            />
+          </label>
+          <fieldset className="flex flex-col gap-2 text-sm font-medium md:col-span-2">
+            Equipment (shown to the driver)
+            <div className="flex flex-col gap-2 text-sm font-normal">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={wheelchair} onChange={(e) => setWheelchair(e.target.checked)} />
+                Wheelchair
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={stairsElevator} onChange={(e) => setStairsElevator(e.target.checked)} />
+                Stair climber / Elevator
+              </label>
+            </div>
+          </fieldset>
+        </>
       )}
 
       {/* For Subir/Bajar: fee calculator that sets total_fare */}
