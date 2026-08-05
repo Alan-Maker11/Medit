@@ -146,6 +146,10 @@ export default function DriverSalaryCard({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const todayISO = todayLocalISO();
+  const currentKey = `${todayISO.slice(0, 7)}-${termOf(todayISO)}`;
+  const [openKey, setOpenKey] = useState<string | null>(currentKey);
+
   const overtimeRate = driver.overtime_hourly_rate ?? 0;
   const baseSalary = driver.base_monthly_salary ?? 0;
   const halfBaseSalary = baseSalary / 2;
@@ -311,43 +315,65 @@ export default function DriverSalaryCard({
 
       {termGroups.length > 0 && (
         <div className="mt-4 flex flex-col gap-4">
-          {termGroups.map((group) => (
-            <div key={group.key} className="rounded-xl border border-zinc-200 dark:border-zinc-800">
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
-                <p className="text-sm font-semibold">{group.label}</p>
-                <p className="text-sm text-zinc-500">
-                  Half base {formatDOP(halfBaseSalary)} + {group.termHours}h ({formatDOP(group.termOvertimePay)}) +
-                  dieta {formatDOP(group.termDieta)} + ascensor {formatDOP(group.termElevator)} ={" "}
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(group.termTotal)}</span>
-                </p>
+          {termGroups.map((group) => {
+            const isOpen = openKey === group.key;
+            const isCurrent = group.key === currentKey;
+            return (
+              <div key={group.key} className="rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <button
+                  onClick={() => setOpenKey(isOpen ? null : group.key)}
+                  className="flex w-full flex-wrap items-baseline justify-between gap-2 px-4 py-2 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                >
+                  <span className="flex items-center gap-2 text-sm font-semibold">
+                    {group.label}
+                    {isCurrent && (
+                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                        In progress
+                      </span>
+                    )}
+                  </span>
+                  <span className="flex items-center gap-2 text-sm text-zinc-500">
+                    Half base {formatDOP(halfBaseSalary)} + {group.termHours}h ({formatDOP(group.termOvertimePay)}) +
+                    dieta {formatDOP(group.termDieta)} + ascensor {formatDOP(group.termElevator)} ={" "}
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(group.termTotal)}</span>
+                    <span className={`text-zinc-400 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}>▾</span>
+                  </span>
+                </button>
+                <div
+                  className="grid transition-[grid-template-rows] duration-200 ease-out"
+                  style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+                >
+                  <div className="overflow-hidden">
+                    <div className="overflow-x-auto border-t border-zinc-200 dark:border-zinc-800">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
+                            <th className="px-4 py-2">Date</th>
+                            <th className="px-4 py-2">Hours</th>
+                            <th className="px-4 py-2">Price</th>
+                            <th className="px-4 py-2">Dieta</th>
+                            <th className="px-4 py-2">Ascensor/Bajador</th>
+                            <th className="px-4 py-2"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {group.entries.map((entry) => (
+                            <EntryRow
+                              key={entry.id}
+                              entry={entry}
+                              overtimeRate={overtimeRate}
+                              onSave={handleSaveEntry}
+                              onDelete={handleDelete}
+                            />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
-                      <th className="px-4 py-2">Date</th>
-                      <th className="px-4 py-2">Hours</th>
-                      <th className="px-4 py-2">Price</th>
-                      <th className="px-4 py-2">Dieta</th>
-                      <th className="px-4 py-2">Ascensor/Bajador</th>
-                      <th className="px-4 py-2"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {group.entries.map((entry) => (
-                      <EntryRow
-                        key={entry.id}
-                        entry={entry}
-                        overtimeRate={overtimeRate}
-                        onSave={handleSaveEntry}
-                        onDelete={handleDelete}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
