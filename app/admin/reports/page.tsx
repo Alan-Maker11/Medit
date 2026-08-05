@@ -10,6 +10,7 @@ interface DayRow {
   trip_count: number;
   revenue: number;
   expenses: number;
+  salary: number;
   net: number;
 }
 
@@ -19,6 +20,9 @@ interface MonthlyReport {
   summary: {
     revenue: number;
     expenses: number;
+    salary: number;
+    base_salary_total: number;
+    salary_extras_total: number;
     profit: number;
     profit_margin: number;
     trip_count: number;
@@ -79,10 +83,18 @@ export default function ReportsPage() {
 
     // Day-by-day sheet
     const dayRows = [
-      ["Date", "Trips", "Revenue (DOP)", "Expenses (DOP)", "Net (DOP)"],
-      ...report.days.map((d) => [d.date, d.trip_count, d.revenue, d.expenses, d.net]),
+      ["Date", "Trips", "Revenue (DOP)", "Expenses (DOP)", "Salary extras (DOP)", "Net (DOP)"],
+      ...report.days.map((d) => [d.date, d.trip_count, d.revenue, d.expenses, d.salary, d.net]),
       [],
-      ["TOTAL", report.summary.trip_count, report.summary.revenue, report.summary.expenses, report.summary.profit],
+      ["Base salaries (fixed, not day-specific)", "", "", "", report.summary.base_salary_total, ""],
+      [
+        "TOTAL",
+        report.summary.trip_count,
+        report.summary.revenue,
+        report.summary.expenses,
+        report.summary.salary,
+        report.summary.profit,
+      ],
     ];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dayRows), "Daily Breakdown");
 
@@ -92,6 +104,9 @@ export default function ReportsPage() {
       [],
       ["Revenue", report.summary.revenue],
       ["Expenses", report.summary.expenses],
+      ["Salary (base + overtime + dieta + ascensor)", report.summary.salary],
+      ["  Base salaries", report.summary.base_salary_total],
+      ["  Overtime/dieta/ascensor", report.summary.salary_extras_total],
       ["Profit", report.summary.profit],
       ["Profit margin %", report.summary.profit_margin],
       ["Total trips", report.summary.trip_count],
@@ -181,9 +196,14 @@ export default function ReportsPage() {
         {report && !reportLoading && (
           <>
             {/* KPI summary cards */}
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-7">
               <Stat label="Revenue" value={formatDOP(report.summary.revenue)} />
               <Stat label="Expenses" value={formatDOP(report.summary.expenses)} />
+              <Stat
+                label="Salary"
+                value={formatDOP(report.summary.salary)}
+                sub={`Base ${formatDOP(report.summary.base_salary_total)} + extras ${formatDOP(report.summary.salary_extras_total)}`}
+              />
               <Stat label="Profit" value={formatDOP(report.summary.profit)} highlight={report.summary.profit >= 0} />
               <Stat label="Margin" value={`${report.summary.profit_margin}%`} />
               <Stat label="Trips" value={String(report.summary.trip_count)} />
@@ -201,6 +221,7 @@ export default function ReportsPage() {
                       <th className="px-4 py-2 text-right">Trips</th>
                       <th className="px-4 py-2 text-right">Revenue</th>
                       <th className="px-4 py-2 text-right">Expenses</th>
+                      <th className="px-4 py-2 text-right">Salary</th>
                       <th className="px-4 py-2 text-right">Net</th>
                     </tr>
                   </thead>
@@ -209,7 +230,7 @@ export default function ReportsPage() {
                       <tr
                         key={day.date}
                         className={`border-b border-zinc-100 dark:border-zinc-800 ${
-                          day.trip_count === 0 && day.expenses === 0
+                          day.trip_count === 0 && day.expenses === 0 && day.salary === 0
                             ? "text-zinc-400 dark:text-zinc-600"
                             : ""
                         }`}
@@ -218,21 +239,28 @@ export default function ReportsPage() {
                         <td className="px-4 py-2 text-right">{day.trip_count || "-"}</td>
                         <td className="px-4 py-2 text-right">{day.revenue > 0 ? formatDOP(day.revenue) : "-"}</td>
                         <td className="px-4 py-2 text-right">{day.expenses > 0 ? formatDOP(day.expenses) : "-"}</td>
+                        <td className="px-4 py-2 text-right">{day.salary > 0 ? formatDOP(day.salary) : "-"}</td>
                         <td className={`px-4 py-2 text-right font-medium ${
                           day.net > 0 ? "text-green-600 dark:text-green-400" :
                           day.net < 0 ? "text-red-600 dark:text-red-400" : ""
                         }`}>
-                          {(day.revenue > 0 || day.expenses > 0) ? formatDOP(day.net) : "-"}
+                          {(day.revenue > 0 || day.expenses > 0 || day.salary > 0) ? formatDOP(day.net) : "-"}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
+                    <tr className="border-t border-zinc-200 text-zinc-500 dark:border-zinc-800">
+                      <td className="px-4 py-2" colSpan={4}>Base salaries (fixed, not tied to a specific day)</td>
+                      <td className="px-4 py-2 text-right">{formatDOP(report.summary.base_salary_total)}</td>
+                      <td className="px-4 py-2"></td>
+                    </tr>
                     <tr className="border-t-2 border-zinc-300 bg-zinc-50 font-semibold dark:border-zinc-700 dark:bg-zinc-800">
                       <td className="px-4 py-2">Total</td>
                       <td className="px-4 py-2 text-right">{report.summary.trip_count}</td>
                       <td className="px-4 py-2 text-right">{formatDOP(report.summary.revenue)}</td>
                       <td className="px-4 py-2 text-right">{formatDOP(report.summary.expenses)}</td>
+                      <td className="px-4 py-2 text-right">{formatDOP(report.summary.salary)}</td>
                       <td className={`px-4 py-2 text-right ${
                         report.summary.profit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                       }`}>
@@ -322,11 +350,12 @@ export default function ReportsPage() {
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function Stat({ label, value, highlight, sub }: { label: string; value: string; highlight?: boolean; sub?: string }) {
   return (
     <div className={`rounded-xl p-4 ${highlight ? "bg-green-50 dark:bg-green-950" : "bg-zinc-50 dark:bg-zinc-800"}`}>
       <p className="text-xs text-zinc-500">{label}</p>
       <p className={`text-lg font-bold ${highlight ? "text-green-700 dark:text-green-300" : ""}`}>{value}</p>
+      {sub && <p className="mt-0.5 text-[11px] text-zinc-400">{sub}</p>}
     </div>
   );
 }

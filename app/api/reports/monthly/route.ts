@@ -29,12 +29,29 @@ export async function GET(request: Request) {
     .lt("date", monthEnd)
     .order("date", { ascending: true });
 
+  // Driver payroll: fixed monthly base salaries (not tied to a specific day) plus
+  // per-day overtime/dieta/elevator entries — both count as real payroll cost that
+  // must reduce profit just like any other expense.
+  const { data: activeDrivers } = await supabase
+    .from("drivers")
+    .select("id, base_monthly_salary, overtime_hourly_rate")
+    .eq("status", "active");
+
+  const { data: overtimeEntries } = await supabase
+    .from("overtime_entries")
+    .select("driver_id, date, hours, dieta_amount, elevator_amount")
+    .gte("date", monthStart)
+    .lt("date", monthEnd);
+
+  const driverRateById = new Map((activeDrivers ?? []).map((d) => [d.id, d.overtime_hourly_rate ?? 0]));
+  const baseSalaryTotal = (activeDrivers ?? []).reduce((sum, d) => sum + (d.base_monthly_salary ?? 0), 0);
+
   // Build day-by-day map
   const daysInMonth = new Date(year, mon, 0).getDate();
-  const dayMap = new Map<string, { trips: number; revenue: number; expenses: number }>();
+  const dayMap = new Map<string, { trips: number; revenue: number; expenses: number; salary_extras: number }>();
   for (let d = 1; d <= daysInMonth; d++) {
     const key = `${month}-${String(d).padStart(2, "0")}`;
-    dayMap.set(key, { trips: 0, revenue: 0, expenses: 0 });
+    dayMap.set(key, { trips: 0, revenue: 0, expenses: 0, salary_extras: 0 });
   }
   for (const t of trips ?? []) {
     const day = dayMap.get(t.date);
@@ -44,13 +61,23 @@ export async function GET(request: Request) {
     const day = dayMap.get(e.date);
     if (day) { day.expenses += e.amount ?? 0; }
   }
+  for (const e of overtimeEntries ?? []) {
+    const day = dayMap.get(e.date);
+    if (!day) continue;
+    const rate = driverRateById.get(e.driver_id) ?? 0;
+    day.salary_extras += Number(e.hours ?? 0) * rate + Number(e.dieta_amount ?? 0) + Number(e.elevator_amount ?? 0);
+  }
+
+  const salaryExtrasTotal = [...dayMap.values()].reduce((sum, d) => sum + d.salary_extras, 0);
+  const salaryTotal = baseSalaryTotal + salaryExtrasTotal;
 
   const days = [...dayMap.entries()].map(([date, d]) => ({
     date,
     trip_count: d.trips,
     revenue: d.revenue,
     expenses: d.expenses,
-    net: d.revenue - d.expenses,
+    salary: d.salary_extras,
+    net: d.revenue - d.expenses - d.salary_extras,
   }));
 
   // Summary breakdowns
@@ -65,6 +92,7 @@ export async function GET(request: Request) {
 
   const revenue = (trips ?? []).reduce((sum, t) => sum + (t.total_fare ?? 0), 0);
   const totalExpenses = (expenses ?? []).reduce((sum, e) => sum + (e.amount ?? 0), 0);
+  const profit = revenue - totalExpenses - salaryTotal;
 
   return NextResponse.json({
     month,
@@ -72,8 +100,11 @@ export async function GET(request: Request) {
     summary: {
       revenue,
       expenses: totalExpenses,
-      profit: revenue - totalExpenses,
-      profit_margin: revenue > 0 ? Number((((revenue - totalExpenses) / revenue) * 100).toFixed(1)) : 0,
+      salary: salaryTotal,
+      base_salary_total: baseSalaryTotal,
+      salary_extras_total: salaryExtrasTotal,
+      profit,
+      profit_margin: revenue > 0 ? Number(((profit / revenue) * 100).toFixed(1)) : 0,
       trip_count: trips?.length ?? 0,
       average_fare: trips && trips.length > 0 ? Math.round(revenue / trips.length) : 0,
       by_service: groupSum(
