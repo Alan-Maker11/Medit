@@ -5,11 +5,14 @@ import DeleteExpenseButton from "./DeleteExpenseButton";
 
 export default async function ExpensesPage() {
   const supabase = await createClient();
-  const { data: expenses } = await supabase
-    .from("expenses")
-    .select("id, date, category, amount, km_at_fill, vehicle_id, description, vehicles(name)")
-    .order("date", { ascending: false })
-    .limit(100);
+  const [{ data: expenses }, { data: vehicles }] = await Promise.all([
+    supabase
+      .from("expenses")
+      .select("id, date, category, amount, km_at_fill, vehicle_id, description, vehicles(name)")
+      .order("date", { ascending: false })
+      .limit(300),
+    supabase.from("vehicles").select("id, name").order("name", { ascending: true }),
+  ]);
 
   const total = (expenses ?? []).reduce((sum, e) => sum + (e.amount ?? 0), 0);
 
@@ -30,6 +33,23 @@ export default async function ExpensesPage() {
     });
   }
 
+  // Every expense is allocated to the box of the vehicle it was logged against.
+  const expensesByVehicle = new Map<string, typeof expenses>();
+  const unassigned: typeof expenses = [];
+  for (const e of expenses ?? []) {
+    if (!e.vehicle_id) {
+      unassigned.push(e);
+      continue;
+    }
+    const list = expensesByVehicle.get(e.vehicle_id) ?? [];
+    list.push(e);
+    expensesByVehicle.set(e.vehicle_id, list);
+  }
+
+  const vehicleGroups = (vehicles ?? [])
+    .map((v) => ({ id: v.id, name: v.name, expenses: expensesByVehicle.get(v.id) ?? [] }))
+    .filter((g) => g.expenses.length > 0);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -42,13 +62,59 @@ export default async function ExpensesPage() {
         </Link>
       </div>
       <p className="text-sm text-zinc-500">Total shown: {formatDOP(total)}</p>
-      <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+
+      <div className="flex flex-col gap-6">
+        {vehicleGroups.map((group) => (
+          <ExpenseBox key={group.id} title={group.name} expenses={group.expenses} kmPerTankById={kmPerTankById} />
+        ))}
+        {unassigned.length > 0 && (
+          <ExpenseBox title="Unassigned" expenses={unassigned} kmPerTankById={kmPerTankById} />
+        )}
+        {vehicleGroups.length === 0 && unassigned.length === 0 && (
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-center text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
+            No expenses logged yet.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface ExpenseRow {
+  id: string;
+  date: string;
+  category: string;
+  amount: number;
+  km_at_fill: number | null;
+  description: string | null;
+}
+
+function ExpenseBox({
+  title,
+  expenses,
+  kmPerTankById,
+}: {
+  title: string;
+  expenses: ExpenseRow[];
+  kmPerTankById: Map<string, number | null>;
+}) {
+  const vehicleTotal = expenses.reduce((sum, e) => sum + (e.amount ?? 0), 0);
+
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
+        <h2 className="text-lg font-semibold">{title}</h2>
+        <p className="text-sm text-zinc-500">
+          {expenses.length} expense{expenses.length !== 1 ? "s" : ""} · Total{" "}
+          <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(vehicleTotal)}</span>
+        </p>
+      </div>
+      <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800">
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Vehicle</th>
               <th className="px-4 py-3">Amount</th>
               <th className="px-4 py-3">Km</th>
               <th className="px-4 py-3">Km/tank</th>
@@ -57,11 +123,10 @@ export default async function ExpensesPage() {
             </tr>
           </thead>
           <tbody>
-            {(expenses ?? []).map((expense) => (
-              <tr key={expense.id} className="border-b border-zinc-100 dark:border-zinc-800">
+            {expenses.map((expense) => (
+              <tr key={expense.id} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
                 <td className="px-4 py-3">{expense.date}</td>
                 <td className="px-4 py-3 capitalize">{expense.category}</td>
-                <td className="px-4 py-3">{(expense.vehicles as unknown as { name: string } | null)?.name ?? "-"}</td>
                 <td className="px-4 py-3">{formatDOP(expense.amount)}</td>
                 <td className="px-4 py-3">{expense.km_at_fill ?? "-"}</td>
                 <td className="px-4 py-3">{kmPerTankById.get(expense.id) ?? "-"}</td>
@@ -76,13 +141,6 @@ export default async function ExpensesPage() {
                 </td>
               </tr>
             ))}
-            {(!expenses || expenses.length === 0) && (
-              <tr>
-                <td colSpan={8} className="px-4 py-6 text-center text-zinc-500">
-                  No expenses logged yet.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
