@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { formatDOP } from "@/lib/fare";
-import type { Driver, OvertimeEntry } from "@/lib/types";
+import type { Driver, OvertimeEntry, UberEarning } from "@/lib/types";
 import { todayLocalISO } from "@/lib/date";
 
 const MONTH_NAMES = [
@@ -131,12 +131,111 @@ function EntryRow({
   );
 }
 
+interface UberEditState {
+  id: string;
+  date: string;
+  amount: string;
+  notes: string;
+}
+
+function UberEntryRow({
+  entry,
+  onSave,
+  onDelete,
+}: {
+  entry: UberEarning;
+  onSave: (state: UberEditState) => Promise<string | null>;
+  onDelete: (id: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState<UberEditState>({
+    id: entry.id,
+    date: entry.date,
+    amount: String(entry.amount),
+    notes: entry.notes ?? "",
+  });
+
+  function startEdit() {
+    setDraft({ id: entry.id, date: entry.date, amount: String(entry.amount), notes: entry.notes ?? "" });
+    setError(null);
+    setEditing(true);
+  }
+
+  async function save() {
+    setSaving(true);
+    const err = await onSave(draft);
+    setSaving(false);
+    if (err) { setError(err); return; }
+    setEditing(false);
+  }
+
+  function cancel() {
+    setEditing(false);
+    setError(null);
+  }
+
+  const cellClass = "px-4 py-2";
+  const inputClass = "w-full rounded-lg border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800";
+
+  if (editing) {
+    return (
+      <>
+        <tr className="border-b border-zinc-100 bg-orange-50 dark:border-zinc-800 dark:bg-orange-950/30">
+          <td className={cellClass}>
+            <input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} className={inputClass} />
+          </td>
+          <td className={cellClass}>
+            <input type="number" min={0} value={draft.amount} onChange={(e) => setDraft({ ...draft, amount: e.target.value })} className={inputClass} style={{ width: "7rem" }} />
+          </td>
+          <td className={cellClass}>
+            <input value={draft.notes} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} className={inputClass} />
+          </td>
+          <td className={`${cellClass} whitespace-nowrap`}>
+            <button onClick={save} disabled={saving} className="mr-2 text-xs font-medium text-blue-600 hover:underline disabled:opacity-50">
+              {saving ? "Saving…" : "Save"}
+            </button>
+            <button onClick={cancel} className="text-xs text-zinc-500 hover:underline">Cancel</button>
+          </td>
+        </tr>
+        {error && (
+          <tr className="border-b border-zinc-100 dark:border-zinc-800">
+            <td colSpan={4} className="px-4 pb-2 text-xs text-red-600">{error}</td>
+          </tr>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <tr className="group border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+      <td className={cellClass}>{entry.date}</td>
+      <td className={cellClass}>{formatDOP(entry.amount)}</td>
+      <td className={cellClass}>{entry.notes ?? "-"}</td>
+      <td className={`${cellClass} whitespace-nowrap`}>
+        <button
+          onClick={startEdit}
+          className="mr-3 text-xs font-medium text-blue-600 hover:underline md:invisible md:group-hover:visible"
+        >
+          Edit
+        </button>
+        <button onClick={() => onDelete(entry.id)} className="text-xs text-red-600 hover:underline">
+          Remove
+        </button>
+      </td>
+    </tr>
+  );
+}
+
 export default function DriverSalaryCard({
   driver,
   entries,
+  uberEarnings,
 }: {
   driver: Driver;
   entries: OvertimeEntry[];
+  uberEarnings: UberEarning[];
 }) {
   const router = useRouter();
   const [date, setDate] = useState(todayLocalISO());
@@ -145,6 +244,12 @@ export default function DriverSalaryCard({
   const [elevator, setElevator] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [uberDate, setUberDate] = useState(todayLocalISO());
+  const [uberAmount, setUberAmount] = useState("");
+  const [uberNotes, setUberNotes] = useState("");
+  const [uberSubmitting, setUberSubmitting] = useState(false);
+  const [uberError, setUberError] = useState<string | null>(null);
 
   const todayISO = todayLocalISO();
   const currentKey = `${todayISO.slice(0, 7)}-${termOf(todayISO)}`;
@@ -158,7 +263,12 @@ export default function DriverSalaryCard({
   const totalOvertimePay = entries.reduce((sum, e) => sum + Number(e.hours) * overtimeRate, 0);
   const totalDieta = entries.reduce((sum, e) => sum + Number(e.dieta_amount), 0);
   const totalElevator = entries.reduce((sum, e) => sum + Number(e.elevator_amount), 0);
-  const totalToPay = baseSalary + totalOvertimePay + totalDieta + totalElevator;
+  const totalUber = uberEarnings.reduce((sum, e) => sum + Number(e.amount), 0);
+  const totalToPay = baseSalary + totalOvertimePay + totalDieta + totalElevator + totalUber;
+  const sortedUberEarnings = useMemo(
+    () => [...uberEarnings].sort((a, b) => b.date.localeCompare(a.date)),
+    [uberEarnings]
+  );
 
   const termGroups = useMemo(() => {
     const map = new Map<string, OvertimeEntry[]>();
@@ -242,6 +352,45 @@ export default function DriverSalaryCard({
     router.refresh();
   }
 
+  async function handleAddUber(e: React.FormEvent) {
+    e.preventDefault();
+    setUberSubmitting(true);
+    setUberError(null);
+    const res = await fetch("/api/uber-earnings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ driver_id: driver.id, date: uberDate, amount: uberAmount, notes: uberNotes }),
+    });
+    setUberSubmitting(false);
+    if (!res.ok) {
+      const data = await res.json();
+      setUberError(data.error ?? "Failed to save Uber earnings");
+      return;
+    }
+    setUberAmount("");
+    setUberNotes("");
+    router.refresh();
+  }
+
+  async function handleSaveUber(state: UberEditState): Promise<string | null> {
+    const res = await fetch(`/api/uber-earnings/${state.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: state.date, amount: state.amount, notes: state.notes }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      return data.error ?? "Failed to update Uber earnings";
+    }
+    router.refresh();
+    return null;
+  }
+
+  async function handleDeleteUber(id: string) {
+    await fetch(`/api/uber-earnings/${id}`, { method: "DELETE" });
+    router.refresh();
+  }
+
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -251,11 +400,12 @@ export default function DriverSalaryCard({
         </p>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
         <Stat label="Salario regular" value={formatDOP(baseSalary)} />
         <Stat label="Horas extras" value={`${totalHours} h / ${formatDOP(totalOvertimePay)}`} />
         <Stat label="Dieta" value={formatDOP(totalDieta)} />
         <Stat label="Ascensor/Bajador" value={formatDOP(totalElevator)} />
+        <Stat label="Uber (manual)" value={formatDOP(totalUber)} />
         <Stat label="Total a pagar" value={formatDOP(totalToPay)} highlight />
       </div>
 
@@ -376,6 +526,74 @@ export default function DriverSalaryCard({
           })}
         </div>
       )}
+
+      <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/10">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-orange-200 px-4 py-2 dark:border-orange-900">
+          <p className="text-sm font-semibold">Uber (manual — not tracked in Medit)</p>
+          <p className="text-sm text-zinc-500">
+            Total this month <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(totalUber)}</span>
+          </p>
+        </div>
+        <form onSubmit={handleAddUber} className="flex flex-wrap items-end gap-3 px-4 py-3">
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Date
+            <input
+              type="date"
+              required
+              value={uberDate}
+              onChange={(e) => setUberDate(e.target.value)}
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Uber earnings (DOP)
+            <input
+              type="number"
+              min={0}
+              value={uberAmount}
+              onChange={(e) => setUberAmount(e.target.value)}
+              className="w-32 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Notes (optional)
+            <input
+              value={uberNotes}
+              onChange={(e) => setUberNotes(e.target.value)}
+              placeholder="5 trips, buena demanda…"
+              className="w-48 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={uberSubmitting}
+            className="rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+          >
+            {uberSubmitting ? "Adding..." : "Add entry"}
+          </button>
+        </form>
+        {uberError && <p className="px-4 pb-2 text-sm text-red-600">{uberError}</p>}
+
+        {sortedUberEarnings.length > 0 && (
+          <div className="overflow-x-auto border-t border-orange-200 dark:border-orange-900">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-orange-200 text-left text-zinc-500 dark:border-orange-900">
+                  <th className="px-4 py-2">Date</th>
+                  <th className="px-4 py-2">Amount</th>
+                  <th className="px-4 py-2">Notes</th>
+                  <th className="px-4 py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedUberEarnings.map((entry) => (
+                  <UberEntryRow key={entry.id} entry={entry} onSave={handleSaveUber} onDelete={handleDeleteUber} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

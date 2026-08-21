@@ -124,6 +124,14 @@ export interface OvertimeEntry {
   notes: string | null;
 }
 
+export interface UberEarning {
+  id: string;
+  driver_id: string;
+  date: string;
+  amount: number;
+  notes: string | null;
+}
+
 export interface Expense {
   id: string;
   date: string;

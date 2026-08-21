@@ -3,21 +3,32 @@
 import { useMemo, useState } from "react";
 import { currentLocalMonth } from "@/lib/date";
 import DriverSalaryCard from "./DriverSalaryCard";
-import type { Driver, OvertimeEntry } from "@/lib/types";
+import type { Driver, OvertimeEntry, UberEarning } from "@/lib/types";
 
-export default function SalaryView({ drivers, entries }: { drivers: Driver[]; entries: OvertimeEntry[] }) {
+function groupByDriverForMonth<T extends { driver_id: string; date: string }>(items: T[], month: string) {
+  const map = new Map<string, T[]>();
+  for (const item of items) {
+    if (!item.date.startsWith(month)) continue;
+    const list = map.get(item.driver_id) ?? [];
+    list.push(item);
+    map.set(item.driver_id, list);
+  }
+  return map;
+}
+
+export default function SalaryView({
+  drivers,
+  entries,
+  uberEarnings,
+}: {
+  drivers: Driver[];
+  entries: OvertimeEntry[];
+  uberEarnings: UberEarning[];
+}) {
   const [month, setMonth] = useState(currentLocalMonth());
 
-  const entriesByDriver = useMemo(() => {
-    const map = new Map<string, OvertimeEntry[]>();
-    for (const entry of entries) {
-      if (!entry.date.startsWith(month)) continue;
-      const list = map.get(entry.driver_id) ?? [];
-      list.push(entry);
-      map.set(entry.driver_id, list);
-    }
-    return map;
-  }, [entries, month]);
+  const entriesByDriver = useMemo(() => groupByDriverForMonth(entries, month), [entries, month]);
+  const uberByDriver = useMemo(() => groupByDriverForMonth(uberEarnings, month), [uberEarnings, month]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -34,7 +45,12 @@ export default function SalaryView({ drivers, entries }: { drivers: Driver[]; en
       </div>
 
       {drivers.map((driver) => (
-        <DriverSalaryCard key={driver.id} driver={driver} entries={entriesByDriver.get(driver.id) ?? []} />
+        <DriverSalaryCard
+          key={driver.id}
+          driver={driver}
+          entries={entriesByDriver.get(driver.id) ?? []}
+          uberEarnings={uberByDriver.get(driver.id) ?? []}
+        />
       ))}
       {drivers.length === 0 && <p className="text-sm text-zinc-500">No active drivers yet.</p>}
     </div>
