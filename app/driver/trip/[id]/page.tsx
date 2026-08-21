@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getCurrentDriver, getTripDetails } from "@/lib/driver-auth";
 import { formatDateWithDay } from "@/lib/date-utils";
+import { formatTime12 } from "@/lib/time-utils";
 
 interface TripDetail {
   id: string;
@@ -177,7 +178,7 @@ export default function TripDetailsPage() {
 
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
             <ReadOnlyField label="Fecha" value={formatDateWithDay(trip.date)} />
-            <ReadOnlyField label="Hora" value={trip.time?.slice(0, 5) ?? "-"} />
+            <ReadOnlyField label="Hora" value={formatTime12(trip.time)} />
           </div>
 
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
