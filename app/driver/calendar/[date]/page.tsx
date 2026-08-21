@@ -5,12 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getCurrentDriver, getDriverTripsForDate } from "@/lib/driver-auth";
 import { formatDateWithDay } from "@/lib/date-utils";
+import { formatTime12 } from "@/lib/time-utils";
 
 interface TripRow {
   id: string;
   time: string;
   client_name: string | null;
   status: string;
+  needs_wheelchair?: boolean;
+  needs_stair_climber?: boolean;
   services: { name: string } | null;
 }
 
@@ -84,11 +87,15 @@ export default function DateTripsPage() {
               >
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                   <div>
-                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{trip.client_name ?? "-"}</h3>
+                    <h3 className="flex items-center gap-1.5 text-lg font-bold text-zinc-900 dark:text-white">
+                      {trip.client_name ?? "-"}
+                      {trip.needs_wheelchair && <span title="Silla de ruedas">♿</span>}
+                      {trip.needs_stair_climber && <span title="Subidor/bajador de escaleras">🪜</span>}
+                    </h3>
                     <p className="mt-1 text-sm text-zinc-500">Servicio: {trip.services?.name ?? "-"}</p>
                   </div>
                   <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                    {trip.time?.slice(0, 5)}
+                    {formatTime12(trip.time)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">

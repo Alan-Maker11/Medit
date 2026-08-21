@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { formatDOP } from "@/lib/fare";
 import { useAdminLang, ADMIN_T } from "@/lib/adminLang";
 import { todayLocalISO } from "@/lib/date";
+import { formatTime12 } from "@/lib/time-utils";
+import AccessibilityIcons from "./AccessibilityIcons";
 
 interface TripRow {
   id: string;
@@ -14,6 +16,8 @@ interface TripRow {
   total_fare: number | null;
   status: string;
   driver_id: string | null;
+  needs_wheelchair?: boolean;
+  needs_stair_climber?: boolean;
   services: { name: string } | null;
   drivers: { name: string } | null;
   vehicles: { name: string } | null;
@@ -187,9 +191,12 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
                 className="block rounded-xl border border-zinc-200 p-4 transition-colors hover:border-blue-500 hover:bg-blue-50 dark:border-zinc-800 dark:hover:bg-blue-950/20"
               >
                 <div className="mb-2 flex items-start justify-between gap-2">
-                  <h4 className="font-bold text-zinc-900 dark:text-white">{trip.client_name ?? "-"}</h4>
-                  <span className="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                    {trip.time?.slice(0, 5)}
+                  <h4 className="flex items-center gap-1.5 font-bold text-zinc-900 dark:text-white">
+                    {trip.client_name ?? "-"}
+                    <AccessibilityIcons wheelchair={trip.needs_wheelchair} stairClimber={trip.needs_stair_climber} />
+                  </h4>
+                  <span className="whitespace-nowrap rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                    {formatTime12(trip.time)}
                   </span>
                 </div>
                 <p className="text-sm text-zinc-500">

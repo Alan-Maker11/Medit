@@ -10,6 +10,7 @@ import { formatDateWithDay } from "@/lib/date-utils";
 import { SERVICE_TYPES, type FareBreakdown, type TransportationMode, type TripType } from "@/lib/types";
 import ClientAutocomplete from "./ClientAutocomplete";
 import type { Client } from "@/lib/types";
+import AccessibilityIcons from "../AccessibilityIcons";
 
 interface Option {
   id: string;
@@ -160,6 +161,8 @@ export default function NewTripPage() {
         transportation_mode: history.transportation_mode ?? prev.transportation_mode,
         waiting_hours: history.waiting_hours != null ? String(history.waiting_hours) : prev.waiting_hours,
       }));
+      setWheelchair(Boolean(history.needs_wheelchair));
+      setStairsElevator(Boolean(history.needs_stair_climber));
       // The previous trip's REAL total (whether manually typed or calculated) — never recompute it from distance
       if (history.total_fare != null) setManualFare(String(history.total_fare));
     } catch {
@@ -187,6 +190,8 @@ export default function NewTripPage() {
         transportation_mode: history.transportation_mode ?? prev.transportation_mode,
         waiting_hours: history.waiting_hours != null ? String(history.waiting_hours) : prev.waiting_hours,
       }));
+      setWheelchair(Boolean(history.needs_wheelchair));
+      setStairsElevator(Boolean(history.needs_stair_climber));
       if (history.total_fare != null) {
         setManualFare(String(history.total_fare));
         // Set the breakdown directly so Save is usable immediately — no extra "Calculate" click needed
@@ -378,6 +383,12 @@ export default function NewTripPage() {
             <p className="text-xs text-zinc-500 sm:col-span-2">
               Previous trip: {previousTrip.last_trip_date ?? "-"} · {previousTrip.last_service_name ?? "no service"} ·{" "}
               {previousTrip.last_total_fare != null ? formatDOP(previousTrip.last_total_fare) : "-"}
+              {(wheelchair || stairsElevator) && (
+                <>
+                  {" "}
+                  <AccessibilityIcons wheelchair={wheelchair} stairClimber={stairsElevator} />
+                </>
+              )}
               <button
                 type="button"
                 onClick={handleDuplicatePreviousTrip}

@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { formatTime12 } from "@/lib/time-utils";
 
 interface TripRow {
   id: string;
   time: string;
   client_name: string | null;
   status: string;
+  needs_wheelchair?: boolean;
+  needs_stair_climber?: boolean;
   services: { name: string } | null;
 }
 
@@ -40,10 +43,14 @@ export default function TodayTrips({ trips }: { trips: TripRow[] }) {
               href={`/driver/trip/${trip.id}`}
               className="block rounded-xl border border-zinc-200 p-4 transition-colors hover:border-blue-500 hover:bg-blue-50 dark:border-zinc-800 dark:hover:bg-blue-950/20"
             >
-              <div className="mb-2 flex items-start justify-between">
-                <h4 className="font-bold text-zinc-900 dark:text-white">{trip.client_name ?? "-"}</h4>
-                <span className="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                  {trip.time?.slice(0, 5)}
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <h4 className="flex items-center gap-1.5 font-bold text-zinc-900 dark:text-white">
+                  {trip.client_name ?? "-"}
+                  {trip.needs_wheelchair && <span title="Silla de ruedas">♿</span>}
+                  {trip.needs_stair_climber && <span title="Subidor/bajador de escaleras">🪜</span>}
+                </h4>
+                <span className="whitespace-nowrap rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                  {formatTime12(trip.time)}
                 </span>
               </div>
               <div className="flex items-center justify-between">

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { formatDOP } from "@/lib/fare";
 import { useAdminLang, ADMIN_T } from "@/lib/adminLang";
 import { formatDateWithDay, formatDateWithDayEnglish } from "@/lib/date-utils";
+import AccessibilityIcons from "./AccessibilityIcons";
 
 interface TripRow {
   id: string;
@@ -12,6 +13,8 @@ interface TripRow {
   client_name: string | null;
   total_fare: number | null;
   status: string;
+  needs_wheelchair?: boolean;
+  needs_stair_climber?: boolean;
   services: { name: string } | null;
   drivers: { name: string } | null;
   vehicles: { name: string } | null;
@@ -127,7 +130,12 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                       <tr key={trip.id} className="group relative border-b border-zinc-100 dark:border-zinc-800">
                         <td className="px-4 py-3 whitespace-nowrap">{lang === "es" ? formatDateWithDay(trip.date) : formatDateWithDayEnglish(trip.date)}</td>
                         <td className="px-4 py-3">{trip.services?.name ?? "-"}</td>
-                        <td className="px-4 py-3">{trip.client_name ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center gap-1.5">
+                            {trip.client_name ?? "-"}
+                            <AccessibilityIcons wheelchair={trip.needs_wheelchair} stairClimber={trip.needs_stair_climber} />
+                          </span>
+                        </td>
                         <td className="px-4 py-3">{trip.drivers?.name ?? "-"}</td>
                         <td className="px-4 py-3">{trip.vehicles?.name ?? "-"}</td>
                         <td className="px-4 py-3">{trip.total_fare ? formatDOP(trip.total_fare) : "-"}</td>

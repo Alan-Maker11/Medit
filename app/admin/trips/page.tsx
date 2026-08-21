@@ -7,7 +7,7 @@ export default async function TripsPage() {
   const [{ data: trips }, { data: drivers }] = await Promise.all([
     supabase
       .from("trips")
-      .select("id, date, time, client_name, trip_type, status, total_fare, driver_id, services(name), drivers(name), vehicles(name)")
+      .select("id, date, time, client_name, trip_type, status, total_fare, driver_id, needs_wheelchair, needs_stair_climber, services(name), drivers(name), vehicles(name)")
       .order("date", { ascending: false }),
     supabase.from("drivers").select("id, name").order("name", { ascending: true }),
   ]);

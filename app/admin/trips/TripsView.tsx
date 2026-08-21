@@ -13,6 +13,8 @@ interface TripRow {
   total_fare: number | null;
   status: string;
   driver_id: string | null;
+  needs_wheelchair: boolean;
+  needs_stair_climber: boolean;
   services: { name: string } | null;
   drivers: { name: string } | null;
   vehicles: { name: string } | null;
