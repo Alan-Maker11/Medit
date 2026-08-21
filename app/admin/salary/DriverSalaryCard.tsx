@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { formatDOP } from "@/lib/fare";
+import { formatDOP, UBER_DRIVER_COMMISSION_RATE } from "@/lib/fare";
 import type { Driver, OvertimeEntry, UberEarning } from "@/lib/types";
 import { todayLocalISO } from "@/lib/date";
 
@@ -134,7 +134,7 @@ function EntryRow({
 interface UberEditState {
   id: string;
   date: string;
-  amount: string;
+  gross_amount: string;
   notes: string;
 }
 
@@ -153,12 +153,12 @@ function UberEntryRow({
   const [draft, setDraft] = useState<UberEditState>({
     id: entry.id,
     date: entry.date,
-    amount: String(entry.amount),
+    gross_amount: String(entry.gross_amount),
     notes: entry.notes ?? "",
   });
 
   function startEdit() {
-    setDraft({ id: entry.id, date: entry.date, amount: String(entry.amount), notes: entry.notes ?? "" });
+    setDraft({ id: entry.id, date: entry.date, gross_amount: String(entry.gross_amount), notes: entry.notes ?? "" });
     setError(null);
     setEditing(true);
   }
@@ -180,6 +180,7 @@ function UberEntryRow({
   const inputClass = "w-full rounded-lg border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800";
 
   if (editing) {
+    const draftCommission = (Number(draft.gross_amount) || 0) * UBER_DRIVER_COMMISSION_RATE;
     return (
       <>
         <tr className="border-b border-zinc-100 bg-orange-50 dark:border-zinc-800 dark:bg-orange-950/30">
@@ -187,8 +188,9 @@ function UberEntryRow({
             <input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} className={inputClass} />
           </td>
           <td className={cellClass}>
-            <input type="number" min={0} value={draft.amount} onChange={(e) => setDraft({ ...draft, amount: e.target.value })} className={inputClass} style={{ width: "7rem" }} />
+            <input type="number" min={0} value={draft.gross_amount} onChange={(e) => setDraft({ ...draft, gross_amount: e.target.value })} className={inputClass} style={{ width: "7rem" }} />
           </td>
+          <td className={cellClass}>{formatDOP(draftCommission)}</td>
           <td className={cellClass}>
             <input value={draft.notes} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} className={inputClass} />
           </td>
@@ -201,7 +203,7 @@ function UberEntryRow({
         </tr>
         {error && (
           <tr className="border-b border-zinc-100 dark:border-zinc-800">
-            <td colSpan={4} className="px-4 pb-2 text-xs text-red-600">{error}</td>
+            <td colSpan={5} className="px-4 pb-2 text-xs text-red-600">{error}</td>
           </tr>
         )}
       </>
@@ -211,6 +213,7 @@ function UberEntryRow({
   return (
     <tr className="group border-b border-zinc-100 last:border-0 dark:border-zinc-800">
       <td className={cellClass}>{entry.date}</td>
+      <td className={cellClass}>{formatDOP(entry.gross_amount)}</td>
       <td className={cellClass}>{formatDOP(entry.amount)}</td>
       <td className={cellClass}>{entry.notes ?? "-"}</td>
       <td className={`${cellClass} whitespace-nowrap`}>
@@ -246,10 +249,11 @@ export default function DriverSalaryCard({
   const [error, setError] = useState<string | null>(null);
 
   const [uberDate, setUberDate] = useState(todayLocalISO());
-  const [uberAmount, setUberAmount] = useState("");
+  const [uberGrossAmount, setUberGrossAmount] = useState("");
   const [uberNotes, setUberNotes] = useState("");
   const [uberSubmitting, setUberSubmitting] = useState(false);
   const [uberError, setUberError] = useState<string | null>(null);
+  const uberCommissionPreview = (Number(uberGrossAmount) || 0) * UBER_DRIVER_COMMISSION_RATE;
 
   const todayISO = todayLocalISO();
   const currentKey = `${todayISO.slice(0, 7)}-${termOf(todayISO)}`;
@@ -359,7 +363,7 @@ export default function DriverSalaryCard({
     const res = await fetch("/api/uber-earnings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ driver_id: driver.id, date: uberDate, amount: uberAmount, notes: uberNotes }),
+      body: JSON.stringify({ driver_id: driver.id, date: uberDate, gross_amount: uberGrossAmount, notes: uberNotes }),
     });
     setUberSubmitting(false);
     if (!res.ok) {
@@ -367,7 +371,7 @@ export default function DriverSalaryCard({
       setUberError(data.error ?? "Failed to save Uber earnings");
       return;
     }
-    setUberAmount("");
+    setUberGrossAmount("");
     setUberNotes("");
     router.refresh();
   }
@@ -376,7 +380,7 @@ export default function DriverSalaryCard({
     const res = await fetch(`/api/uber-earnings/${state.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: state.date, amount: state.amount, notes: state.notes }),
+      body: JSON.stringify({ date: state.date, gross_amount: state.gross_amount, notes: state.notes }),
     });
     if (!res.ok) {
       const data = await res.json();
@@ -531,7 +535,7 @@ export default function DriverSalaryCard({
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-orange-200 px-4 py-2 dark:border-orange-900">
           <p className="text-sm font-semibold">Uber (manual — not tracked in Medit)</p>
           <p className="text-sm text-zinc-500">
-            Total this month <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(totalUber)}</span>
+            Commission this month <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(totalUber)}</span>
           </p>
         </div>
         <form onSubmit={handleAddUber} className="flex flex-wrap items-end gap-3 px-4 py-3">
@@ -546,15 +550,21 @@ export default function DriverSalaryCard({
             />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium">
-            Uber earnings (DOP)
+            Total del día (todos los viajes, DOP)
             <input
               type="number"
               min={0}
-              value={uberAmount}
-              onChange={(e) => setUberAmount(e.target.value)}
-              className="w-32 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+              value={uberGrossAmount}
+              onChange={(e) => setUberGrossAmount(e.target.value)}
+              className="w-40 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
             />
           </label>
+          <div className="flex flex-col gap-1 text-sm font-medium">
+            Comisión ({UBER_DRIVER_COMMISSION_RATE * 100}%)
+            <div className="flex h-[38px] items-center rounded-lg border border-dashed border-orange-300 bg-orange-50 px-3 text-sm font-semibold text-orange-700 dark:border-orange-800 dark:bg-orange-950/30 dark:text-orange-300">
+              {formatDOP(uberCommissionPreview)}
+            </div>
+          </div>
           <label className="flex flex-col gap-1 text-sm font-medium">
             Notes (optional)
             <input
@@ -580,7 +590,8 @@ export default function DriverSalaryCard({
               <thead>
                 <tr className="border-b border-orange-200 text-left text-zinc-500 dark:border-orange-900">
                   <th className="px-4 py-2">Date</th>
-                  <th className="px-4 py-2">Amount</th>
+                  <th className="px-4 py-2">Total del día</th>
+                  <th className="px-4 py-2">Comisión ({UBER_DRIVER_COMMISSION_RATE * 100}%)</th>
                   <th className="px-4 py-2">Notes</th>
                   <th className="px-4 py-2"></th>
                 </tr>

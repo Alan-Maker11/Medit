@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { UBER_DRIVER_COMMISSION_RATE } from "@/lib/fare";
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -17,11 +18,13 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const supabase = await createClient();
   const body = await request.json();
-  const { driver_id, date, amount, notes } = body;
+  const { driver_id, date, gross_amount, notes } = body;
 
   if (!driver_id || !date) {
     return NextResponse.json({ error: "driver_id and date are required" }, { status: 400 });
   }
+
+  const gross = Number(gross_amount) || 0;
 
   const { data, error } = await supabase
     .from("driver_uber_earnings")
@@ -29,7 +32,8 @@ export async function POST(request: Request) {
       {
         driver_id,
         date,
-        amount: Number(amount) || 0,
+        gross_amount: gross,
+        amount: Math.round(gross * UBER_DRIVER_COMMISSION_RATE * 100) / 100,
         notes: notes || null,
       },
       { onConflict: "driver_id,date" }

@@ -10,6 +10,9 @@ export const PUBLIC_DISTANCE_RATE_PER_KM = 15;
 export const PUBLIC_DURATION_RATE_PER_MIN = 10;
 export const PUBLIC_WAITING_RATE_PER_HOUR = 100;
 
+// Driver's cut of manually-logged Uber side earnings (day total, all trips combined).
+export const UBER_DRIVER_COMMISSION_RATE = 0.2;
+
 // One-way price is anchored to round-trip-with-2hr-wait divided by 2.
 // This constant is the reference waiting hours used only for that anchor calculation.
 const ONE_WAY_REFERENCE_WAIT_HOURS = 2;

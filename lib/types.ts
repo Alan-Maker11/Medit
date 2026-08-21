@@ -128,7 +128,8 @@ export interface UberEarning {
   id: string;
   driver_id: string;
   date: string;
-  amount: number;
+  gross_amount: number;
+  amount: number; // driver's commission, computed from gross_amount
   notes: string | null;
 }
 
