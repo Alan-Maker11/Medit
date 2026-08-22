@@ -51,6 +51,7 @@ export async function POST(request: Request) {
     notes,
     needs_wheelchair,
     needs_stair_climber,
+    stair_climber_floor,
   } = body;
 
   if (!date || !pickup_address) {
@@ -124,6 +125,7 @@ export async function POST(request: Request) {
       notes,
       needs_wheelchair: Boolean(needs_wheelchair),
       needs_stair_climber: Boolean(needs_stair_climber),
+      stair_climber_floor: Number(stair_climber_floor) || 0,
     })
     .select()
     .single();

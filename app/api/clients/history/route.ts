@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   }
 
   const columns =
-    "pickup_address, destination_address, driver_id, vehicle_id, service_id, total_fare, client_phone, trip_type, transportation_mode, waiting_hours, additional_fees, distance_km, duration_minutes, needs_wheelchair, needs_stair_climber";
+    "pickup_address, destination_address, driver_id, vehicle_id, service_id, total_fare, client_phone, trip_type, transportation_mode, waiting_hours, additional_fees, distance_km, duration_minutes, needs_wheelchair, needs_stair_climber, stair_climber_floor";
 
   // Prefer the most recent trip that actually has a usable fare recorded — some historical/imported
   // rows have no total_fare, and using one of those would silently leave the fare field empty.

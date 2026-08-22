@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { createClient } from "@/lib/supabase/client";
-import { calculateFare, formatDOP } from "@/lib/fare";
+import { calculateFare, formatDOP, STAIR_CLIMBER_PRICING, getStairClimberPrice } from "@/lib/fare";
 import { todayLocalISO } from "@/lib/date";
 import { formatDateWithDay } from "@/lib/date-utils";
 import { SERVICE_TYPES, type FareBreakdown, type TransportationMode, type TripType } from "@/lib/types";
@@ -56,6 +56,7 @@ export default function NewTripPage() {
   const [transportFee, setTransportFee] = useState("0");
   const [wheelchair, setWheelchair] = useState(false);
   const [stairsElevator, setStairsElevator] = useState(false);
+  const [stairFloor, setStairFloor] = useState(0);
   const [subBajarRoundTrip, setSubBajarRoundTrip] = useState(false);
   const [manualFare, setManualFare] = useState("");
   const [previousTrip, setPreviousTrip] = useState<Client | null>(null);
@@ -72,7 +73,7 @@ export default function NewTripPage() {
   const subBajarTotal =
     (Number(transportFee) || 0) * subBajarMultiplier +
     (wheelchair ? 350 : 0) +
-    (stairsElevator ? 500 * subBajarMultiplier : 0);
+    (stairsElevator ? getStairClimberPrice(stairFloor) * subBajarMultiplier : 0);
 
   useEffect(() => {
     if (!isSubirBajar) {
@@ -163,6 +164,7 @@ export default function NewTripPage() {
       }));
       setWheelchair(Boolean(history.needs_wheelchair));
       setStairsElevator(Boolean(history.needs_stair_climber));
+      setStairFloor(Number(history.stair_climber_floor) || 0);
       // The previous trip's REAL total (whether manually typed or calculated) — never recompute it from distance
       if (history.total_fare != null) setManualFare(String(history.total_fare));
     } catch {
@@ -192,6 +194,7 @@ export default function NewTripPage() {
       }));
       setWheelchair(Boolean(history.needs_wheelchair));
       setStairsElevator(Boolean(history.needs_stair_climber));
+      setStairFloor(Number(history.stair_climber_floor) || 0);
       if (history.total_fare != null) {
         setManualFare(String(history.total_fare));
         // Set the breakdown directly so Save is usable immediately — no extra "Calculate" click needed
@@ -237,7 +240,7 @@ export default function NewTripPage() {
 
   function regularAdditionalFees() {
     const stairsMultiplier = form.trip_type === "round-trip" ? 2 : 1;
-    return (Number(transportFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? 500 * stairsMultiplier : 0);
+    return (Number(transportFee) || 0) + (wheelchair ? 350 : 0) + (stairsElevator ? getStairClimberPrice(stairFloor) * stairsMultiplier : 0);
   }
 
   function handleCalculate() {
@@ -295,6 +298,7 @@ export default function NewTripPage() {
         manual_total_fare: hasManualOverride ? overrideFare + regularAdditionalFees() : undefined,
         needs_wheelchair: wheelchair,
         needs_stair_climber: stairsElevator,
+        stair_climber_floor: stairFloor,
       }),
     });
     setSubmitting(false);
@@ -545,15 +549,41 @@ export default function NewTripPage() {
                 Wheelchair (+{formatDOP(350)}{isSubirBajar && subBajarRoundTrip ? ` × 2 = ${formatDOP(700)}` : ""})
               </label>
               <label className="flex items-center gap-2">
-                <input type="checkbox" checked={stairsElevator} onChange={(e) => setStairsElevator(e.target.checked)} />
-                Stair climber / Elevator (+{formatDOP(500)}{
-                  isSubirBajar && subBajarRoundTrip
-                    ? ` × 2 = ${formatDOP(1000)}`
-                    : !isSubirBajar && form.trip_type === "round-trip"
-                    ? ` × 2 = ${formatDOP(1000)}`
-                    : ""
-                })
+                <input
+                  type="checkbox"
+                  checked={stairsElevator}
+                  onChange={(e) => {
+                    setStairsElevator(e.target.checked);
+                    if (!e.target.checked) setStairFloor(0);
+                    else if (!stairFloor) setStairFloor(2);
+                  }}
+                />
+                Stair climber / Elevator
               </label>
+              {stairsElevator && (
+                <div className="ml-6 flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-zinc-500">Floor:</span>
+                  {STAIR_CLIMBER_PRICING.map((p) => (
+                    <button
+                      key={p.floor}
+                      type="button"
+                      onClick={() => setStairFloor(p.floor)}
+                      className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                        stairFloor === p.floor
+                          ? "border-orange-500 bg-orange-500 text-white"
+                          : "border-zinc-300 bg-white text-zinc-700 hover:border-orange-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                      }`}
+                    >
+                      {p.label} {p.price > 0 ? `(+${formatDOP(p.price)})` : ""}
+                    </button>
+                  ))}
+                  {(isSubirBajar ? subBajarRoundTrip : form.trip_type === "round-trip") && stairFloor > 0 && (
+                    <span className="text-sm text-zinc-500">
+                      × 2 = {formatDOP(getStairClimberPrice(stairFloor) * 2)}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Live total for Subir/Bajar */}

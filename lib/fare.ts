@@ -13,6 +13,21 @@ export const PUBLIC_WAITING_RATE_PER_HOUR = 100;
 // Driver's cut of manually-logged Uber side earnings (day total, all trips combined).
 export const UBER_DRIVER_COMMISSION_RATE = 0.2;
 
+// Stair climber fee scales with how many floors up the client lives.
+// Floor 1 (ground) needs no climb; floor 4+ is capped at the top rate.
+export const STAIR_CLIMBER_PRICING = [
+  { floor: 1, price: 0, label: "Ground floor" },
+  { floor: 2, price: 350, label: "2nd floor" },
+  { floor: 3, price: 450, label: "3rd floor" },
+  { floor: 4, price: 500, label: "4th floor+" },
+] as const;
+
+export function getStairClimberPrice(floor: number): number {
+  if (!floor || floor < 1) return 0;
+  if (floor >= 4) return 500;
+  return STAIR_CLIMBER_PRICING.find((p) => p.floor === floor)?.price ?? 500;
+}
+
 // One-way price is anchored to round-trip-with-2hr-wait divided by 2.
 // This constant is the reference waiting hours used only for that anchor calculation.
 const ONE_WAY_REFERENCE_WAIT_HOURS = 2;

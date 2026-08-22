@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatDOP } from "@/lib/fare";
+import { formatDOP, STAIR_CLIMBER_PRICING, getStairClimberPrice } from "@/lib/fare";
 import { formatDateWithDay } from "@/lib/date-utils";
 
 interface Option {
@@ -45,6 +45,12 @@ export default function EditTripForm({
   // Equipment flags — shown for every trip type so the driver knows what to bring
   const [wheelchair, setWheelchair] = useState(Boolean(trip.needs_wheelchair));
   const [stairsElevator, setStairsElevator] = useState(Boolean(trip.needs_stair_climber));
+  const [stairFloor, setStairFloor] = useState(Number(trip.stair_climber_floor) || 0);
+
+  // Payment tracking
+  const [paymentStatus, setPaymentStatus] = useState(trip.payment_status ?? "pending");
+  const [paymentMethod, setPaymentMethod] = useState(trip.payment_method ?? "full");
+  const [paidAmount, setPaidAmount] = useState(trip.paid_amount != null ? String(trip.paid_amount) : "0");
 
   // Subir/Bajar fee helper state
   const [transportFee, setTransportFee] = useState("0");
@@ -57,12 +63,12 @@ export default function EditTripForm({
   const subBajarTotal =
     (Number(transportFee) || 0) * subBajarMultiplier +
     (wheelchair ? 350 : 0) +
-    (stairsElevator ? 500 * subBajarMultiplier : 0);
+    (stairsElevator ? getStairClimberPrice(stairFloor) * subBajarMultiplier : 0);
 
   // Keep total_fare in sync with fee calculator when in Subir/Bajar mode
-  function handleFeeChange(newTransport: string, newWheelchair: boolean, newStairs: boolean) {
+  function handleFeeChange(newTransport: string, newWheelchair: boolean, newStairs: boolean, newFloor: number) {
     const m = subBajarRoundTrip ? 2 : 1;
-    const total = (Number(newTransport) || 0) * m + (newWheelchair ? 350 : 0) + (newStairs ? 500 * m : 0);
+    const total = (Number(newTransport) || 0) * m + (newWheelchair ? 350 : 0) + (newStairs ? getStairClimberPrice(newFloor) * m : 0);
     setForm((prev) => ({ ...prev, total_fare: total > 0 ? String(total) : prev.total_fare }));
   }
 
@@ -86,6 +92,10 @@ export default function EditTripForm({
         total_fare: form.total_fare === "" ? null : Number(form.total_fare),
         needs_wheelchair: wheelchair,
         needs_stair_climber: stairsElevator,
+        stair_climber_floor: stairFloor,
+        payment_status: paymentStatus,
+        payment_method: paymentMethod,
+        paid_amount: Number(paidAmount) || 0,
       }),
     });
     setSubmitting(false);
@@ -209,13 +219,73 @@ export default function EditTripForm({
                 Wheelchair
               </label>
               <label className="flex items-center gap-2">
-                <input type="checkbox" checked={stairsElevator} onChange={(e) => setStairsElevator(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={stairsElevator}
+                  onChange={(e) => {
+                    setStairsElevator(e.target.checked);
+                    if (!e.target.checked) setStairFloor(0);
+                    else if (!stairFloor) setStairFloor(2);
+                  }}
+                />
                 Stair climber / Elevator
               </label>
+              {stairsElevator && (
+                <div className="ml-6 flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-zinc-500">Floor:</span>
+                  {STAIR_CLIMBER_PRICING.map((p) => (
+                    <button
+                      key={p.floor}
+                      type="button"
+                      onClick={() => setStairFloor(p.floor)}
+                      className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                        stairFloor === p.floor
+                          ? "border-orange-500 bg-orange-500 text-white"
+                          : "border-zinc-300 bg-white text-zinc-700 hover:border-orange-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                      }`}
+                    >
+                      {p.label} {p.price > 0 ? `(+${formatDOP(p.price)})` : ""}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </fieldset>
         </>
       )}
+
+      <fieldset className="flex flex-col gap-2 text-sm font-medium md:col-span-2">
+        Payment
+        <div className="grid grid-cols-2 gap-3 text-sm font-normal sm:grid-cols-3">
+          <label className="flex flex-col gap-1">
+            Status
+            <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className="input">
+              <option value="pending">Pending</option>
+              <option value="partial">Partial</option>
+              <option value="paid">Paid</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
+            Method
+            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="input">
+              <option value="full">Full</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </label>
+          {(paymentStatus === "partial" || paymentStatus === "paid") && (
+            <label className="flex flex-col gap-1">
+              Paid amount (DOP)
+              <input
+                type="number"
+                min={0}
+                value={paidAmount}
+                onChange={(e) => setPaidAmount(e.target.value)}
+                className="input"
+              />
+            </label>
+          )}
+        </div>
+      </fieldset>
 
       {/* For Subir/Bajar: fee calculator that sets total_fare */}
       {isSubirBajar && (
@@ -230,7 +300,7 @@ export default function EditTripForm({
                   setSubBajarRoundTrip(e.target.checked);
                   // recalc with new multiplier
                   const m = e.target.checked ? 2 : 1;
-                  const total = (Number(transportFee) || 0) * m + (wheelchair ? 350 : 0) + (stairsElevator ? 500 * m : 0);
+                  const total = (Number(transportFee) || 0) * m + (wheelchair ? 350 : 0) + (stairsElevator ? getStairClimberPrice(stairFloor) * m : 0);
                   if (total > 0) setForm((prev) => ({ ...prev, total_fare: String(total) }));
                 }}
               />
@@ -244,7 +314,7 @@ export default function EditTripForm({
                 value={transportFee}
                 onChange={(e) => {
                   setTransportFee(e.target.value);
-                  handleFeeChange(e.target.value, wheelchair, stairsElevator);
+                  handleFeeChange(e.target.value, wheelchair, stairsElevator, stairFloor);
                 }}
                 className="input w-32"
               />
@@ -258,7 +328,7 @@ export default function EditTripForm({
                 checked={wheelchair}
                 onChange={(e) => {
                   setWheelchair(e.target.checked);
-                  handleFeeChange(transportFee, e.target.checked, stairsElevator);
+                  handleFeeChange(transportFee, e.target.checked, stairsElevator, stairFloor);
                 }}
               />
               Wheelchair (+{formatDOP(350)} — one-time rental)
@@ -268,12 +338,37 @@ export default function EditTripForm({
                 type="checkbox"
                 checked={stairsElevator}
                 onChange={(e) => {
-                  setStairsElevator(e.target.checked);
-                  handleFeeChange(transportFee, wheelchair, e.target.checked);
+                  const checked = e.target.checked;
+                  setStairsElevator(checked);
+                  const nextFloor = checked ? (stairFloor || 2) : 0;
+                  setStairFloor(nextFloor);
+                  handleFeeChange(transportFee, wheelchair, checked, nextFloor);
                 }}
               />
-              Stair climber / Elevator (+{formatDOP(500)}{subBajarRoundTrip ? ` × 2 = ${formatDOP(1000)}` : ""})
+              Stair climber / Elevator
             </label>
+            {stairsElevator && (
+              <div className="ml-6 flex flex-wrap items-center gap-2">
+                <span className="text-sm text-zinc-500">Floor:</span>
+                {STAIR_CLIMBER_PRICING.map((p) => (
+                  <button
+                    key={p.floor}
+                    type="button"
+                    onClick={() => {
+                      setStairFloor(p.floor);
+                      handleFeeChange(transportFee, wheelchair, stairsElevator, p.floor);
+                    }}
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                      stairFloor === p.floor
+                        ? "border-orange-500 bg-orange-500 text-white"
+                        : "border-zinc-300 bg-white text-zinc-700 hover:border-orange-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                    }`}
+                  >
+                    {p.label} {p.price > 0 ? `(+${formatDOP(p.price)}${subBajarRoundTrip ? ` × 2 = ${formatDOP(p.price * 2)}` : ""})` : ""}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="mt-1 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
             <p className="text-xs text-zinc-500">Total charge</p>
