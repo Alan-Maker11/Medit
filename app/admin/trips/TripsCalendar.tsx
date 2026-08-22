@@ -7,6 +7,7 @@ import { useAdminLang, ADMIN_T } from "@/lib/adminLang";
 import { todayLocalISO } from "@/lib/date";
 import { formatTime12 } from "@/lib/time-utils";
 import AccessibilityIcons from "./AccessibilityIcons";
+import PaymentStatusToggle from "./PaymentStatusToggle";
 
 interface TripRow {
   id: string;
@@ -56,13 +57,18 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
   const [selectedMonth, setSelectedMonth] = useState(() => new Date(`${todayISO}T00:00:00`));
   const [driverId, setDriverId] = useState("");
   const [selectedDate, setSelectedDate] = useState<string | null>(todayISO);
+  const [localTrips, setLocalTrips] = useState<TripRow[]>(trips);
+
+  function handlePaymentToggled(id: string, nextStatus: string) {
+    setLocalTrips((prev) => prev.map((trip) => (trip.id === id ? { ...trip, payment_status: nextStatus } : trip)));
+  }
 
   const year = selectedMonth.getFullYear();
   const month = selectedMonth.getMonth();
 
   const filteredTrips = useMemo(
-    () => (driverId ? trips.filter((trip) => trip.driver_id === driverId) : trips),
-    [trips, driverId]
+    () => (driverId ? localTrips.filter((trip) => trip.driver_id === driverId) : localTrips),
+    [localTrips, driverId]
   );
 
   const tripsByDay = useMemo(() => {
@@ -203,19 +209,18 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
                 <p className="text-sm text-zinc-500">
                   {trip.services?.name ?? "-"} · {trip.drivers?.name ?? "-"}
                 </p>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 font-semibold text-green-600">
-                    {formatDOP(trip.total_fare ?? 0)}
-                    {trip.payment_status && trip.payment_status !== "paid" && (
-                      <span
-                        title={trip.payment_status === "partial" ? "Partial payment" : "Payment pending"}
-                        className={`h-2 w-2 rounded-full ${trip.payment_status === "partial" ? "bg-yellow-500" : "bg-orange-500"}`}
-                      />
-                    )}
-                  </span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
-                    {trip.status}
-                  </span>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <span className="font-semibold text-green-600">{formatDOP(trip.total_fare ?? 0)}</span>
+                  <div className="flex items-center gap-2">
+                    <PaymentStatusToggle
+                      tripId={trip.id}
+                      status={trip.payment_status ?? "pending"}
+                      onToggled={(next) => handlePaymentToggled(trip.id, next)}
+                    />
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
+                      {trip.status}
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}

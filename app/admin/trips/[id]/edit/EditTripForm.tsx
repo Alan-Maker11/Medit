@@ -47,11 +47,6 @@ export default function EditTripForm({
   const [stairsElevator, setStairsElevator] = useState(Boolean(trip.needs_stair_climber));
   const [stairFloor, setStairFloor] = useState(Number(trip.stair_climber_floor) || 0);
 
-  // Payment tracking
-  const [paymentStatus, setPaymentStatus] = useState(trip.payment_status ?? "pending");
-  const [paymentMethod, setPaymentMethod] = useState(trip.payment_method ?? "full");
-  const [paidAmount, setPaidAmount] = useState(trip.paid_amount != null ? String(trip.paid_amount) : "0");
-
   // Subir/Bajar fee helper state
   const [transportFee, setTransportFee] = useState("0");
   const [subBajarRoundTrip, setSubBajarRoundTrip] = useState(false);
@@ -93,9 +88,6 @@ export default function EditTripForm({
         needs_wheelchair: wheelchair,
         needs_stair_climber: stairsElevator,
         stair_climber_floor: stairFloor,
-        payment_status: paymentStatus,
-        payment_method: paymentMethod,
-        paid_amount: Number(paidAmount) || 0,
       }),
     });
     setSubmitting(false);
@@ -253,39 +245,6 @@ export default function EditTripForm({
           </fieldset>
         </>
       )}
-
-      <fieldset className="flex flex-col gap-2 text-sm font-medium md:col-span-2">
-        Payment
-        <div className="grid grid-cols-2 gap-3 text-sm font-normal sm:grid-cols-3">
-          <label className="flex flex-col gap-1">
-            Status
-            <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className="input">
-              <option value="pending">Pending</option>
-              <option value="partial">Partial</option>
-              <option value="paid">Paid</option>
-            </select>
-          </label>
-          <label className="flex flex-col gap-1">
-            Method
-            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="input">
-              <option value="full">Full</option>
-              <option value="weekly">Weekly</option>
-            </select>
-          </label>
-          {(paymentStatus === "partial" || paymentStatus === "paid") && (
-            <label className="flex flex-col gap-1">
-              Paid amount (DOP)
-              <input
-                type="number"
-                min={0}
-                value={paidAmount}
-                onChange={(e) => setPaidAmount(e.target.value)}
-                className="input"
-              />
-            </label>
-          )}
-        </div>
-      </fieldset>
 
       {/* For Subir/Bajar: fee calculator that sets total_fare */}
       {isSubirBajar && (

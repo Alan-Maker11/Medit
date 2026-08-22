@@ -6,6 +6,7 @@ import { formatDOP } from "@/lib/fare";
 import { useAdminLang, ADMIN_T } from "@/lib/adminLang";
 import { formatDateWithDay, formatDateWithDayEnglish } from "@/lib/date-utils";
 import AccessibilityIcons from "./AccessibilityIcons";
+import PaymentStatusToggle from "./PaymentStatusToggle";
 
 interface TripRow {
   id: string;
@@ -70,6 +71,10 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
     });
   }
 
+  function handlePaymentToggled(id: string, nextStatus: string) {
+    setLocalTrips((prev) => prev.map((trip) => (trip.id === id ? { ...trip, payment_status: nextStatus } : trip)));
+  }
+
   async function handleDelete(id: string) {
     if (!window.confirm(t.confirmDelete)) return;
     setDeletingId(id);
@@ -123,6 +128,7 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                       <th className="px-4 py-3">{t.vehicle}</th>
                       <th className="px-4 py-3">{t.fare}</th>
                       <th className="px-4 py-3">{t.status}</th>
+                      <th className="px-4 py-3">Payment</th>
                       <th className="px-4 py-3 w-28"></th>
                     </tr>
                   </thead>
@@ -139,18 +145,15 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                         </td>
                         <td className="px-4 py-3">{trip.drivers?.name ?? "-"}</td>
                         <td className="px-4 py-3">{trip.vehicles?.name ?? "-"}</td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-1.5">
-                            {trip.total_fare ? formatDOP(trip.total_fare) : "-"}
-                            {trip.payment_status && trip.payment_status !== "paid" && (
-                              <span
-                                title={trip.payment_status === "partial" ? "Partial payment" : "Payment pending"}
-                                className={`h-2 w-2 rounded-full ${trip.payment_status === "partial" ? "bg-yellow-500" : "bg-orange-500"}`}
-                              />
-                            )}
-                          </span>
-                        </td>
+                        <td className="px-4 py-3">{trip.total_fare ? formatDOP(trip.total_fare) : "-"}</td>
                         <td className="px-4 py-3 capitalize">{trip.status}</td>
+                        <td className="px-4 py-3">
+                          <PaymentStatusToggle
+                            tripId={trip.id}
+                            status={trip.payment_status ?? "pending"}
+                            onToggled={(next) => handlePaymentToggled(trip.id, next)}
+                          />
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3 md:invisible md:group-hover:visible">
                             <Link
