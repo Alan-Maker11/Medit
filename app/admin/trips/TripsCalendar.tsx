@@ -18,6 +18,7 @@ interface TripRow {
   driver_id: string | null;
   needs_wheelchair?: boolean;
   needs_stair_climber?: boolean;
+  payment_status?: string;
   services: { name: string } | null;
   drivers: { name: string } | null;
   vehicles: { name: string } | null;
@@ -203,7 +204,15 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
                   {trip.services?.name ?? "-"} · {trip.drivers?.name ?? "-"}
                 </p>
                 <div className="mt-2 flex items-center justify-between">
-                  <span className="font-semibold text-green-600">{formatDOP(trip.total_fare ?? 0)}</span>
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-green-600">
+                    {formatDOP(trip.total_fare ?? 0)}
+                    {trip.payment_status && trip.payment_status !== "paid" && (
+                      <span
+                        title={trip.payment_status === "partial" ? "Partial payment" : "Payment pending"}
+                        className={`h-2 w-2 rounded-full ${trip.payment_status === "partial" ? "bg-yellow-500" : "bg-orange-500"}`}
+                      />
+                    )}
+                  </span>
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
                     {trip.status}
                   </span>

@@ -38,6 +38,11 @@ const TRIP_COLUMNS = [
   "notes",
   "needs_wheelchair",
   "needs_stair_climber",
+  "stair_climber_floor",
+  "payment_status",
+  "payment_method",
+  "paid_amount",
+  "payment_date",
 ] as const;
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -54,6 +59,17 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   const { data, error } = await supabase.from("trips").update(update).eq("id", id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // Log a payment_history entry whenever this save records money received.
+  if ((update.payment_status === "paid" || update.payment_status === "partial") && Number(update.paid_amount) > 0) {
+    await supabase.from("payment_history").insert({
+      trip_id: id,
+      amount: Number(update.paid_amount),
+      payment_method: update.payment_method ?? data.payment_method,
+      payment_date: (update.payment_date as string | undefined) ?? new Date().toISOString().slice(0, 10),
+    });
+  }
+
   return NextResponse.json({ trip: data });
 }
 

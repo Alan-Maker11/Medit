@@ -15,6 +15,7 @@ interface TripRow {
   status: string;
   needs_wheelchair?: boolean;
   needs_stair_climber?: boolean;
+  payment_status?: string;
   services: { name: string } | null;
   drivers: { name: string } | null;
   vehicles: { name: string } | null;
@@ -138,7 +139,17 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                         </td>
                         <td className="px-4 py-3">{trip.drivers?.name ?? "-"}</td>
                         <td className="px-4 py-3">{trip.vehicles?.name ?? "-"}</td>
-                        <td className="px-4 py-3">{trip.total_fare ? formatDOP(trip.total_fare) : "-"}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center gap-1.5">
+                            {trip.total_fare ? formatDOP(trip.total_fare) : "-"}
+                            {trip.payment_status && trip.payment_status !== "paid" && (
+                              <span
+                                title={trip.payment_status === "partial" ? "Partial payment" : "Payment pending"}
+                                className={`h-2 w-2 rounded-full ${trip.payment_status === "partial" ? "bg-yellow-500" : "bg-orange-500"}`}
+                              />
+                            )}
+                          </span>
+                        </td>
                         <td className="px-4 py-3 capitalize">{trip.status}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3 md:invisible md:group-hover:visible">
