@@ -19,7 +19,7 @@ interface TripRow {
   driver_id: string | null;
   needs_wheelchair?: boolean;
   needs_stair_climber?: boolean;
-  payment_status?: string;
+  client_owes?: boolean;
   services: { name: string } | null;
   drivers: { name: string } | null;
   vehicles: { name: string } | null;
@@ -59,8 +59,8 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
   const [selectedDate, setSelectedDate] = useState<string | null>(todayISO);
   const [localTrips, setLocalTrips] = useState<TripRow[]>(trips);
 
-  function handlePaymentToggled(id: string, nextStatus: string) {
-    setLocalTrips((prev) => prev.map((trip) => (trip.id === id ? { ...trip, payment_status: nextStatus } : trip)));
+  function handleOwesToggled(id: string, nextOwes: boolean) {
+    setLocalTrips((prev) => prev.map((trip) => (trip.id === id ? { ...trip, client_owes: nextOwes } : trip)));
   }
 
   const year = selectedMonth.getFullYear();
@@ -214,8 +214,8 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
                   <div className="flex items-center gap-2">
                     <PaymentStatusToggle
                       tripId={trip.id}
-                      status={trip.payment_status ?? "pending"}
-                      onToggled={(next) => handlePaymentToggled(trip.id, next)}
+                      owes={Boolean(trip.client_owes)}
+                      onToggled={(next) => handleOwesToggled(trip.id, next)}
                     />
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
                       {trip.status}

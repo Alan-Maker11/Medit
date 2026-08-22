@@ -16,7 +16,7 @@ interface TripRow {
   status: string;
   needs_wheelchair?: boolean;
   needs_stair_climber?: boolean;
-  payment_status?: string;
+  client_owes?: boolean;
   services: { name: string } | null;
   drivers: { name: string } | null;
   vehicles: { name: string } | null;
@@ -71,8 +71,8 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
     });
   }
 
-  function handlePaymentToggled(id: string, nextStatus: string) {
-    setLocalTrips((prev) => prev.map((trip) => (trip.id === id ? { ...trip, payment_status: nextStatus } : trip)));
+  function handleOwesToggled(id: string, nextOwes: boolean) {
+    setLocalTrips((prev) => prev.map((trip) => (trip.id === id ? { ...trip, client_owes: nextOwes } : trip)));
   }
 
   async function handleDelete(id: string) {
@@ -128,7 +128,7 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                       <th className="px-4 py-3">{t.vehicle}</th>
                       <th className="px-4 py-3">{t.fare}</th>
                       <th className="px-4 py-3">{t.status}</th>
-                      <th className="px-4 py-3">Payment</th>
+                      <th className="px-4 py-3">{t.clientOwes}</th>
                       <th className="px-4 py-3 w-28"></th>
                     </tr>
                   </thead>
@@ -150,8 +150,8 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
                         <td className="px-4 py-3">
                           <PaymentStatusToggle
                             tripId={trip.id}
-                            status={trip.payment_status ?? "pending"}
-                            onToggled={(next) => handlePaymentToggled(trip.id, next)}
+                            owes={Boolean(trip.client_owes)}
+                            onToggled={(next) => handleOwesToggled(trip.id, next)}
                           />
                         </td>
                         <td className="px-4 py-3">

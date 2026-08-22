@@ -65,6 +65,8 @@ export const ADMIN_T = {
     prev: "← Anterior",
     next: "Siguiente →",
     today: "Hoy",
+    clientOwes: "Debe",
+    clientOwesHint: "Marcar/desmarcar: el cliente todavía debe este viaje",
   },
   en: {
     dashboard: "Dashboard",
@@ -99,5 +101,7 @@ export const ADMIN_T = {
     prev: "← Previous",
     next: "Next →",
     today: "Today",
+    clientOwes: "Owes",
+    clientOwesHint: "Toggle: client still owes for this trip",
   },
 } as const;
