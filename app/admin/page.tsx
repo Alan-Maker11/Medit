@@ -10,7 +10,7 @@ export default async function AdminDashboard() {
   const [{ data: trips }, { data: expenses }, { data: uberEarnings }, { data: drivers }] = await Promise.all([
     supabase.from("trips").select("total_fare, status").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("expenses").select("amount").gte("date", weekStart).lte("date", weekEnd),
-    supabase.from("driver_uber_earnings").select("driver_id, amount, date").gte("date", weekStart).lte("date", weekEnd),
+    supabase.from("driver_uber_earnings").select("driver_id, gross_amount, amount, date").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("drivers").select("id, name"),
   ]);
 
@@ -19,16 +19,21 @@ export default async function AdminDashboard() {
   const profit = revenue - expenseTotal;
   const tripCount = trips?.length ?? 0;
 
+  // Medit's Uber income is the day's whole take minus the driver's 20% commission (their cut),
+  // not the driver's commission itself — that part belongs to the driver, not to Medit.
   const driverNameById = new Map((drivers ?? []).map((d) => [d.id, d.name]));
-  const uberByDriver = new Map<string, { name: string; total: number; days: number }>();
+  const uberByDriver = new Map<string, { name: string; gross: number; driverCommission: number; days: number }>();
   for (const e of uberEarnings ?? []) {
-    const acc = uberByDriver.get(e.driver_id) ?? { name: driverNameById.get(e.driver_id) ?? "Unknown", total: 0, days: 0 };
-    acc.total += e.amount ?? 0;
+    const acc = uberByDriver.get(e.driver_id) ?? { name: driverNameById.get(e.driver_id) ?? "Unknown", gross: 0, driverCommission: 0, days: 0 };
+    acc.gross += e.gross_amount ?? 0;
+    acc.driverCommission += e.amount ?? 0;
     acc.days += 1;
     uberByDriver.set(e.driver_id, acc);
   }
-  const uberTotal = [...uberByDriver.values()].reduce((sum, d) => sum + d.total, 0);
-  const combinedTotal = revenue + uberTotal;
+  const uberGrossTotal = [...uberByDriver.values()].reduce((sum, d) => sum + d.gross, 0);
+  const uberDriverCommissionTotal = [...uberByDriver.values()].reduce((sum, d) => sum + d.driverCommission, 0);
+  const uberMeditIncome = uberGrossTotal - uberDriverCommissionTotal;
+  const combinedTotal = revenue + uberMeditIncome;
 
   const stats = [
     { label: "Weekly revenue", value: formatDOP(revenue) },
@@ -59,9 +64,11 @@ export default async function AdminDashboard() {
           <p className="mt-1 text-xs text-blue-700/70 dark:text-blue-300/70">{tripCount} trips</p>
         </div>
         <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5 dark:border-orange-900 dark:bg-orange-950/30">
-          <p className="text-sm text-orange-700 dark:text-orange-300">Uber earnings (week)</p>
-          <p className="mt-1 text-2xl font-bold text-orange-900 dark:text-orange-200">{formatDOP(uberTotal)}</p>
-          <p className="mt-1 text-xs text-orange-700/70 dark:text-orange-300/70">{uberByDriver.size} driver{uberByDriver.size !== 1 ? "s" : ""}</p>
+          <p className="text-sm text-orange-700 dark:text-orange-300">Uber income — Medit's cut (week)</p>
+          <p className="mt-1 text-2xl font-bold text-orange-900 dark:text-orange-200">{formatDOP(uberMeditIncome)}</p>
+          <p className="mt-1 text-xs text-orange-700/70 dark:text-orange-300/70">
+            {formatDOP(uberGrossTotal)} gross − {formatDOP(uberDriverCommissionTotal)} driver commission
+          </p>
         </div>
         <div className="rounded-2xl border border-green-200 bg-gradient-to-br from-green-500 to-green-600 p-5 text-white">
           <p className="text-sm text-green-50">Combined weekly total</p>
@@ -72,13 +79,15 @@ export default async function AdminDashboard() {
 
       {uberByDriver.size > 0 && (
         <div className="rounded-2xl border border-orange-200 bg-orange-50/50 p-5 dark:border-orange-900 dark:bg-orange-950/10">
-          <h3 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Uber breakdown by driver</h3>
+          <h3 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Uber breakdown by driver — Medit's cut</h3>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[...uberByDriver.entries()].map(([driverId, d]) => (
               <div key={driverId} className="rounded-xl bg-white p-3 dark:bg-zinc-900">
                 <p className="text-xs text-zinc-500">{d.name}</p>
-                <p className="text-lg font-bold text-orange-600">{formatDOP(d.total)}</p>
-                <p className="text-xs text-zinc-500">{d.days} day{d.days !== 1 ? "s" : ""}</p>
+                <p className="text-lg font-bold text-orange-600">{formatDOP(d.gross - d.driverCommission)}</p>
+                <p className="text-xs text-zinc-500">
+                  {formatDOP(d.gross)} gross · {d.days} day{d.days !== 1 ? "s" : ""}
+                </p>
               </div>
             ))}
           </div>
