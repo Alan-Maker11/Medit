@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getStairClimberPrice } from "@/lib/fare";
+
+const WHEELCHAIR_FEE = 350;
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -17,7 +20,9 @@ export async function GET(request: Request) {
 
   const { data: trips } = await supabase
     .from("trips")
-    .select("id, date, total_fare, services(name), vehicles(name), drivers(name)")
+    .select(
+      "id, date, total_fare, trip_type, needs_wheelchair, needs_stair_climber, stair_climber_floor, services(name), vehicles(name), drivers(name)"
+    )
     .gte("date", monthStart)
     .lt("date", monthEnd)
     .order("date", { ascending: true });
@@ -94,6 +99,18 @@ export async function GET(request: Request) {
   const totalExpenses = (expenses ?? []).reduce((sum, e) => sum + (e.amount ?? 0), 0);
   const profit = revenue - totalExpenses - salaryTotal;
 
+  // Equipment income: trips don't store an itemized fee per add-on, so this is
+  // reconstructed from the flags using the same pricing rules used when the fare
+  // was originally calculated (wheelchair flat 350, stairs by floor, both doubled
+  // on round-trips).
+  const wheelchairTrips = (trips ?? []).filter((t) => t.needs_wheelchair);
+  const stairTrips = (trips ?? []).filter((t) => t.needs_stair_climber);
+  const wheelchairIncome = wheelchairTrips.length * WHEELCHAIR_FEE;
+  const stairIncome = stairTrips.reduce((sum, t) => {
+    const multiplier = t.trip_type === "round-trip" ? 2 : 1;
+    return sum + getStairClimberPrice(t.stair_climber_floor ?? 0) * multiplier;
+  }, 0);
+
   return NextResponse.json({
     month,
     days,
@@ -107,6 +124,10 @@ export async function GET(request: Request) {
       profit_margin: revenue > 0 ? Number(((profit / revenue) * 100).toFixed(1)) : 0,
       trip_count: trips?.length ?? 0,
       average_fare: trips && trips.length > 0 ? Math.round(revenue / trips.length) : 0,
+      wheelchair_trip_count: wheelchairTrips.length,
+      wheelchair_income: wheelchairIncome,
+      stair_climber_trip_count: stairTrips.length,
+      stair_climber_income: stairIncome,
       by_service: groupSum(
         trips ?? [],
         (t) => (t.services as unknown as { name: string } | null)?.name ?? "Unknown",

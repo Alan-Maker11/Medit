@@ -27,6 +27,10 @@ interface MonthlyReport {
     profit_margin: number;
     trip_count: number;
     average_fare: number;
+    wheelchair_trip_count: number;
+    wheelchair_income: number;
+    stair_climber_trip_count: number;
+    stair_climber_income: number;
     by_service: Record<string, number>;
     by_driver: Record<string, number>;
     by_vehicle_revenue: Record<string, number>;
@@ -111,6 +115,9 @@ export default function ReportsPage() {
       ["Profit margin %", report.summary.profit_margin],
       ["Total trips", report.summary.trip_count],
       ["Average fare", report.summary.average_fare],
+      [],
+      ["Wheelchair income", report.summary.wheelchair_income, `${report.summary.wheelchair_trip_count} trips`],
+      ["Stair climber income", report.summary.stair_climber_income, `${report.summary.stair_climber_trip_count} trips`],
     ];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), "Summary");
 
@@ -269,6 +276,23 @@ export default function ReportsPage() {
                     </tr>
                   </tfoot>
                 </table>
+              </div>
+            </div>
+
+            {/* Equipment income */}
+            <div>
+              <h3 className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Equipment income</h3>
+              <div className="grid grid-cols-2 gap-4 sm:w-1/2">
+                <Stat
+                  label="Wheelchair"
+                  value={formatDOP(report.summary.wheelchair_income)}
+                  sub={`${report.summary.wheelchair_trip_count} trip${report.summary.wheelchair_trip_count !== 1 ? "s" : ""}`}
+                />
+                <Stat
+                  label="Stair climber"
+                  value={formatDOP(report.summary.stair_climber_income)}
+                  sub={`${report.summary.stair_climber_trip_count} trip${report.summary.stair_climber_trip_count !== 1 ? "s" : ""}`}
+                />
               </div>
             </div>
 
