@@ -67,6 +67,8 @@ export const ADMIN_T = {
     today: "Hoy",
     clientOwes: "Debe",
     clientOwesHint: "Marcar/desmarcar: el cliente todavía debe este viaje",
+    allServices: "Todos los servicios",
+    onlyOwes: "Solo quienes deben",
   },
   en: {
     dashboard: "Dashboard",
@@ -103,5 +105,7 @@ export const ADMIN_T = {
     today: "Today",
     clientOwes: "Owes",
     clientOwesHint: "Toggle: client still owes for this trip",
+    allServices: "All services",
+    onlyOwes: "Only who owes",
   },
 } as const;

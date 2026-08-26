@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatDOP } from "@/lib/fare";
 import { useAdminLang, ADMIN_T } from "@/lib/adminLang";
 import { todayLocalISO } from "@/lib/date";
@@ -58,6 +58,7 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
   const [driverId, setDriverId] = useState("");
   const [selectedDate, setSelectedDate] = useState<string | null>(todayISO);
   const [localTrips, setLocalTrips] = useState<TripRow[]>(trips);
+  useEffect(() => setLocalTrips(trips), [trips]);
 
   function handleOwesToggled(id: string, nextOwes: boolean) {
     setLocalTrips((prev) => prev.map((trip) => (trip.id === id ? { ...trip, client_owes: nextOwes } : trip)));

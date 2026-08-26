@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatDOP } from "@/lib/fare";
 import { useAdminLang, ADMIN_T } from "@/lib/adminLang";
 import { formatDateWithDay, formatDateWithDayEnglish } from "@/lib/date-utils";
@@ -50,6 +50,7 @@ export default function TripsByMonth({ trips }: { trips: TripRow[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(groups.slice(0, 1).map(([key]) => key)));
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [localTrips, setLocalTrips] = useState<TripRow[]>(trips);
+  useEffect(() => setLocalTrips(trips), [trips]);
 
   const localGroups = useMemo(() => {
     const map = new Map<string, TripRow[]>();
