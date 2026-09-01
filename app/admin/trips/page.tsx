@@ -4,11 +4,18 @@ import TripsHeader from "./TripsHeader";
 
 export default async function TripsPage() {
   const supabase = await createClient();
+
+  // Meditiko trips live under the separate Meditiko tab, not the main Medit trip list.
+  const { data: meditikoVehicle } = await supabase.from("vehicles").select("id").ilike("name", "Meditiko").maybeSingle();
+
+  let tripsQuery = supabase
+    .from("trips")
+    .select("id, date, time, client_name, trip_type, status, total_fare, driver_id, service_id, needs_wheelchair, needs_stair_climber, client_owes, services(name), drivers(name), vehicles(name)")
+    .order("date", { ascending: false });
+  if (meditikoVehicle) tripsQuery = tripsQuery.neq("vehicle_id", meditikoVehicle.id);
+
   const [{ data: trips, error: tripsError }, { data: drivers }, { data: services }] = await Promise.all([
-    supabase
-      .from("trips")
-      .select("id, date, time, client_name, trip_type, status, total_fare, driver_id, service_id, needs_wheelchair, needs_stair_climber, client_owes, services(name), drivers(name), vehicles(name)")
-      .order("date", { ascending: false }),
+    tripsQuery,
     supabase.from("drivers").select("id, name").order("name", { ascending: true }),
     supabase.from("services").select("id, name").order("name", { ascending: true }),
   ]);

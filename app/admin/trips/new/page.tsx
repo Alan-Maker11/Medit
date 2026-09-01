@@ -17,7 +17,16 @@ interface Option {
   name: string;
 }
 
-export default function NewTripPage() {
+export default function NewTripPage({
+  lockedVehicleName,
+  redirectTo = "/admin/trips",
+  heading = "Log new trip",
+}: {
+  /** When set, the vehicle is auto-selected to the matching vehicle and the field is locked instead of a free select — used by the Meditiko "Registrar viaje" flow. */
+  lockedVehicleName?: string;
+  redirectTo?: string;
+  heading?: string;
+} = {}) {
   const router = useRouter();
   const pickupRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
@@ -48,7 +57,7 @@ export default function NewTripPage() {
     distance_km: "",
     duration_minutes: "",
     trip_type: "one-way" as TripType,
-    transportation_mode: "private" as TransportationMode,
+    transportation_mode: (lockedVehicleName ? "public" : "private") as TransportationMode,
     waiting_hours: "0",
     notes: "",
   });
@@ -96,7 +105,18 @@ export default function NewTripPage() {
     const supabase = createClient();
     supabase.from("services").select("id, name").then(({ data }) => setServices(data ?? []));
     supabase.from("drivers").select("id, name").eq("status", "active").then(({ data }) => setDrivers(data ?? []));
-    supabase.from("vehicles").select("id, name").eq("status", "active").then(({ data }) => setVehicles(data ?? []));
+    supabase
+      .from("vehicles")
+      .select("id, name")
+      .eq("status", "active")
+      .then(({ data }) => {
+        setVehicles(data ?? []);
+        if (lockedVehicleName) {
+          const locked = (data ?? []).find((v) => v.name.toLowerCase() === lockedVehicleName.toLowerCase());
+          if (locked) update("vehicle_id", locked.id);
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -326,12 +346,12 @@ export default function NewTripPage() {
       window.open(calUrl, "_blank");
     }
 
-    router.push("/admin/trips");
+    router.push(redirectTo);
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Log new trip</h1>
+      <h1 className="text-2xl font-bold">{heading}</h1>
       <div className="grid max-w-5xl gap-6 md:grid-cols-2">
         <form
           onSubmit={handleSubmit}
@@ -436,10 +456,16 @@ export default function NewTripPage() {
             </select>
           </Field>
           <Field label="Vehicle">
-            <select value={form.vehicle_id} onChange={(e) => update("vehicle_id", e.target.value)} className="input">
-              <option value="">Select vehicle</option>
-              {vehicles.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
-            </select>
+            {lockedVehicleName ? (
+              <div className="input flex items-center bg-orange-50 font-medium text-orange-700 dark:bg-orange-950/30 dark:text-orange-300">
+                ⚡ {lockedVehicleName}
+              </div>
+            ) : (
+              <select value={form.vehicle_id} onChange={(e) => update("vehicle_id", e.target.value)} className="input">
+                <option value="">Select vehicle</option>
+                {vehicles.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+              </select>
+            )}
           </Field>
 
           {/* Distance/duration manual entry — only for regular trips */}
@@ -476,23 +502,31 @@ export default function NewTripPage() {
                   <option value="round-trip">Round-trip</option>
                 </select>
               </Field>
-              <Field label="Mode">
-                <select
-                  value={form.transportation_mode}
-                  onChange={(e) => {
-                    const mode = e.target.value as TransportationMode;
-                    update("transportation_mode", mode);
-                    if (mode === "public") {
-                      const meditiko = vehicles.find((v) => v.name.toLowerCase() === "meditiko");
-                      if (meditiko) update("vehicle_id", meditiko.id);
-                    }
-                  }}
-                  className="input"
-                >
-                  <option value="private">Private</option>
-                  <option value="public">Public (Meditiko)</option>
-                </select>
-              </Field>
+              {lockedVehicleName ? (
+                <Field label="Mode">
+                  <div className="input flex items-center bg-orange-50 font-medium text-orange-700 dark:bg-orange-950/30 dark:text-orange-300">
+                    Public ({lockedVehicleName})
+                  </div>
+                </Field>
+              ) : (
+                <Field label="Mode">
+                  <select
+                    value={form.transportation_mode}
+                    onChange={(e) => {
+                      const mode = e.target.value as TransportationMode;
+                      update("transportation_mode", mode);
+                      if (mode === "public") {
+                        const meditiko = vehicles.find((v) => v.name.toLowerCase() === "meditiko");
+                        if (meditiko) update("vehicle_id", meditiko.id);
+                      }
+                    }}
+                    className="input"
+                  >
+                    <option value="private">Private</option>
+                    <option value="public">Public (Meditiko)</option>
+                  </select>
+                </Field>
+              )}
               {form.trip_type === "round-trip" && (
                 <Field label="Waiting hours">
                   <input
