@@ -27,11 +27,25 @@ export default function AdminSidebar({ signOutSlot }: { signOutSlot: React.React
     { href: "/admin/reports", label: t.reports },
   ];
 
+  const MEDITIKO_NAV_ITEMS = [
+    { href: "/admin/meditiko", label: "⚡ Meditiko" },
+    { href: "/admin/meditiko/expenses", label: "💰 Gastos Meditiko" },
+  ];
+
   function linkClass(href: string) {
     const active = href === "/admin" ? pathname === href : pathname.startsWith(href);
     return `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
       active
         ? "bg-blue-600 text-white"
+        : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+    }`;
+  }
+
+  function meditikoLinkClass(href: string) {
+    const active = pathname === href || (href !== "/admin/meditiko" && pathname.startsWith(href)) || (href === "/admin/meditiko" && pathname.startsWith(href) && !pathname.startsWith("/admin/meditiko/expenses"));
+    return `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+      active
+        ? "bg-orange-600 text-white"
         : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
     }`;
   }
@@ -91,6 +105,12 @@ export default function AdminSidebar({ signOutSlot }: { signOutSlot: React.React
                 {item.label}
               </Link>
             ))}
+            <div className="my-2 border-t border-zinc-200 dark:border-zinc-800" />
+            {MEDITIKO_NAV_ITEMS.map((item) => (
+              <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={meditikoLinkClass(item.href)}>
+                {item.label}
+              </Link>
+            ))}
             <div className="mt-auto flex flex-col gap-2 px-0 pt-4">
               {LangToggle}
               {signOutSlot}
@@ -104,6 +124,12 @@ export default function AdminSidebar({ signOutSlot }: { signOutSlot: React.React
         <h2 className="mb-4 px-2 text-lg font-bold">Medit Admin</h2>
         {NAV_ITEMS.map((item) => (
           <Link key={item.href} href={item.href} className={linkClass(item.href)}>
+            {item.label}
+          </Link>
+        ))}
+        <div className="my-2 border-t border-zinc-200 dark:border-zinc-800" />
+        {MEDITIKO_NAV_ITEMS.map((item) => (
+          <Link key={item.href} href={item.href} className={meditikoLinkClass(item.href)}>
             {item.label}
           </Link>
         ))}

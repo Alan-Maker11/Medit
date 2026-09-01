@@ -55,11 +55,16 @@ export default function MeditikoCalculatorPage() {
   const pickupRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
 
+  const [passengerName, setPassengerName] = useState("");
+  const [passengerPhone, setPassengerPhone] = useState("");
   const [pickupAddress, setPickupAddress] = useState("");
   const [destinationAddress, setDestinationAddress] = useState("");
   const [tripType, setTripType] = useState<"oneway" | "roundtrip">("oneway");
   const [waitingHours, setWaitingHours] = useState(0);
   const [showFormulaTest, setShowFormulaTest] = useState(false);
+  const [booking, setBooking] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   const [mapsReady, setMapsReady] = useState(false);
   const [mapsError, setMapsError] = useState<string | null>(() =>
@@ -77,8 +82,8 @@ export default function MeditikoCalculatorPage() {
   const effectiveKm = distanceKm ?? (mapsError ? manualKm : null);
   const effectiveMinutes =
     durationMinutes ?? (mapsError ? Math.round((manualKm / MEDITIKO_TOP_SPEED_KMH) * 60) : null);
-  const isLongJourney =
-    effectiveKm != null && (effectiveKm > MAX_EXPRESS_KM || (effectiveMinutes ?? 0) > MAX_EXPRESS_MINUTES);
+  // Distance is the only restriction — time/duration is shown for information only.
+  const isLongJourney = effectiveKm != null && effectiveKm > MAX_EXPRESS_KM;
 
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -154,11 +159,48 @@ export default function MeditikoCalculatorPage() {
   }${effectiveKm != null ? `, ${effectiveKm}km` : ""})`;
 
   const bookHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    `Hola Meditiko, quiero reservar un viaje: ${tripSummary} — precio estimado RD$${calculatedPrice.toLocaleString()}`
+    `Hola Meditiko, soy ${passengerName || "?"} (${passengerPhone || "?"}). Quiero reservar: ${tripSummary} — precio estimado RD$${calculatedPrice.toLocaleString()}`
   )}`;
   const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     `Hola Medit, necesito transporte para un viaje largo: ${tripSummary}`
   )}`;
+
+  async function handleBook() {
+    setBookingError(null);
+    if (!passengerName.trim() || !passengerPhone.trim()) {
+      setBookingError("Ingresa tu nombre y teléfono para reservar.");
+      return;
+    }
+    if (effectiveKm == null) return;
+    setBooking(true);
+    try {
+      const res = await fetch("/api/meditiko/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          passenger_name: passengerName.trim(),
+          passenger_phone: passengerPhone.trim(),
+          pickup_address: pickupAddress,
+          destination_address: destinationAddress,
+          trip_distance_km: effectiveKm,
+          estimated_duration_minutes: effectiveMinutes ?? 0,
+          trip_type: tripType === "roundtrip" ? "round_trip" : "one_way",
+          waiting_hours: waitingHours,
+          estimated_price: calculatedPrice,
+        }),
+      });
+      if (!res.ok) {
+        setBookingError("No se pudo enviar la reserva. Intenta de nuevo o contáctanos por WhatsApp.");
+        setBooking(false);
+        return;
+      }
+      setBookingConfirmed(true);
+      window.open(bookHref, "_blank", "noopener,noreferrer");
+    } catch {
+      setBookingError("No se pudo enviar la reserva. Intenta de nuevo o contáctanos por WhatsApp.");
+    }
+    setBooking(false);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-purple-900 px-4 py-8">
@@ -169,6 +211,24 @@ export default function MeditikoCalculatorPage() {
         </div>
 
         <div className="space-y-6 rounded-3xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-md">
+          {/* Passenger info */}
+          <div className="space-y-3">
+            <label className="block text-sm font-bold uppercase tracking-wider text-gray-800">Tus datos</label>
+            <input
+              value={passengerName}
+              onChange={(e) => setPassengerName(e.target.value)}
+              placeholder="Nombre completo"
+              className="w-full rounded-xl border-2 border-blue-300 px-4 py-3 text-sm font-medium text-gray-900 focus:border-blue-600 focus:outline-none"
+            />
+            <input
+              value={passengerPhone}
+              onChange={(e) => setPassengerPhone(e.target.value)}
+              placeholder="Teléfono / WhatsApp"
+              type="tel"
+              className="w-full rounded-xl border-2 border-blue-300 px-4 py-3 text-sm font-medium text-gray-900 focus:border-blue-600 focus:outline-none"
+            />
+          </div>
+
           {/* Trip type */}
           <div className="space-y-3">
             <label className="block text-sm font-bold uppercase tracking-wider text-gray-800">Tipo de Viaje</label>
@@ -386,19 +446,35 @@ export default function MeditikoCalculatorPage() {
           </div>
 
           {/* CTA */}
-          {effectiveKm != null && (
-            <a
-              href={isLongJourney ? whatsappHref : bookHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex w-full transform items-center justify-center gap-2 rounded-xl px-6 py-4 font-bold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl ${
-                isLongJourney
-                  ? "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
-                  : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              }`}
-            >
-              📍 {isLongJourney ? "Contactar Medit Premium" : "Reservar Ahora"}
-            </a>
+          {effectiveKm != null && !bookingConfirmed && (
+            <>
+              {isLongJourney ? (
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full transform items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 px-6 py-4 font-bold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-red-700 hover:to-orange-700 hover:shadow-xl"
+                >
+                  📍 Contactar Medit Premium
+                </a>
+              ) : (
+                <button
+                  onClick={handleBook}
+                  disabled={booking}
+                  className="flex w-full transform items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 font-bold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:opacity-60"
+                >
+                  📍 {booking ? "Enviando reserva…" : "Reservar Ahora"}
+                </button>
+              )}
+              {bookingError && <p className="text-center text-sm text-red-600">{bookingError}</p>}
+            </>
+          )}
+
+          {bookingConfirmed && (
+            <div className="rounded-xl border-2 border-green-300 bg-green-50 p-4 text-center">
+              <p className="font-bold text-green-900">✅ ¡Reserva enviada!</p>
+              <p className="text-sm text-green-800">Te contactaremos por WhatsApp para confirmar tu viaje.</p>
+            </div>
           )}
 
           {/* Formula test toggle */}

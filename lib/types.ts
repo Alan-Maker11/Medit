@@ -33,6 +33,39 @@ export const EXPENSE_CATEGORIES = [
 ] as const;
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
 
+export const MEDITIKO_EXPENSE_CATEGORIES = ["gas", "maintenance", "insurance", "tolls", "other"] as const;
+export type MeditikoExpenseCategory = (typeof MEDITIKO_EXPENSE_CATEGORIES)[number];
+
+export type MeditikoBookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
+
+export interface MeditikoBooking {
+  id: string;
+  passenger_name: string;
+  passenger_phone: string;
+  pickup_address: string;
+  destination_address: string;
+  trip_distance_km: number;
+  estimated_duration_minutes: number;
+  trip_type: "one_way" | "round_trip";
+  waiting_hours: number;
+  estimated_price: number;
+  assigned_driver_id: string | null;
+  status: MeditikoBookingStatus;
+  notes: string | null;
+  created_at: string;
+  drivers?: { name: string } | null;
+}
+
+export interface MeditikoExpense {
+  id: string;
+  date: string;
+  category: MeditikoExpenseCategory;
+  description: string;
+  amount: number;
+  driver_id: string | null;
+  notes: string | null;
+}
+
 export interface FareBreakdown {
   distanceKm: number;
   durationMinutes: number;
