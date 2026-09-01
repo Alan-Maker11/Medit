@@ -13,6 +13,11 @@ export const PUBLIC_WAITING_RATE_PER_HOUR = 100;
 // Driver's cut of manually-logged Uber side earnings (day total, all trips combined).
 export const UBER_DRIVER_COMMISSION_RATE = 0.2;
 
+// Meditiko drivers are paid a fixed base salary plus this cut of each contracted
+// client's daily trip total — the driver only ever sees the rate and base salary,
+// never the computed dollar amounts (admin enters/reviews those).
+export const MEDITIKO_DRIVER_COMMISSION_RATE = 0.2;
+
 // Stair climber fee scales with how many floors up the client lives.
 // Floor 1 (ground) needs no climb; floor 4+ is capped at the top rate.
 export const STAIR_CLIMBER_PRICING = [

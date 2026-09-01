@@ -19,7 +19,8 @@ interface SalaryEntry {
 
 interface SalaryResponse {
   month: string;
-  driver: { name: string; baseMonthlySalary: number; overtimeHourlyRate: number };
+  isMeditiko?: boolean;
+  driver: { name: string; baseMonthlySalary: number; overtimeHourlyRate?: number; commissionRate?: number };
   entries: SalaryEntry[];
 }
 
@@ -72,7 +73,7 @@ export default function DriverSalaryPage() {
   const termGroups = useMemo(() => {
     if (!data) return [];
     const halfBaseSalary = data.driver.baseMonthlySalary / 2;
-    const rate = data.driver.overtimeHourlyRate;
+    const rate = data.driver.overtimeHourlyRate ?? 0;
     const map = new Map<1 | 2, SalaryEntry[]>();
     for (const entry of data.entries) {
       const term = termOf(entry.date);
@@ -152,11 +153,24 @@ export default function DriverSalaryPage() {
         {loading && <p className="text-sm text-zinc-500">Cargando...</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        {!loading && !error && data && (
+        {!loading && !error && data && data.isMeditiko && (
+          <div className="rounded-2xl border border-orange-200 bg-orange-50 p-6 text-center shadow-sm dark:border-orange-900 dark:bg-orange-950/20">
+            <p className="text-lg font-bold text-orange-700 dark:text-orange-300">⚡ Conductor Meditiko</p>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              Salario base mensual: <span className="font-semibold text-zinc-900 dark:text-white">{formatDOP(data.driver.baseMonthlySalary)}</span>
+            </p>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Comisión: <span className="font-semibold text-zinc-900 dark:text-white">{(data.driver.commissionRate ?? 0.2) * 100}%</span> por cliente contratado
+            </p>
+            <p className="mt-3 text-xs text-zinc-500">Contacta a tu supervisor para el detalle de pagos.</p>
+          </div>
+        )}
+
+        {!loading && !error && data && !data.isMeditiko && (
           <div className="flex flex-col gap-4">
             <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
               Salario base mensual {formatDOP(data.driver.baseMonthlySalary)} · Tarifa hora extra{" "}
-              {formatDOP(data.driver.overtimeHourlyRate)}/hr
+              {formatDOP(data.driver.overtimeHourlyRate ?? 0)}/hr
             </div>
 
             {termGroups.length === 0 && (
@@ -212,7 +226,7 @@ export default function DriverSalaryPage() {
                               <tr key={entry.date} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
                                 <td className="px-4 py-2">{entry.date}</td>
                                 <td className="px-4 py-2">{entry.hours}</td>
-                                <td className="px-4 py-2">{formatDOP(Number(entry.hours) * data.driver.overtimeHourlyRate)}</td>
+                                <td className="px-4 py-2">{formatDOP(Number(entry.hours) * (data.driver.overtimeHourlyRate ?? 0))}</td>
                                 <td className="px-4 py-2">{formatDOP(entry.dieta_amount)}</td>
                                 <td className="px-4 py-2">{entry.elevator_amount ? formatDOP(entry.elevator_amount) : "-"}</td>
                               </tr>

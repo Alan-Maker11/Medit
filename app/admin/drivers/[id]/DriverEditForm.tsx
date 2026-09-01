@@ -20,6 +20,7 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
     status: driver.status ?? "active",
     start_date: driver.start_date ?? "",
   });
+  const [isMeditiko, setIsMeditiko] = useState(Boolean(driver.is_meditiko));
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -40,6 +41,7 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
         diet_morning_allowance: Number(form.diet_morning_allowance),
         diet_evening_allowance: Number(form.diet_evening_allowance),
         start_date: form.start_date || null,
+        is_meditiko: isMeditiko,
       }),
     });
     setSubmitting(false);
@@ -116,6 +118,11 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
           onChange={(e) => update("diet_evening_allowance", e.target.value)}
           className="input"
         />
+      </label>
+
+      <label className="flex items-center gap-2 text-sm font-medium">
+        <input type="checkbox" checked={isMeditiko} onChange={(e) => setIsMeditiko(e.target.checked)} />
+        ⚡ Conductor Meditiko (base + 20% comisión por cliente, en vez de horas extra/dieta)
       </label>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

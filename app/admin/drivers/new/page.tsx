@@ -19,6 +19,7 @@ export default function NewDriverPage() {
     status: "active",
     start_date: "",
   });
+  const [isMeditiko, setIsMeditiko] = useState(false);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -31,7 +32,7 @@ export default function NewDriverPage() {
     const res = await fetch("/api/drivers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, is_meditiko: isMeditiko }),
     });
     setSubmitting(false);
     if (!res.ok) {
@@ -100,6 +101,11 @@ export default function NewDriverPage() {
             onChange={(e) => update("diet_evening_allowance", e.target.value)}
             className="input"
           />
+        </label>
+
+        <label className="flex items-center gap-2 text-sm font-medium md:col-span-2">
+          <input type="checkbox" checked={isMeditiko} onChange={(e) => setIsMeditiko(e.target.checked)} />
+          ⚡ Conductor Meditiko (base + 20% comisión por cliente, en vez de horas extra/dieta)
         </label>
 
         {error && <p className="col-span-2 text-sm text-red-600">{error}</p>}

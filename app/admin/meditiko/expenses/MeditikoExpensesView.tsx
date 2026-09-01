@@ -11,6 +11,7 @@ interface DriverOption {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
+  storage: "🅿️ Almacenaje/Parqueo",
   gas: "⛽ Gasolina",
   maintenance: "🔧 Mantenimiento",
   insurance: "🛡️ Seguro",

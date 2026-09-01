@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     diet_evening_allowance,
     status,
     start_date,
+    is_meditiko,
   } = body;
 
   if (!name) return NextResponse.json({ error: "name is required" }, { status: 400 });
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
       diet_evening_allowance: diet_evening_allowance ? Number(diet_evening_allowance) : 200,
       status: status || "active",
       start_date: start_date || null,
+      is_meditiko: Boolean(is_meditiko),
     })
     .select()
     .single();

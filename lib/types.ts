@@ -33,7 +33,7 @@ export const EXPENSE_CATEGORIES = [
 ] as const;
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
 
-export const MEDITIKO_EXPENSE_CATEGORIES = ["gas", "maintenance", "insurance", "tolls", "other"] as const;
+export const MEDITIKO_EXPENSE_CATEGORIES = ["storage", "gas", "maintenance", "insurance", "tolls", "other"] as const;
 export type MeditikoExpenseCategory = (typeof MEDITIKO_EXPENSE_CATEGORIES)[number];
 
 export type MeditikoBookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
@@ -107,6 +107,17 @@ export interface Driver {
   diet_evening_allowance: number;
   status: "active" | "inactive";
   start_date: string | null;
+  is_meditiko: boolean;
+}
+
+export interface MeditikoDriverEarning {
+  id: string;
+  driver_id: string;
+  client_name: string;
+  date: string;
+  gross_amount: number;
+  amount: number; // driver's commission, computed from gross_amount
+  notes: string | null;
 }
 
 export interface Trip {
