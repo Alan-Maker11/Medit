@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { formatDOP, UBER_DRIVER_COMMISSION_RATE } from "@/lib/fare";
-import type { Driver, OvertimeEntry, UberEarning } from "@/lib/types";
+import { formatDOP, UBER_DRIVER_COMMISSION_RATE, MEDITIKO_DRIVER_COMMISSION_RATE } from "@/lib/fare";
+import type { Driver, OvertimeEntry, UberEarning, MeditikoDriverEarning } from "@/lib/types";
 import { todayLocalISO } from "@/lib/date";
 
 const MONTH_NAMES = [
@@ -231,14 +231,110 @@ function UberEntryRow({
   );
 }
 
+interface MeditikoEditState {
+  id: string;
+  client_name: string;
+  date: string;
+  gross_amount: string;
+  notes: string;
+}
+
+function MeditikoEntryRow({
+  entry,
+  onSave,
+  onDelete,
+}: {
+  entry: MeditikoDriverEarning;
+  onSave: (state: MeditikoEditState) => Promise<string | null>;
+  onDelete: (id: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState<MeditikoEditState>({
+    id: entry.id,
+    client_name: entry.client_name,
+    date: entry.date,
+    gross_amount: String(entry.gross_amount),
+    notes: entry.notes ?? "",
+  });
+
+  function startEdit() {
+    setDraft({ id: entry.id, client_name: entry.client_name, date: entry.date, gross_amount: String(entry.gross_amount), notes: entry.notes ?? "" });
+    setError(null);
+    setEditing(true);
+  }
+
+  async function save() {
+    setSaving(true);
+    const err = await onSave(draft);
+    setSaving(false);
+    if (err) { setError(err); return; }
+    setEditing(false);
+  }
+
+  const cellClass = "px-4 py-2";
+  const inputClass = "w-full rounded-lg border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800";
+
+  if (editing) {
+    const draftCommission = (Number(draft.gross_amount) || 0) * MEDITIKO_DRIVER_COMMISSION_RATE;
+    return (
+      <>
+        <tr className="border-b border-zinc-100 bg-orange-50 dark:border-zinc-800 dark:bg-orange-950/30">
+          <td className={cellClass}>
+            <input value={draft.client_name} onChange={(e) => setDraft({ ...draft, client_name: e.target.value })} className={inputClass} />
+          </td>
+          <td className={cellClass}>
+            <input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} className={inputClass} />
+          </td>
+          <td className={cellClass}>
+            <input type="number" min={0} value={draft.gross_amount} onChange={(e) => setDraft({ ...draft, gross_amount: e.target.value })} className={inputClass} style={{ width: "7rem" }} />
+          </td>
+          <td className={cellClass}>{formatDOP(draftCommission)}</td>
+          <td className={`${cellClass} whitespace-nowrap`}>
+            <button onClick={save} disabled={saving} className="mr-2 text-xs font-medium text-blue-600 hover:underline disabled:opacity-50">
+              {saving ? "Saving…" : "Save"}
+            </button>
+            <button onClick={() => setEditing(false)} className="text-xs text-zinc-500 hover:underline">Cancel</button>
+          </td>
+        </tr>
+        {error && (
+          <tr>
+            <td colSpan={5} className="px-4 pb-2 text-xs text-red-600">{error}</td>
+          </tr>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <tr className="group border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+      <td className={cellClass}>{entry.client_name}</td>
+      <td className={cellClass}>{entry.date}</td>
+      <td className={cellClass}>{formatDOP(entry.gross_amount)}</td>
+      <td className={cellClass}>{formatDOP(entry.amount)}</td>
+      <td className={`${cellClass} whitespace-nowrap`}>
+        <button onClick={startEdit} className="mr-3 text-xs font-medium text-blue-600 hover:underline md:invisible md:group-hover:visible">
+          Edit
+        </button>
+        <button onClick={() => onDelete(entry.id)} className="text-xs text-red-600 hover:underline">
+          Remove
+        </button>
+      </td>
+    </tr>
+  );
+}
+
 export default function DriverSalaryCard({
   driver,
   entries,
   uberEarnings,
+  meditikoEarnings = [],
 }: {
   driver: Driver;
   entries: OvertimeEntry[];
   uberEarnings: UberEarning[];
+  meditikoEarnings?: MeditikoDriverEarning[];
 }) {
   const router = useRouter();
   const [date, setDate] = useState(todayLocalISO());
@@ -255,6 +351,14 @@ export default function DriverSalaryCard({
   const [uberError, setUberError] = useState<string | null>(null);
   const uberCommissionPreview = (Number(uberGrossAmount) || 0) * UBER_DRIVER_COMMISSION_RATE;
 
+  const [meditikoClientName, setMeditikoClientName] = useState("");
+  const [meditikoDate, setMeditikoDate] = useState(todayLocalISO());
+  const [meditikoGrossAmount, setMeditikoGrossAmount] = useState("");
+  const [meditikoNotes, setMeditikoNotes] = useState("");
+  const [meditikoSubmitting, setMeditikoSubmitting] = useState(false);
+  const [meditikoError, setMeditikoError] = useState<string | null>(null);
+  const meditikoCommissionPreview = (Number(meditikoGrossAmount) || 0) * MEDITIKO_DRIVER_COMMISSION_RATE;
+
   const todayISO = todayLocalISO();
   const currentKey = `${todayISO.slice(0, 7)}-${termOf(todayISO)}`;
   const [openKey, setOpenKey] = useState<string | null>(currentKey);
@@ -268,10 +372,15 @@ export default function DriverSalaryCard({
   const totalDieta = entries.reduce((sum, e) => sum + Number(e.dieta_amount), 0);
   const totalElevator = entries.reduce((sum, e) => sum + Number(e.elevator_amount), 0);
   const totalUber = uberEarnings.reduce((sum, e) => sum + Number(e.amount), 0);
-  const totalToPay = baseSalary + totalOvertimePay + totalDieta + totalElevator + totalUber;
+  const totalMeditikoCommission = meditikoEarnings.reduce((sum, e) => sum + Number(e.amount), 0);
+  const totalToPay = baseSalary + totalOvertimePay + totalDieta + totalElevator + totalUber + totalMeditikoCommission;
   const sortedUberEarnings = useMemo(
     () => [...uberEarnings].sort((a, b) => b.date.localeCompare(a.date)),
     [uberEarnings]
+  );
+  const sortedMeditikoEarnings = useMemo(
+    () => [...meditikoEarnings].sort((a, b) => b.date.localeCompare(a.date)),
+    [meditikoEarnings]
   );
 
   const termGroups = useMemo(() => {
@@ -395,6 +504,46 @@ export default function DriverSalaryCard({
     router.refresh();
   }
 
+  async function handleAddMeditiko(e: React.FormEvent) {
+    e.preventDefault();
+    setMeditikoSubmitting(true);
+    setMeditikoError(null);
+    const res = await fetch("/api/meditiko/driver-earnings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ driver_id: driver.id, client_name: meditikoClientName, date: meditikoDate, gross_amount: meditikoGrossAmount, notes: meditikoNotes }),
+    });
+    setMeditikoSubmitting(false);
+    if (!res.ok) {
+      const data = await res.json();
+      setMeditikoError(data.error ?? "Failed to save Meditiko earnings");
+      return;
+    }
+    setMeditikoClientName("");
+    setMeditikoGrossAmount("");
+    setMeditikoNotes("");
+    router.refresh();
+  }
+
+  async function handleSaveMeditiko(state: MeditikoEditState): Promise<string | null> {
+    const res = await fetch(`/api/meditiko/driver-earnings/${state.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ client_name: state.client_name, date: state.date, gross_amount: state.gross_amount, notes: state.notes }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      return data.error ?? "Failed to update Meditiko earnings";
+    }
+    router.refresh();
+    return null;
+  }
+
+  async function handleDeleteMeditiko(id: string) {
+    await fetch(`/api/meditiko/driver-earnings/${id}`, { method: "DELETE" });
+    router.refresh();
+  }
+
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -410,6 +559,7 @@ export default function DriverSalaryCard({
         <Stat label="Dieta" value={formatDOP(totalDieta)} />
         <Stat label="Ascensor/Bajador" value={formatDOP(totalElevator)} />
         <Stat label="Uber (manual)" value={formatDOP(totalUber)} />
+        {driver.is_meditiko && <Stat label="Comisión Meditiko" value={formatDOP(totalMeditikoCommission)} />}
         <Stat label="Total a pagar" value={formatDOP(totalToPay)} highlight />
       </div>
 
@@ -605,6 +755,86 @@ export default function DriverSalaryCard({
           </div>
         )}
       </div>
+
+      {driver.is_meditiko && (
+        <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/10">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-orange-200 px-4 py-2 dark:border-orange-900">
+            <p className="text-sm font-semibold">⚡ Clientes Meditiko (comisión por cliente)</p>
+            <p className="text-sm text-zinc-500">
+              Comisión este mes <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(totalMeditikoCommission)}</span>
+            </p>
+          </div>
+          <form onSubmit={handleAddMeditiko} className="flex flex-wrap items-end gap-3 px-4 py-3">
+            <label className="flex flex-col gap-1 text-sm font-medium">
+              Cliente
+              <input required value={meditikoClientName} onChange={(e) => setMeditikoClientName(e.target.value)} className="w-40 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-medium">
+              Date
+              <input
+                type="date"
+                required
+                value={meditikoDate}
+                onChange={(e) => setMeditikoDate(e.target.value)}
+                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-medium">
+              Total del día del cliente (DOP)
+              <input
+                type="number"
+                min={0}
+                value={meditikoGrossAmount}
+                onChange={(e) => setMeditikoGrossAmount(e.target.value)}
+                className="w-40 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+              />
+            </label>
+            <div className="flex flex-col gap-1 text-sm font-medium">
+              Comisión ({MEDITIKO_DRIVER_COMMISSION_RATE * 100}%)
+              <div className="flex h-[38px] items-center rounded-lg border border-dashed border-orange-300 bg-orange-50 px-3 text-sm font-semibold text-orange-700 dark:border-orange-800 dark:bg-orange-950/30 dark:text-orange-300">
+                {formatDOP(meditikoCommissionPreview)}
+              </div>
+            </div>
+            <label className="flex flex-col gap-1 text-sm font-medium">
+              Notes (optional)
+              <input
+                value={meditikoNotes}
+                onChange={(e) => setMeditikoNotes(e.target.value)}
+                className="w-48 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={meditikoSubmitting}
+              className="rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700 disabled:opacity-50"
+            >
+              {meditikoSubmitting ? "Adding..." : "Add entry"}
+            </button>
+          </form>
+          {meditikoError && <p className="px-4 pb-2 text-sm text-red-600">{meditikoError}</p>}
+
+          {sortedMeditikoEarnings.length > 0 && (
+            <div className="overflow-x-auto border-t border-orange-200 dark:border-orange-900">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-orange-200 text-left text-zinc-500 dark:border-orange-900">
+                    <th className="px-4 py-2">Cliente</th>
+                    <th className="px-4 py-2">Fecha</th>
+                    <th className="px-4 py-2">Total del día</th>
+                    <th className="px-4 py-2">Comisión ({MEDITIKO_DRIVER_COMMISSION_RATE * 100}%)</th>
+                    <th className="px-4 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedMeditikoEarnings.map((entry) => (
+                    <MeditikoEntryRow key={entry.id} entry={entry} onSave={handleSaveMeditiko} onDelete={handleDeleteMeditiko} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

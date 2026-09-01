@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { MEDITIKO_DRIVER_COMMISSION_RATE } from "@/lib/fare";
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -20,25 +19,10 @@ export async function GET(request: Request) {
 
   const { data: driver, error: driverError } = await supabase
     .from("drivers")
-    .select("name, base_monthly_salary, overtime_hourly_rate, is_meditiko")
+    .select("name, base_monthly_salary, overtime_hourly_rate")
     .eq("id", driverAccount.driver_id)
     .single();
   if (driverError || !driver) return NextResponse.json({ error: "Driver not found" }, { status: 404 });
-
-  // Meditiko drivers are paid base + 20% commission per client, but must never see the
-  // computed dollar amounts — only their rate and base salary. No entries are returned.
-  if (driver.is_meditiko) {
-    return NextResponse.json({
-      month,
-      isMeditiko: true,
-      driver: {
-        name: driver.name,
-        baseMonthlySalary: driver.base_monthly_salary ?? 0,
-        commissionRate: MEDITIKO_DRIVER_COMMISSION_RATE,
-      },
-      entries: [],
-    });
-  }
 
   const monthStart = `${month}-01`;
   const [year, mon] = month.split("-").map(Number);

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { currentLocalMonth } from "@/lib/date";
 import DriverSalaryCard from "./DriverSalaryCard";
-import type { Driver, OvertimeEntry, UberEarning } from "@/lib/types";
+import type { Driver, OvertimeEntry, UberEarning, MeditikoDriverEarning } from "@/lib/types";
 
 function groupByDriverForMonth<T extends { driver_id: string; date: string }>(items: T[], month: string) {
   const map = new Map<string, T[]>();
@@ -20,15 +20,18 @@ export default function SalaryView({
   drivers,
   entries,
   uberEarnings,
+  meditikoEarnings = [],
 }: {
   drivers: Driver[];
   entries: OvertimeEntry[];
   uberEarnings: UberEarning[];
+  meditikoEarnings?: MeditikoDriverEarning[];
 }) {
   const [month, setMonth] = useState(currentLocalMonth());
 
   const entriesByDriver = useMemo(() => groupByDriverForMonth(entries, month), [entries, month]);
   const uberByDriver = useMemo(() => groupByDriverForMonth(uberEarnings, month), [uberEarnings, month]);
+  const meditikoByDriver = useMemo(() => groupByDriverForMonth(meditikoEarnings, month), [meditikoEarnings, month]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,6 +53,7 @@ export default function SalaryView({
           driver={driver}
           entries={entriesByDriver.get(driver.id) ?? []}
           uberEarnings={uberByDriver.get(driver.id) ?? []}
+          meditikoEarnings={meditikoByDriver.get(driver.id) ?? []}
         />
       ))}
       {drivers.length === 0 && <p className="text-sm text-zinc-500">No active drivers yet.</p>}
