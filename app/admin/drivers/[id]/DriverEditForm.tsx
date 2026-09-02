@@ -8,9 +8,9 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false);
+  const [togglingStatus, setTogglingStatus] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     name: driver.name ?? "",
@@ -24,6 +24,7 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
     start_date: driver.start_date ?? "",
   });
   const [isMeditiko, setIsMeditiko] = useState(Boolean(driver.is_meditiko));
+  const isActive = form.status === "active";
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -57,17 +58,22 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
     router.refresh();
   }
 
-  async function handleDelete() {
-    setDeleting(true);
-    setDeleteError(null);
-    const res = await fetch(`/api/drivers/${driver.id}`, { method: "DELETE" });
+  async function setStatus(status: "active" | "inactive") {
+    setTogglingStatus(true);
+    setStatusError(null);
+    const res = await fetch(`/api/drivers/${driver.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    setTogglingStatus(false);
     if (!res.ok) {
       const data = await res.json();
-      setDeleting(false);
-      setDeleteError(data.error ?? "Failed to delete driver");
+      setStatusError(data.error ?? "Failed to update status");
       return;
     }
-    router.push("/admin/drivers");
+    setShowDisableConfirm(false);
+    update("status", status);
     router.refresh();
   }
 
@@ -154,40 +160,55 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
       </button>
 
       <div className="mt-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
-        {deleteError && <p className="mb-2 text-sm text-red-600">{deleteError}</p>}
-        <button
-          type="button"
-          onClick={() => setShowDeleteConfirm(true)}
-          className="rounded-full border border-red-300 px-5 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
-        >
-          Eliminar conductor
-        </button>
+        <p className="mb-2 text-xs text-zinc-500">
+          Deshabilitar oculta al conductor de nuevos viajes (no se puede asignar ni aparece al crear
+          uno) pero conserva sus viajes, salario e historial pasados sin cambios.
+        </p>
+        {statusError && <p className="mb-2 text-sm text-red-600">{statusError}</p>}
+        {isActive ? (
+          <button
+            type="button"
+            onClick={() => setShowDisableConfirm(true)}
+            className="rounded-full border border-red-300 px-5 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
+          >
+            Deshabilitar conductor
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setStatus("active")}
+            disabled={togglingStatus}
+            className="rounded-full border border-green-300 px-5 py-3 text-sm font-semibold text-green-700 hover:bg-green-50 disabled:opacity-50 dark:border-green-900 dark:text-green-400 dark:hover:bg-green-950/30"
+          >
+            {togglingStatus ? "Habilitando..." : "Habilitar conductor"}
+          </button>
+        )}
       </div>
 
-      {showDeleteConfirm && (
+      {showDisableConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg dark:bg-zinc-900">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">¿Eliminar a {driver.name}?</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">¿Deshabilitar a {driver.name}?</h3>
             <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              Esta acción no se puede deshacer. Se eliminará el conductor y todos sus datos de salario,
-              horas extra y comisiones. Sus viajes se conservarán sin conductor asignado.
+              No podrá ser asignado a viajes nuevos ni aparecerá al crear uno. Sus viajes, salario y
+              comisiones pasadas no se modifican. Puedes volver a habilitarlo cuando quieras.
             </p>
             <div className="mt-5 flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={deleting}
+                onClick={() => setShowDisableConfirm(false)}
+                disabled={togglingStatus}
                 className="rounded-full px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                onClick={handleDelete}
-                disabled={deleting}
+                onClick={() => setStatus("inactive")}
+                disabled={togglingStatus}
                 className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
               >
-                {deleting ? "Eliminando..." : "Sí, eliminar"}
+                {togglingStatus ? "Deshabilitando..." : "Sí, deshabilitar"}
               </button>
             </div>
           </div>
