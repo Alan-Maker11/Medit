@@ -8,6 +8,9 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     name: driver.name ?? "",
@@ -51,6 +54,20 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
       return;
     }
     setSaved(true);
+    router.refresh();
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    setDeleteError(null);
+    const res = await fetch(`/api/drivers/${driver.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json();
+      setDeleting(false);
+      setDeleteError(data.error ?? "Failed to delete driver");
+      return;
+    }
+    router.push("/admin/drivers");
     router.refresh();
   }
 
@@ -135,6 +152,47 @@ export default function DriverEditForm({ driver }: { driver: Record<string, any>
       >
         {submitting ? "Saving..." : "Save changes"}
       </button>
+
+      <div className="mt-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        {deleteError && <p className="mb-2 text-sm text-red-600">{deleteError}</p>}
+        <button
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          className="rounded-full border border-red-300 px-5 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
+        >
+          Eliminar conductor
+        </button>
+      </div>
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg dark:bg-zinc-900">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">¿Eliminar a {driver.name}?</h3>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              Esta acción no se puede deshacer. Se eliminará el conductor y todos sus datos de salario,
+              horas extra y comisiones. Sus viajes se conservarán sin conductor asignado.
+            </p>
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="rounded-full px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? "Eliminando..." : "Sí, eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
