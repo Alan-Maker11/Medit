@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getCurrentDriver, getDriverTodayTrips, driverLogout, type DriverSession } from "@/lib/driver-auth";
 import DriverCalendar from "@/components/driver/DriverCalendar";
 import TodayTrips from "@/components/driver/TodayTrips";
+import NotificationToggle from "@/components/driver/NotificationToggle";
 
 interface TripRow {
   id: string;
@@ -76,6 +77,7 @@ export default function DriverDashboard() {
             <p className="text-sm text-zinc-500">Portal del Conductor Medit</p>
           </div>
           <div className="flex items-center gap-2">
+            <NotificationToggle />
             <button
               onClick={() => router.push("/driver/salary")}
               className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:bg-blue-700 active:scale-[0.98]"

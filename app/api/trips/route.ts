@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { calculateFare } from "@/lib/fare";
 import { nowLocalTime } from "@/lib/date";
+import { notifyDriver, tripAssignedNotification } from "@/lib/push-notifications";
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -153,6 +154,12 @@ export async function POST(request: Request) {
     } else {
       await supabase.from("clients").insert(clientPayload);
     }
+  }
+
+  if (data.driver_id) {
+    notifyDriver(data.driver_id, tripAssignedNotification(data)).catch((err) =>
+      console.error("Failed to send trip-assigned push notification:", err)
+    );
   }
 
   return NextResponse.json(data, { status: 201 });

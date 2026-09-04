@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { notifyDriver, tripAssignedNotification } from "@/lib/push-notifications";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -54,8 +55,21 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (key in body) update[key] = body[key];
   }
 
+  let previousDriverId: string | null = null;
+  if ("driver_id" in update) {
+    const { data: existing } = await supabase.from("trips").select("driver_id").eq("id", id).maybeSingle();
+    previousDriverId = existing?.driver_id ?? null;
+  }
+
   const { data, error } = await supabase.from("trips").update(update).eq("id", id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  if (data.driver_id && data.driver_id !== previousDriverId) {
+    notifyDriver(data.driver_id, tripAssignedNotification(data)).catch((err) =>
+      console.error("Failed to send trip-assigned push notification:", err)
+    );
+  }
+
   return NextResponse.json({ trip: data });
 }
 

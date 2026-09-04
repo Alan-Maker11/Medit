@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { notifyDriver } from "@/lib/push-notifications";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -44,6 +45,14 @@ export async function POST(request: Request) {
     .select("id");
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 400 });
+
+  if (updated && updated.length > 0) {
+    notifyDriver(driver.id, {
+      title: "🚗 Viajes asignados",
+      body: `Se te asignaron ${updated.length} viaje${updated.length !== 1 ? "s" : ""} en ${month}`,
+      url: "/driver/dashboard",
+    }).catch((err) => console.error("Failed to send bulk-assign push notification:", err));
+  }
 
   return NextResponse.json({ updated: updated?.length ?? 0 });
 }
