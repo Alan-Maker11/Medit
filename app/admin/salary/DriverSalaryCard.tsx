@@ -91,7 +91,7 @@ function EntryRow({
             <input type="number" min={0} value={draft.dieta_amount} onChange={(e) => setDraft({ ...draft, dieta_amount: e.target.value })} className={inputClass} style={{ width: "6rem" }} />
           </td>
           <td className={cellClass}>
-            <input type="number" min={0} step={100} value={draft.elevator_amount} onChange={(e) => setDraft({ ...draft, elevator_amount: e.target.value })} className={inputClass} style={{ width: "6rem" }} />
+            <input type="number" min={0} value={draft.elevator_amount} onChange={(e) => setDraft({ ...draft, elevator_amount: e.target.value })} className={inputClass} style={{ width: "6rem" }} />
           </td>
           <td className={`${cellClass} whitespace-nowrap`}>
             <button onClick={save} disabled={saving} className="mr-2 text-xs font-medium text-blue-600 hover:underline disabled:opacity-50">
@@ -600,11 +600,10 @@ export default function DriverSalaryCard({
           <input
             type="number"
             min={0}
-            step={100}
             value={elevator}
             onChange={(e) => setElevator(e.target.value)}
             className="w-36 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
-            placeholder="100, 200…"
+            placeholder="120, 320…"
           />
         </label>
         <button
