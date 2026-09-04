@@ -85,12 +85,14 @@ export async function getDriverTodayTrips(driverId: string) {
 /** month format: "2026-07" */
 export async function getDriverMonthTrips(driverId: string, month: string) {
   const supabase = createClient();
+  const [year, mon] = month.split("-").map(Number);
+  const nextMonth = mon === 12 ? `${year + 1}-01-01` : `${year}-${String(mon + 1).padStart(2, "0")}-01`;
   const { data, error } = await supabase
     .from("trips")
     .select(TRIP_SELECT)
     .eq("driver_id", driverId)
     .gte("date", `${month}-01`)
-    .lte("date", `${month}-31`)
+    .lt("date", nextMonth)
     .order("date", { ascending: true });
   if (error) throw error;
   return data ?? [];
