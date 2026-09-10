@@ -6,6 +6,7 @@ export default function DriverPortalAccountForm({ driverId }: { driverId: string
   const [hasAccount, setHasAccount] = useState<boolean | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -39,6 +40,26 @@ export default function DriverPortalAccountForm({ driverId }: { driverId: string
     setPassword("");
   }
 
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    setSuccess(null);
+    const res = await fetch(`/api/drivers/${driverId}/portal-account`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: newPassword }),
+    });
+    const data = await res.json();
+    setSubmitting(false);
+    if (!res.ok) {
+      setError(data.error ?? "Failed to reset password");
+      return;
+    }
+    setSuccess("Password updated.");
+    setNewPassword("");
+  }
+
   async function handleRevoke() {
     if (!window.confirm("Revoke this driver's portal login? They will no longer be able to sign in.")) return;
     setSubmitting(true);
@@ -65,6 +86,29 @@ export default function DriverPortalAccountForm({ driverId }: { driverId: string
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             This driver has an active portal login and can access <code>/driver/login</code>.
           </p>
+
+          <form onSubmit={handleResetPassword} className="flex flex-col gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+            <label className="flex flex-col gap-1 text-sm font-medium">
+              New password
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="input"
+                placeholder="At least 6 characters"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="self-start rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:bg-blue-700 active:scale-[0.98] disabled:opacity-50"
+            >
+              {submitting ? "Updating..." : "Reset password"}
+            </button>
+          </form>
+
           <button
             onClick={handleRevoke}
             disabled={submitting}

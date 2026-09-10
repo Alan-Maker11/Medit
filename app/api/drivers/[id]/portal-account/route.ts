@@ -76,6 +76,36 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   return NextResponse.json({ success: true });
 }
 
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: driverId } = await params;
+  const isStaff = await assertStaff(request);
+  if (!isStaff) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+
+  const { password } = await request.json();
+  if (!password || password.length < 6) {
+    return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+  }
+
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return NextResponse.json(
+      { error: "SUPABASE_SERVICE_ROLE_KEY is not configured on the server" },
+      { status: 500 }
+    );
+  }
+
+  const supabase = await createClient();
+  const { data: account } = await supabase.from("driver_accounts").select("user_id").eq("driver_id", driverId).maybeSingle();
+  if (!account) return NextResponse.json({ error: "No portal login found for this driver" }, { status: 404 });
+
+  const { error } = await admin.auth.admin.updateUserById(account.user_id, { password });
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  return NextResponse.json({ success: true });
+}
+
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: driverId } = await params;
   const isStaff = await assertStaff(request);
