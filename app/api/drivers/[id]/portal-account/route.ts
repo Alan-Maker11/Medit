@@ -56,8 +56,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
   }
 
-  const supabase = await createClient();
-  const { data: existing } = await supabase.from("driver_accounts").select("id").eq("driver_id", driverId).maybeSingle();
+  const { data: existing } = await admin.from("driver_accounts").select("id").eq("driver_id", driverId).maybeSingle();
   if (existing) {
     return NextResponse.json({ error: "This driver already has a portal login" }, { status: 400 });
   }
@@ -107,8 +106,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     );
   }
 
-  const supabase = await createClient();
-  const { data: account } = await supabase.from("driver_accounts").select("user_id").eq("driver_id", driverId).maybeSingle();
+  const { data: account } = await admin.from("driver_accounts").select("user_id").eq("driver_id", driverId).maybeSingle();
   if (!account) return NextResponse.json({ error: "No portal login found for this driver" }, { status: 404 });
 
   const { error } = await admin.auth.admin.updateUserById(account.user_id, { password });
