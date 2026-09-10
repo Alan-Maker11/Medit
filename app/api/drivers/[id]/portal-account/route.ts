@@ -17,8 +17,19 @@ async function assertStaff(request: Request) {
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase.from("driver_accounts").select("id, status").eq("driver_id", id).maybeSingle();
+
+  // driver_accounts RLS only lets a driver read their own row, so a staff/admin session
+  // querying it via the regular client always comes back empty. Use the admin client here.
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return NextResponse.json(
+      { error: "SUPABASE_SERVICE_ROLE_KEY is not configured on the server" },
+      { status: 500 }
+    );
+  }
+  const { data } = await admin.from("driver_accounts").select("id, status").eq("driver_id", id).maybeSingle();
   return NextResponse.json({ hasAccount: !!data, status: data?.status ?? null });
 }
 
