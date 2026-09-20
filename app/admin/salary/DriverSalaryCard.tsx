@@ -16,6 +16,27 @@ function termOf(dateStr: string): 1 | 2 {
   return day <= 15 ? 1 : 2;
 }
 
+/** Prorates a term's half of the base salary by the days actually employed within it (via driver.start_date). */
+function proratedTermBase(monthStr: string, term: 1 | 2, halfBaseSalary: number, startDate: string | null) {
+  const [year, monthNum] = monthStr.split("-").map(Number);
+  const startDay = term === 1 ? 1 : 16;
+  const endDay = term === 1 ? 15 : new Date(year, monthNum, 0).getDate();
+  const totalDays = endDay - startDay + 1;
+
+  let workedDays = totalDays;
+  if (startDate) {
+    const termEndStr = `${monthStr}-${String(endDay).padStart(2, "0")}`;
+    if (startDate > termEndStr) {
+      workedDays = 0;
+    } else if (startDate.slice(0, 7) === monthStr) {
+      const effectiveStartDay = Math.max(startDay, Number(startDate.slice(8, 10)));
+      workedDays = endDay - effectiveStartDay + 1;
+    }
+  }
+
+  return { amount: halfBaseSalary * (workedDays / totalDays), workedDays, totalDays };
+}
+
 interface EditState {
   id: string;
   date: string;
@@ -375,7 +396,6 @@ export default function DriverSalaryCard({
   const totalElevator = entries.reduce((sum, e) => sum + Number(e.elevator_amount), 0);
   const totalUber = uberEarnings.reduce((sum, e) => sum + Number(e.amount), 0);
   const totalMeditikoCommission = meditikoEarnings.reduce((sum, e) => sum + Number(e.amount), 0);
-  const totalToPay = baseSalary + totalOvertimePay + totalDieta + totalElevator + totalUber + totalMeditikoCommission;
   const sortedUberEarnings = useMemo(
     () => [...uberEarnings].sort((a, b) => b.date.localeCompare(a.date)),
     [uberEarnings]
@@ -415,7 +435,13 @@ export default function DriverSalaryCard({
         const termDieta = termEntries.reduce((sum, e) => sum + Number(e.dieta_amount), 0);
         const termElevator = termEntries.reduce((sum, e) => sum + Number(e.elevator_amount), 0);
         const termMeditikoCommission = bucket.meditikoEarnings.reduce((sum, e) => sum + Number(e.amount), 0);
-        const termTotal = halfBaseSalary + termOvertimePay + termDieta + termElevator + termMeditikoCommission;
+        const { amount: proratedBase, workedDays, totalDays } = proratedTermBase(
+          `${year}-${month}`,
+          Number(term) as 1 | 2,
+          halfBaseSalary,
+          driver.start_date ?? null
+        );
+        const termTotal = proratedBase + termOvertimePay + termDieta + termElevator + termMeditikoCommission;
         return {
           key,
           label: `${MONTH_NAMES[Number(month) - 1]} ${year} - ${term === "1" ? "1st term (1-15)" : "2nd term (16-end)"}`,
@@ -425,10 +451,17 @@ export default function DriverSalaryCard({
           termDieta,
           termElevator,
           termMeditikoCommission,
+          proratedBase,
+          isProrated: workedDays < totalDays,
+          workedDays,
+          totalDays,
           termTotal,
         };
       });
-  }, [entries, meditikoEarnings, overtimeRate, halfBaseSalary, month]);
+  }, [entries, meditikoEarnings, overtimeRate, halfBaseSalary, month, driver.start_date]);
+
+  const totalProratedBase = termGroups.reduce((sum, g) => sum + g.proratedBase, 0);
+  const totalToPay = totalProratedBase + totalOvertimePay + totalDieta + totalElevator + totalUber + totalMeditikoCommission;
 
   async function handleAddEntry(e: React.FormEvent) {
     e.preventDefault();
@@ -570,7 +603,7 @@ export default function DriverSalaryCard({
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-        <Stat label="Salario regular" value={formatDOP(baseSalary)} />
+        <Stat label="Salario regular" value={formatDOP(totalProratedBase)} />
         <Stat label="Horas extras" value={`${totalHours} h / ${formatDOP(totalOvertimePay)}`} />
         <Stat label="Dieta" value={formatDOP(totalDieta)} />
         <Stat label="Ascensor/Bajador" value={formatDOP(totalElevator)} />
@@ -652,13 +685,21 @@ export default function DriverSalaryCard({
                     )}
                   </span>
                   <span className="flex items-center gap-2 text-sm text-zinc-500">
-                    Half base {formatDOP(halfBaseSalary)} + {group.termHours}h ({formatDOP(group.termOvertimePay)}) +
+                    {group.isProrated
+                      ? `Base (${group.workedDays}/${group.totalDays} días) ${formatDOP(group.proratedBase)}`
+                      : `Half base ${formatDOP(group.proratedBase)}`}{" "}
+                    + {group.termHours}h ({formatDOP(group.termOvertimePay)}) +
                     dieta {formatDOP(group.termDieta)} + ascensor {formatDOP(group.termElevator)}
                     {driver.is_meditiko && <> + comisión {formatDOP(group.termMeditikoCommission)}</>} ={" "}
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(group.termTotal)}</span>
                     <span className={`text-zinc-400 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}>▾</span>
                   </span>
                 </button>
+                {group.isProrated && (
+                  <p className="border-t border-amber-200 bg-amber-50 px-4 py-1.5 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-300">
+                    Salario prorrateado: el conductor empezó el {driver.start_date} — solo {group.workedDays} de {group.totalDays} días de este término.
+                  </p>
+                )}
                 <div
                   className="grid transition-[grid-template-rows] duration-200 ease-out"
                   style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}

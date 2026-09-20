@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
   const { data: driver, error: driverError } = await supabase
     .from("drivers")
-    .select("name, base_monthly_salary, overtime_hourly_rate")
+    .select("name, base_monthly_salary, overtime_hourly_rate, start_date")
     .eq("id", driverAccount.driver_id)
     .single();
   if (driverError || !driver) return NextResponse.json({ error: "Driver not found" }, { status: 404 });
@@ -43,6 +43,7 @@ export async function GET(request: Request) {
       name: driver.name,
       baseMonthlySalary: driver.base_monthly_salary ?? 0,
       overtimeHourlyRate: driver.overtime_hourly_rate ?? 0,
+      startDate: driver.start_date ?? null,
     },
     entries: entries ?? [],
   });

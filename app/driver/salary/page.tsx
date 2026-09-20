@@ -19,12 +19,33 @@ interface SalaryEntry {
 
 interface SalaryResponse {
   month: string;
-  driver: { name: string; baseMonthlySalary: number; overtimeHourlyRate: number };
+  driver: { name: string; baseMonthlySalary: number; overtimeHourlyRate: number; startDate: string | null };
   entries: SalaryEntry[];
 }
 
 function termOf(dateStr: string): 1 | 2 {
   return Number(dateStr.slice(8, 10)) <= 15 ? 1 : 2;
+}
+
+/** Prorates a term's half of the base salary by the days actually employed within it. */
+function proratedTermBase(monthStr: string, term: 1 | 2, halfBaseSalary: number, startDate: string | null) {
+  const [year, monthNum] = monthStr.split("-").map(Number);
+  const startDay = term === 1 ? 1 : 16;
+  const endDay = term === 1 ? 15 : new Date(year, monthNum, 0).getDate();
+  const totalDays = endDay - startDay + 1;
+
+  let workedDays = totalDays;
+  if (startDate) {
+    const termEndStr = `${monthStr}-${String(endDay).padStart(2, "0")}`;
+    if (startDate > termEndStr) {
+      workedDays = 0;
+    } else if (startDate.slice(0, 7) === monthStr) {
+      const effectiveStartDay = Math.max(startDay, Number(startDate.slice(8, 10)));
+      workedDays = endDay - effectiveStartDay + 1;
+    }
+  }
+
+  return { amount: halfBaseSalary * (workedDays / totalDays), workedDays, totalDays };
 }
 
 export default function DriverSalaryPage() {
@@ -88,12 +109,13 @@ export default function DriverSalaryPage() {
         const termOvertimePay = termHours * rate;
         const termDieta = termEntries.reduce((sum, e) => sum + Number(e.dieta_amount), 0);
         const termElevator = termEntries.reduce((sum, e) => sum + Number(e.elevator_amount), 0);
-        const termTotal = halfBaseSalary + termOvertimePay + termDieta + termElevator;
+        const { amount: proratedBase } = proratedTermBase(data.month, term, halfBaseSalary, data.driver.startDate);
+        const termTotal = proratedBase + termOvertimePay + termDieta + termElevator;
         return {
           term,
           label: term === 1 ? "1er quincena (1-15)" : "2da quincena (16-fin)",
           entries: termEntries,
-          halfBaseSalary,
+          halfBaseSalary: proratedBase,
           termHours,
           termOvertimePay,
           termDieta,
