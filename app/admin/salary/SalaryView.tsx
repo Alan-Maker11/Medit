@@ -51,6 +51,7 @@ export default function SalaryView({
         <DriverSalaryCard
           key={driver.id}
           driver={driver}
+          month={month}
           entries={entriesByDriver.get(driver.id) ?? []}
           uberEarnings={uberByDriver.get(driver.id) ?? []}
           meditikoEarnings={meditikoByDriver.get(driver.id) ?? []}

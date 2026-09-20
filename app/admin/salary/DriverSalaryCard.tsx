@@ -327,11 +327,13 @@ function MeditikoEntryRow({
 
 export default function DriverSalaryCard({
   driver,
+  month,
   entries,
   uberEarnings,
   meditikoEarnings = [],
 }: {
   driver: Driver;
+  month: string;
   entries: OvertimeEntry[];
   uberEarnings: UberEarning[];
   meditikoEarnings?: MeditikoDriverEarning[];
@@ -385,22 +387,26 @@ export default function DriverSalaryCard({
 
   const termGroups = useMemo(() => {
     const map = new Map<string, { entries: OvertimeEntry[]; meditikoEarnings: MeditikoDriverEarning[] }>();
+    // Always show both terms for the month currently being viewed, even with no entries yet,
+    // so the admin can see/enter data for either half without waiting for a first entry.
+    map.set(`${month}-1`, { entries: [], meditikoEarnings: [] });
+    map.set(`${month}-2`, { entries: [], meditikoEarnings: [] });
     for (const entry of entries) {
-      const month = entry.date.slice(0, 7);
-      const key = `${month}-${termOf(entry.date)}`;
+      const entryMonth = entry.date.slice(0, 7);
+      const key = `${entryMonth}-${termOf(entry.date)}`;
       const bucket = map.get(key) ?? { entries: [], meditikoEarnings: [] };
       bucket.entries.push(entry);
       map.set(key, bucket);
     }
     for (const earning of meditikoEarnings) {
-      const month = earning.date.slice(0, 7);
-      const key = `${month}-${termOf(earning.date)}`;
+      const entryMonth = earning.date.slice(0, 7);
+      const key = `${entryMonth}-${termOf(earning.date)}`;
       const bucket = map.get(key) ?? { entries: [], meditikoEarnings: [] };
       bucket.meditikoEarnings.push(earning);
       map.set(key, bucket);
     }
     return [...map.entries()]
-      .sort((a, b) => b[0].localeCompare(a[0]))
+      .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([key, bucket]) => {
         const [year, month, term] = key.split("-");
         const termEntries = bucket.entries;
@@ -422,7 +428,7 @@ export default function DriverSalaryCard({
           termTotal,
         };
       });
-  }, [entries, meditikoEarnings, overtimeRate, halfBaseSalary]);
+  }, [entries, meditikoEarnings, overtimeRate, halfBaseSalary, month]);
 
   async function handleAddEntry(e: React.FormEvent) {
     e.preventDefault();
@@ -691,81 +697,6 @@ export default function DriverSalaryCard({
         </div>
       )}
 
-      <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/10">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-orange-200 px-4 py-2 dark:border-orange-900">
-          <p className="text-sm font-semibold">Uber (manual — not tracked in Medit)</p>
-          <p className="text-sm text-zinc-500">
-            Commission this month <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(totalUber)}</span>
-          </p>
-        </div>
-        <form onSubmit={handleAddUber} className="flex flex-wrap items-end gap-3 px-4 py-3">
-          <label className="flex flex-col gap-1 text-sm font-medium">
-            Date
-            <input
-              type="date"
-              required
-              value={uberDate}
-              onChange={(e) => setUberDate(e.target.value)}
-              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm font-medium">
-            Total del día (todos los viajes, DOP)
-            <input
-              type="number"
-              min={0}
-              value={uberGrossAmount}
-              onChange={(e) => setUberGrossAmount(e.target.value)}
-              className="w-40 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
-            />
-          </label>
-          <div className="flex flex-col gap-1 text-sm font-medium">
-            Comisión ({UBER_DRIVER_COMMISSION_RATE * 100}%)
-            <div className="flex h-[38px] items-center rounded-lg border border-dashed border-orange-300 bg-orange-50 px-3 text-sm font-semibold text-orange-700 dark:border-orange-800 dark:bg-orange-950/30 dark:text-orange-300">
-              {formatDOP(uberCommissionPreview)}
-            </div>
-          </div>
-          <label className="flex flex-col gap-1 text-sm font-medium">
-            Notes (optional)
-            <input
-              value={uberNotes}
-              onChange={(e) => setUberNotes(e.target.value)}
-              placeholder="5 trips, buena demanda…"
-              className="w-48 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={uberSubmitting}
-            className="rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
-          >
-            {uberSubmitting ? "Adding..." : "Add entry"}
-          </button>
-        </form>
-        {uberError && <p className="px-4 pb-2 text-sm text-red-600">{uberError}</p>}
-
-        {sortedUberEarnings.length > 0 && (
-          <div className="overflow-x-auto border-t border-orange-200 dark:border-orange-900">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-orange-200 text-left text-zinc-500 dark:border-orange-900">
-                  <th className="px-4 py-2">Date</th>
-                  <th className="px-4 py-2">Total del día</th>
-                  <th className="px-4 py-2">Comisión ({UBER_DRIVER_COMMISSION_RATE * 100}%)</th>
-                  <th className="px-4 py-2">Notes</th>
-                  <th className="px-4 py-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedUberEarnings.map((entry) => (
-                  <UberEntryRow key={entry.id} entry={entry} onSave={handleSaveUber} onDelete={handleDeleteUber} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
       {driver.is_meditiko && (
         <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/10">
           <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-orange-200 px-4 py-2 dark:border-orange-900">
@@ -845,6 +776,81 @@ export default function DriverSalaryCard({
           )}
         </div>
       )}
+
+      <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/10">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-orange-200 px-4 py-2 dark:border-orange-900">
+          <p className="text-sm font-semibold">Uber (manual — not tracked in Medit)</p>
+          <p className="text-sm text-zinc-500">
+            Commission this month <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(totalUber)}</span>
+          </p>
+        </div>
+        <form onSubmit={handleAddUber} className="flex flex-wrap items-end gap-3 px-4 py-3">
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Date
+            <input
+              type="date"
+              required
+              value={uberDate}
+              onChange={(e) => setUberDate(e.target.value)}
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Total del día (todos los viajes, DOP)
+            <input
+              type="number"
+              min={0}
+              value={uberGrossAmount}
+              onChange={(e) => setUberGrossAmount(e.target.value)}
+              className="w-40 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            />
+          </label>
+          <div className="flex flex-col gap-1 text-sm font-medium">
+            Comisión ({UBER_DRIVER_COMMISSION_RATE * 100}%)
+            <div className="flex h-[38px] items-center rounded-lg border border-dashed border-orange-300 bg-orange-50 px-3 text-sm font-semibold text-orange-700 dark:border-orange-800 dark:bg-orange-950/30 dark:text-orange-300">
+              {formatDOP(uberCommissionPreview)}
+            </div>
+          </div>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Notes (optional)
+            <input
+              value={uberNotes}
+              onChange={(e) => setUberNotes(e.target.value)}
+              placeholder="5 trips, buena demanda…"
+              className="w-48 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={uberSubmitting}
+            className="rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+          >
+            {uberSubmitting ? "Adding..." : "Add entry"}
+          </button>
+        </form>
+        {uberError && <p className="px-4 pb-2 text-sm text-red-600">{uberError}</p>}
+
+        {sortedUberEarnings.length > 0 && (
+          <div className="overflow-x-auto border-t border-orange-200 dark:border-orange-900">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-orange-200 text-left text-zinc-500 dark:border-orange-900">
+                  <th className="px-4 py-2">Date</th>
+                  <th className="px-4 py-2">Total del día</th>
+                  <th className="px-4 py-2">Comisión ({UBER_DRIVER_COMMISSION_RATE * 100}%)</th>
+                  <th className="px-4 py-2">Notes</th>
+                  <th className="px-4 py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedUberEarnings.map((entry) => (
+                  <UberEntryRow key={entry.id} entry={entry} onSave={handleSaveUber} onDelete={handleDeleteUber} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
