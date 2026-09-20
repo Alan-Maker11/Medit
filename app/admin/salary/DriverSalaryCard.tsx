@@ -384,23 +384,32 @@ export default function DriverSalaryCard({
   );
 
   const termGroups = useMemo(() => {
-    const map = new Map<string, OvertimeEntry[]>();
+    const map = new Map<string, { entries: OvertimeEntry[]; meditikoEarnings: MeditikoDriverEarning[] }>();
     for (const entry of entries) {
       const month = entry.date.slice(0, 7);
       const key = `${month}-${termOf(entry.date)}`;
-      const list = map.get(key) ?? [];
-      list.push(entry);
-      map.set(key, list);
+      const bucket = map.get(key) ?? { entries: [], meditikoEarnings: [] };
+      bucket.entries.push(entry);
+      map.set(key, bucket);
+    }
+    for (const earning of meditikoEarnings) {
+      const month = earning.date.slice(0, 7);
+      const key = `${month}-${termOf(earning.date)}`;
+      const bucket = map.get(key) ?? { entries: [], meditikoEarnings: [] };
+      bucket.meditikoEarnings.push(earning);
+      map.set(key, bucket);
     }
     return [...map.entries()]
       .sort((a, b) => b[0].localeCompare(a[0]))
-      .map(([key, termEntries]) => {
+      .map(([key, bucket]) => {
         const [year, month, term] = key.split("-");
+        const termEntries = bucket.entries;
         const termHours = termEntries.reduce((sum, e) => sum + Number(e.hours), 0);
         const termOvertimePay = termHours * overtimeRate;
         const termDieta = termEntries.reduce((sum, e) => sum + Number(e.dieta_amount), 0);
         const termElevator = termEntries.reduce((sum, e) => sum + Number(e.elevator_amount), 0);
-        const termTotal = halfBaseSalary + termOvertimePay + termDieta + termElevator;
+        const termMeditikoCommission = bucket.meditikoEarnings.reduce((sum, e) => sum + Number(e.amount), 0);
+        const termTotal = halfBaseSalary + termOvertimePay + termDieta + termElevator + termMeditikoCommission;
         return {
           key,
           label: `${MONTH_NAMES[Number(month) - 1]} ${year} - ${term === "1" ? "1st term (1-15)" : "2nd term (16-end)"}`,
@@ -409,10 +418,11 @@ export default function DriverSalaryCard({
           termOvertimePay,
           termDieta,
           termElevator,
+          termMeditikoCommission,
           termTotal,
         };
       });
-  }, [entries, overtimeRate, halfBaseSalary]);
+  }, [entries, meditikoEarnings, overtimeRate, halfBaseSalary]);
 
   async function handleAddEntry(e: React.FormEvent) {
     e.preventDefault();
@@ -637,7 +647,8 @@ export default function DriverSalaryCard({
                   </span>
                   <span className="flex items-center gap-2 text-sm text-zinc-500">
                     Half base {formatDOP(halfBaseSalary)} + {group.termHours}h ({formatDOP(group.termOvertimePay)}) +
-                    dieta {formatDOP(group.termDieta)} + ascensor {formatDOP(group.termElevator)} ={" "}
+                    dieta {formatDOP(group.termDieta)} + ascensor {formatDOP(group.termElevator)}
+                    {driver.is_meditiko && <> + comisión {formatDOP(group.termMeditikoCommission)}</>} ={" "}
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatDOP(group.termTotal)}</span>
                     <span className={`text-zinc-400 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}>▾</span>
                   </span>
