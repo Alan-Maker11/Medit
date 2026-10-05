@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDOP } from "@/lib/fare";
 import { startOfWeek, endOfWeek, startOfMonth, formatISO } from "date-fns";
+import DeliverCashButton from "@/components/admin/DeliverCashButton";
 
 interface PaymentTrip {
   advance_payment_amount: number | null;
@@ -49,6 +50,7 @@ export default async function AdminDashboard() {
     { data: monthMeditikoExpenses },
     { data: cashTrips },
     { data: cashExpenses },
+    { data: cashHandoffs },
   ] = await Promise.all([
     supabase.from("vehicles").select("id").ilike("name", "Meditiko").maybeSingle(),
     supabase
@@ -73,6 +75,7 @@ export default async function AdminDashboard() {
       .not("driver_id", "is", null)
       .or("advance_payment_method.eq.Cash,final_payment_method.eq.Cash"),
     supabase.from("expenses").select("driver_id, amount").eq("withdrawal_account", "Cash on hand").not("driver_id", "is", null),
+    supabase.from("driver_cash_handoffs").select("driver_id, amount"),
   ]);
 
   const meditikoVehicleId = meditikoVehicle?.id ?? null;
@@ -127,11 +130,12 @@ export default async function AdminDashboard() {
   }
 
   // Cash-in-hand per driver: cash they've collected on their own trips (advance/final, received
-  // or collected) minus cash expenses logged against them (e.g. gas paid from that cash).
-  const cashByDriver = new Map<string, { collected: number; spent: number }>();
+  // or collected) minus cash expenses logged against them (e.g. gas paid from that cash) minus
+  // cash they've handed off to the admin (regardless of what it was later used for).
+  const cashByDriver = new Map<string, { collected: number; spent: number; handedOff: number }>();
   for (const t of cashTrips ?? []) {
     if (!t.driver_id) continue;
-    const acc = cashByDriver.get(t.driver_id) ?? { collected: 0, spent: 0 };
+    const acc = cashByDriver.get(t.driver_id) ?? { collected: 0, spent: 0, handedOff: 0 };
     if (t.advance_payment_method === "Cash" && t.advance_payment_status === "received") {
       acc.collected += t.advance_payment_amount ?? 0;
     }
@@ -142,9 +146,14 @@ export default async function AdminDashboard() {
   }
   for (const e of cashExpenses ?? []) {
     if (!e.driver_id) continue;
-    const acc = cashByDriver.get(e.driver_id) ?? { collected: 0, spent: 0 };
+    const acc = cashByDriver.get(e.driver_id) ?? { collected: 0, spent: 0, handedOff: 0 };
     acc.spent += e.amount ?? 0;
     cashByDriver.set(e.driver_id, acc);
+  }
+  for (const h of cashHandoffs ?? []) {
+    const acc = cashByDriver.get(h.driver_id) ?? { collected: 0, spent: 0, handedOff: 0 };
+    acc.handedOff += h.amount ?? 0;
+    cashByDriver.set(h.driver_id, acc);
   }
 
   const stats = [
@@ -248,13 +257,17 @@ export default async function AdminDashboard() {
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 dark:border-emerald-900 dark:bg-emerald-950/10">
           <h3 className="mb-1 text-sm font-semibold text-emerald-800 dark:text-emerald-300">💵 Cash in hand by driver</h3>
           <p className="mb-3 text-xs text-zinc-500">
-            Cash each driver has collected on their trips, minus cash expenses (like gas) they've paid from it.
+            Cash each driver has collected on their trips, minus cash they've spent directly (e.g. gas) and cash
+            they've delivered to you.
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[...cashByDriver.entries()]
-              .sort((a, b) => b[1].collected - b[1].spent - (a[1].collected - a[1].spent))
+              .sort(
+                (a, b) =>
+                  b[1].collected - b[1].spent - b[1].handedOff - (a[1].collected - a[1].spent - a[1].handedOff)
+              )
               .map(([driverId, c]) => {
-                const balance = c.collected - c.spent;
+                const balance = c.collected - c.spent - c.handedOff;
                 return (
                   <div key={driverId} className="rounded-xl bg-white p-3 dark:bg-zinc-900">
                     <p className="text-xs text-zinc-500">{driverNameById.get(driverId) ?? "Unknown"}</p>
@@ -263,7 +276,9 @@ export default async function AdminDashboard() {
                     </p>
                     <p className="text-xs text-zinc-500">
                       {formatDOP(c.collected)} collected − {formatDOP(c.spent)} spent
+                      {c.handedOff > 0 && <> − {formatDOP(c.handedOff)} delivered</>}
                     </p>
+                    <DeliverCashButton driverId={driverId} driverName={driverNameById.get(driverId) ?? "Driver"} />
                   </div>
                 );
               })}

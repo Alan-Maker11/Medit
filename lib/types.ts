@@ -43,6 +43,21 @@ export type WithdrawalAccount = (typeof WITHDRAWAL_ACCOUNTS)[number];
 export const WITHDRAWAL_METHODS = ["ATM", "Transfer", "Cash payment", "Direct deposit", "Check"] as const;
 export type WithdrawalMethod = (typeof WITHDRAWAL_METHODS)[number];
 
+export const BANK_ACCOUNTS = ["Banreservas - 7314", "Popular - 4389", "BHD - 0021"] as const;
+export type BankAccount = (typeof BANK_ACCOUNTS)[number];
+export const CASH_HANDOFF_USES = ["gas", "salary", "bank_deposit", "other"] as const;
+export type CashHandoffUse = (typeof CASH_HANDOFF_USES)[number];
+
+export interface DriverCashHandoff {
+  id: string;
+  driver_id: string;
+  date: string;
+  amount: number;
+  used_for: CashHandoffUse;
+  bank_account: BankAccount | null;
+  notes: string | null;
+}
+
 export const MEDITIKO_EXPENSE_CATEGORIES = ["storage", "gas", "maintenance", "insurance", "tolls", "other"] as const;
 export type MeditikoExpenseCategory = (typeof MEDITIKO_EXPENSE_CATEGORIES)[number];
 
