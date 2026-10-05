@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const body = await request.json();
 
-  const { date, category, vehicle_id, amount, km_at_fill, description, withdrawal_account, withdrawal_method } = body;
+  const { date, category, vehicle_id, amount, km_at_fill, description, withdrawal_account, withdrawal_method, driver_id } = body;
   if (!date || !category || amount == null) {
     return NextResponse.json({ error: "date, category and amount are required" }, { status: 400 });
   }
@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       description,
       withdrawal_account: withdrawal_account || null,
       withdrawal_method: withdrawal_method || null,
+      driver_id: driver_id || null,
     })
     .select()
     .single();

@@ -205,4 +205,5 @@ export interface Expense {
   status: "recorded" | "verified";
   withdrawal_account: WithdrawalAccount | null;
   withdrawal_method: WithdrawalMethod | null;
+  driver_id: string | null;
 }

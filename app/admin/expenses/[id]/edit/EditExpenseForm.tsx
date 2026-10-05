@@ -9,7 +9,15 @@ interface Option {
   name: string;
 }
 
-export default function EditExpenseForm({ expense, vehicles }: { expense: Record<string, any>; vehicles: Option[] }) {
+export default function EditExpenseForm({
+  expense,
+  vehicles,
+  drivers,
+}: {
+  expense: Record<string, any>;
+  vehicles: Option[];
+  drivers: Option[];
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -23,6 +31,7 @@ export default function EditExpenseForm({ expense, vehicles }: { expense: Record
     description: expense.description ?? "",
     withdrawal_account: expense.withdrawal_account ?? "",
     withdrawal_method: expense.withdrawal_method ?? "",
+    driver_id: expense.driver_id ?? "",
   });
 
   function update<K extends keyof typeof form>(key: K, value: string) {
@@ -43,6 +52,7 @@ export default function EditExpenseForm({ expense, vehicles }: { expense: Record
         km_at_fill: form.km_at_fill === "" ? null : Number(form.km_at_fill),
         withdrawal_account: form.withdrawal_account || null,
         withdrawal_method: form.withdrawal_method || null,
+        driver_id: form.driver_id || null,
       }),
     });
     setSubmitting(false);
@@ -127,6 +137,22 @@ export default function EditExpenseForm({ expense, vehicles }: { expense: Record
           ))}
         </select>
       </label>
+      {form.withdrawal_account === "Cash on hand" && (
+        <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
+          Driver whose cash this came from
+          <select value={form.driver_id} onChange={(e) => update("driver_id", e.target.value)} className="input">
+            <option value="">Select driver</option>
+            {drivers.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+          <span className="text-xs font-normal text-zinc-500">
+            Deducts from that driver&apos;s cash-in-hand balance on the dashboard.
+          </span>
+        </label>
+      )}
       <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
         Notes
         <textarea value={form.description} onChange={(e) => update("description", e.target.value)} className="input" rows={3} />

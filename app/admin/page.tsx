@@ -47,6 +47,8 @@ export default async function AdminDashboard() {
     { data: monthTrips },
     { data: monthExpenses },
     { data: monthMeditikoExpenses },
+    { data: cashTrips },
+    { data: cashExpenses },
   ] = await Promise.all([
     supabase.from("vehicles").select("id").ilike("name", "Meditiko").maybeSingle(),
     supabase
@@ -63,6 +65,14 @@ export default async function AdminDashboard() {
     supabase.from("trips").select("total_fare, status, vehicle_id").gte("date", monthStart).lte("date", today),
     supabase.from("expenses").select("amount").gte("date", monthStart).lte("date", today),
     supabase.from("meditiko_expenses").select("amount").gte("date", monthStart).lte("date", today),
+    // All-time cash collected per driver — this money physically stays with the driver until
+    // they spend it (e.g. gas), so it isn't scoped to the current week like the rest above.
+    supabase
+      .from("trips")
+      .select("driver_id, advance_payment_amount, advance_payment_method, advance_payment_status, final_payment_amount, final_payment_method, final_payment_status")
+      .not("driver_id", "is", null)
+      .or("advance_payment_method.eq.Cash,final_payment_method.eq.Cash"),
+    supabase.from("expenses").select("driver_id, amount").eq("withdrawal_account", "Cash on hand").not("driver_id", "is", null),
   ]);
 
   const meditikoVehicleId = meditikoVehicle?.id ?? null;
@@ -114,6 +124,27 @@ export default async function AdminDashboard() {
   for (const e of weekExpenses ?? []) {
     const key = e.withdrawal_account ?? "Unspecified";
     expensesByAccount.set(key, (expensesByAccount.get(key) ?? 0) + (e.amount ?? 0));
+  }
+
+  // Cash-in-hand per driver: cash they've collected on their own trips (advance/final, received
+  // or collected) minus cash expenses logged against them (e.g. gas paid from that cash).
+  const cashByDriver = new Map<string, { collected: number; spent: number }>();
+  for (const t of cashTrips ?? []) {
+    if (!t.driver_id) continue;
+    const acc = cashByDriver.get(t.driver_id) ?? { collected: 0, spent: 0 };
+    if (t.advance_payment_method === "Cash" && t.advance_payment_status === "received") {
+      acc.collected += t.advance_payment_amount ?? 0;
+    }
+    if (t.final_payment_method === "Cash" && (t.final_payment_status === "received" || t.final_payment_status === "collected")) {
+      acc.collected += t.final_payment_amount ?? 0;
+    }
+    cashByDriver.set(t.driver_id, acc);
+  }
+  for (const e of cashExpenses ?? []) {
+    if (!e.driver_id) continue;
+    const acc = cashByDriver.get(e.driver_id) ?? { collected: 0, spent: 0 };
+    acc.spent += e.amount ?? 0;
+    cashByDriver.set(e.driver_id, acc);
   }
 
   const stats = [
@@ -212,6 +243,33 @@ export default async function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {cashByDriver.size > 0 && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 dark:border-emerald-900 dark:bg-emerald-950/10">
+          <h3 className="mb-1 text-sm font-semibold text-emerald-800 dark:text-emerald-300">💵 Cash in hand by driver</h3>
+          <p className="mb-3 text-xs text-zinc-500">
+            Cash each driver has collected on their trips, minus cash expenses (like gas) they've paid from it.
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[...cashByDriver.entries()]
+              .sort((a, b) => b[1].collected - b[1].spent - (a[1].collected - a[1].spent))
+              .map(([driverId, c]) => {
+                const balance = c.collected - c.spent;
+                return (
+                  <div key={driverId} className="rounded-xl bg-white p-3 dark:bg-zinc-900">
+                    <p className="text-xs text-zinc-500">{driverNameById.get(driverId) ?? "Unknown"}</p>
+                    <p className={`text-lg font-bold ${balance < 0 ? "text-red-600" : "text-emerald-700 dark:text-emerald-300"}`}>
+                      {formatDOP(balance)}
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      {formatDOP(c.collected)} collected − {formatDOP(c.spent)} spent
+                    </p>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-500 to-purple-600 p-5 text-white">
         <p className="text-sm text-purple-50">Month so far — total income after expenses</p>

@@ -7,13 +7,14 @@ export default async function EditExpensePage({ params }: { params: Promise<{ id
   const supabase = await createClient();
   const { data: expense } = await supabase.from("expenses").select("*").eq("id", id).single();
   const { data: vehicles } = await supabase.from("vehicles").select("id, name").order("name");
+  const { data: drivers } = await supabase.from("drivers").select("id, name").eq("status", "active").order("name");
 
   if (!expense) notFound();
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-bold">Edit expense</h1>
-      <EditExpenseForm expense={expense} vehicles={vehicles ?? []} />
+      <EditExpenseForm expense={expense} vehicles={vehicles ?? []} drivers={drivers ?? []} />
     </div>
   );
 }

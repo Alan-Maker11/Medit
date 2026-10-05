@@ -14,6 +14,7 @@ interface Option {
 export default function NewExpensePage() {
   const router = useRouter();
   const [vehicles, setVehicles] = useState<Option[]>([]);
+  const [drivers, setDrivers] = useState<Option[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -26,6 +27,7 @@ export default function NewExpensePage() {
     description: "",
     withdrawal_account: "",
     withdrawal_method: "",
+    driver_id: "",
   });
 
   useEffect(() => {
@@ -34,6 +36,11 @@ export default function NewExpensePage() {
       .from("vehicles")
       .select("id, name")
       .then(({ data }) => setVehicles(data ?? []));
+    supabase
+      .from("drivers")
+      .select("id, name")
+      .eq("status", "active")
+      .then(({ data }) => setDrivers(data ?? []));
   }, []);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
@@ -134,6 +141,22 @@ export default function NewExpensePage() {
             ))}
           </select>
         </label>
+        {form.withdrawal_account === "Cash on hand" && (
+          <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
+            Driver whose cash this came from
+            <select value={form.driver_id} onChange={(e) => update("driver_id", e.target.value)} className="input">
+              <option value="">Select driver</option>
+              {drivers.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+            <span className="text-xs font-normal text-zinc-500">
+              Deducts from that driver&apos;s cash-in-hand balance on the dashboard.
+            </span>
+          </label>
+        )}
         <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
           Notes
           <textarea value={form.description} onChange={(e) => update("description", e.target.value)} className="input" rows={3} />
