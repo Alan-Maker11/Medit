@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { EXPENSE_CATEGORIES } from "@/lib/types";
+import { EXPENSE_CATEGORIES, WITHDRAWAL_ACCOUNTS, WITHDRAWAL_METHODS } from "@/lib/types";
 
 interface Option {
   id: string;
@@ -21,6 +21,8 @@ export default function EditExpenseForm({ expense, vehicles }: { expense: Record
     amount: expense.amount ?? "",
     km_at_fill: expense.km_at_fill ?? "",
     description: expense.description ?? "",
+    withdrawal_account: expense.withdrawal_account ?? "",
+    withdrawal_method: expense.withdrawal_method ?? "",
   });
 
   function update<K extends keyof typeof form>(key: K, value: string) {
@@ -39,6 +41,8 @@ export default function EditExpenseForm({ expense, vehicles }: { expense: Record
         vehicle_id: form.vehicle_id || null,
         amount: Number(form.amount),
         km_at_fill: form.km_at_fill === "" ? null : Number(form.km_at_fill),
+        withdrawal_account: form.withdrawal_account || null,
+        withdrawal_method: form.withdrawal_method || null,
       }),
     });
     setSubmitting(false);
@@ -100,6 +104,28 @@ export default function EditExpenseForm({ expense, vehicles }: { expense: Record
           onChange={(e) => update("km_at_fill", e.target.value)}
           className="input"
         />
+      </label>
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        Withdrawal account
+        <select value={form.withdrawal_account} onChange={(e) => update("withdrawal_account", e.target.value)} className="input">
+          <option value="">Select account</option>
+          {WITHDRAWAL_ACCOUNTS.map((a) => (
+            <option key={a} value={a}>
+              {a}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        Withdrawal method
+        <select value={form.withdrawal_method} onChange={(e) => update("withdrawal_method", e.target.value)} className="input">
+          <option value="">Select method</option>
+          {WITHDRAWAL_METHODS.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
       </label>
       <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
         Notes

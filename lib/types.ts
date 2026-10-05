@@ -33,6 +33,16 @@ export const EXPENSE_CATEGORIES = [
 ] as const;
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
 
+export const PAYMENT_METHODS = ["Banreservas - 7314", "Popular - 4389", "BHD - 0021", "Cash", "Check"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+export type AdvancePaymentStatus = "pending" | "received";
+export type FinalPaymentStatus = "pending" | "received" | "collected";
+
+export const WITHDRAWAL_ACCOUNTS = ["Banreservas - 7314", "Popular - 4389", "BHD - 0021", "Cash on hand", "Check"] as const;
+export type WithdrawalAccount = (typeof WITHDRAWAL_ACCOUNTS)[number];
+export const WITHDRAWAL_METHODS = ["ATM", "Transfer", "Cash payment", "Direct deposit", "Check"] as const;
+export type WithdrawalMethod = (typeof WITHDRAWAL_METHODS)[number];
+
 export const MEDITIKO_EXPENSE_CATEGORIES = ["storage", "gas", "maintenance", "insurance", "tolls", "other"] as const;
 export type MeditikoExpenseCategory = (typeof MEDITIKO_EXPENSE_CATEGORIES)[number];
 
@@ -146,6 +156,14 @@ export interface Trip {
   notes: string | null;
   needs_wheelchair: boolean;
   needs_stair_climber: boolean;
+  advance_payment_amount: number | null;
+  advance_payment_method: PaymentMethod | null;
+  advance_payment_status: AdvancePaymentStatus;
+  advance_payment_date: string | null;
+  final_payment_amount: number | null;
+  final_payment_method: PaymentMethod | null;
+  final_payment_status: FinalPaymentStatus;
+  final_payment_date: string | null;
 }
 
 export interface Client {
@@ -185,4 +203,6 @@ export interface Expense {
   amount: number;
   description: string | null;
   status: "recorded" | "verified";
+  withdrawal_account: WithdrawalAccount | null;
+  withdrawal_method: WithdrawalMethod | null;
 }

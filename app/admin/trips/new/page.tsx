@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { calculateFare, formatDOP, STAIR_CLIMBER_PRICING, getStairClimberPrice } from "@/lib/fare";
 import { todayLocalISO } from "@/lib/date";
 import { formatDateWithDay } from "@/lib/date-utils";
-import { SERVICE_TYPES, type FareBreakdown, type TransportationMode, type TripType } from "@/lib/types";
+import { SERVICE_TYPES, PAYMENT_METHODS, type FareBreakdown, type TransportationMode, type TripType } from "@/lib/types";
 import ClientAutocomplete from "./ClientAutocomplete";
 import type { Client } from "@/lib/types";
 import AccessibilityIcons from "../AccessibilityIcons";
@@ -60,6 +60,14 @@ export default function NewTripPage({
     transportation_mode: (lockedVehicleName ? "public" : "private") as TransportationMode,
     waiting_hours: "0",
     notes: "",
+    advance_payment_amount: "",
+    advance_payment_method: "",
+    advance_payment_status: "pending",
+    advance_payment_date: todayLocalISO(),
+    final_payment_amount: "",
+    final_payment_method: "",
+    final_payment_status: "pending",
+    final_payment_date: todayLocalISO(),
   });
 
   const [transportFee, setTransportFee] = useState("0");
@@ -626,6 +634,109 @@ export default function NewTripPage({
                 <p className="text-xs text-zinc-500">Total charge{subBajarRoundTrip ? " (round-trip)" : ""}</p>
                 <p className="text-2xl font-bold">{formatDOP(subBajarTotal)}</p>
               </div>
+            )}
+          </fieldset>
+
+          <fieldset className="col-span-2 flex flex-col gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+            <legend className="px-1 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Payment tracking</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <p className="col-span-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Advance payment</p>
+              <Field label="Amount (DOP)">
+                <input
+                  type="number"
+                  min={0}
+                  value={form.advance_payment_amount}
+                  onChange={(e) => update("advance_payment_amount", e.target.value)}
+                  className="input"
+                />
+              </Field>
+              <Field label="Method">
+                <select
+                  value={form.advance_payment_method}
+                  onChange={(e) => update("advance_payment_method", e.target.value)}
+                  className="input"
+                >
+                  <option value="">Select method</option>
+                  {PAYMENT_METHODS.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Status">
+                <select
+                  value={form.advance_payment_status}
+                  onChange={(e) => update("advance_payment_status", e.target.value)}
+                  className="input"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="received">Received</option>
+                </select>
+              </Field>
+              <Field label="Date">
+                <input
+                  type="date"
+                  value={form.advance_payment_date}
+                  onChange={(e) => update("advance_payment_date", e.target.value)}
+                  className="input"
+                />
+              </Field>
+            </div>
+
+            <div className="grid gap-3 border-t border-zinc-200 pt-3 dark:border-zinc-700 sm:grid-cols-2">
+              <p className="col-span-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Final payment</p>
+              <Field label="Amount (DOP)">
+                <input
+                  type="number"
+                  min={0}
+                  value={form.final_payment_amount}
+                  onChange={(e) => update("final_payment_amount", e.target.value)}
+                  className="input"
+                />
+              </Field>
+              <Field label="Method">
+                <select
+                  value={form.final_payment_method}
+                  onChange={(e) => update("final_payment_method", e.target.value)}
+                  className="input"
+                >
+                  <option value="">Select method</option>
+                  {PAYMENT_METHODS.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Status">
+                <select
+                  value={form.final_payment_status}
+                  onChange={(e) => update("final_payment_status", e.target.value)}
+                  className="input"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="received">Received</option>
+                  <option value="collected">Collected</option>
+                </select>
+              </Field>
+              <Field label="Date">
+                <input
+                  type="date"
+                  value={form.final_payment_date}
+                  onChange={(e) => update("final_payment_date", e.target.value)}
+                  className="input"
+                />
+              </Field>
+            </div>
+
+            {(Number(form.advance_payment_amount) || 0) + (Number(form.final_payment_amount) || 0) > 0 && (
+              <p className="text-xs text-zinc-500">
+                Tracked so far: {formatDOP((Number(form.advance_payment_amount) || 0) + (Number(form.final_payment_amount) || 0))}
+                {breakdown || isSubirBajar
+                  ? ` of ${formatDOP(isSubirBajar ? subBajarTotal : breakdown?.totalFare ?? 0)} trip total`
+                  : ""}
+              </p>
             )}
           </fieldset>
 

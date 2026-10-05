@@ -2,6 +2,34 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDOP } from "@/lib/fare";
 import { startOfWeek, endOfWeek, startOfMonth, formatISO } from "date-fns";
 
+interface PaymentTrip {
+  advance_payment_amount: number | null;
+  advance_payment_method: string | null;
+  advance_payment_status: string | null;
+  final_payment_amount: number | null;
+  final_payment_method: string | null;
+  final_payment_status: string | null;
+}
+
+/** Sums trip advance/final payments actually received, grouped by account/method; also totals what's still pending. */
+function accountBreakdown(trips: PaymentTrip[] | null) {
+  const byAccount = new Map<string, number>();
+  let pending = 0;
+  for (const t of trips ?? []) {
+    if (t.advance_payment_status === "received" && t.advance_payment_method) {
+      byAccount.set(t.advance_payment_method, (byAccount.get(t.advance_payment_method) ?? 0) + (t.advance_payment_amount ?? 0));
+    } else if (t.advance_payment_status === "pending") {
+      pending += t.advance_payment_amount ?? 0;
+    }
+    if ((t.final_payment_status === "received" || t.final_payment_status === "collected") && t.final_payment_method) {
+      byAccount.set(t.final_payment_method, (byAccount.get(t.final_payment_method) ?? 0) + (t.final_payment_amount ?? 0));
+    } else if (t.final_payment_status === "pending") {
+      pending += t.final_payment_amount ?? 0;
+    }
+  }
+  return { byAccount, pending };
+}
+
 export default async function AdminDashboard() {
   const supabase = await createClient();
   const weekStart = formatISO(startOfWeek(new Date()), { representation: "date" });
@@ -21,8 +49,14 @@ export default async function AdminDashboard() {
     { data: monthMeditikoExpenses },
   ] = await Promise.all([
     supabase.from("vehicles").select("id").ilike("name", "Meditiko").maybeSingle(),
-    supabase.from("trips").select("total_fare, status, vehicle_id").gte("date", weekStart).lte("date", weekEnd),
-    supabase.from("expenses").select("amount").gte("date", weekStart).lte("date", weekEnd),
+    supabase
+      .from("trips")
+      .select(
+        "total_fare, status, vehicle_id, advance_payment_amount, advance_payment_method, advance_payment_status, final_payment_amount, final_payment_method, final_payment_status"
+      )
+      .gte("date", weekStart)
+      .lte("date", weekEnd),
+    supabase.from("expenses").select("amount, withdrawal_account").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("meditiko_expenses").select("amount").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("driver_uber_earnings").select("driver_id, gross_amount, amount, date").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("drivers").select("id, name"),
@@ -73,6 +107,14 @@ export default async function AdminDashboard() {
   const monthMeditikoExpenseTotal = (monthMeditikoExpenses ?? []).reduce((sum, e) => sum + (e.amount ?? 0), 0);
   const monthToDateIncomeAfterExpenses =
     monthRevenue.total - monthExpenseTotal - monthMeditikoExpenseTotal;
+
+  const { byAccount: weekByAccount, pending: weekPendingPayments } = accountBreakdown(weekTrips as PaymentTrip[] | null);
+  const weekAccountTotal = [...weekByAccount.values()].reduce((sum, v) => sum + v, 0);
+  const expensesByAccount = new Map<string, number>();
+  for (const e of weekExpenses ?? []) {
+    const key = e.withdrawal_account ?? "Unspecified";
+    expensesByAccount.set(key, (expensesByAccount.get(key) ?? 0) + (e.amount ?? 0));
+  }
 
   const stats = [
     { label: "Weekly revenue", value: formatDOP(weekRevenue.total) },
@@ -134,6 +176,41 @@ export default async function AdminDashboard() {
             <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{formatDOP(meditikoProfit)}</p>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <h3 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Payments received by account (week)</h3>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[...weekByAccount.entries()].map(([account, amount]) => (
+            <div key={account} className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800">
+              <p className="text-xs text-zinc-500">{account}</p>
+              <p className="text-lg font-bold">{formatDOP(amount)}</p>
+              <p className="text-xs text-zinc-500">{weekAccountTotal > 0 ? Math.round((amount / weekAccountTotal) * 100) : 0}%</p>
+            </div>
+          ))}
+          {weekPendingPayments > 0 && (
+            <div className="rounded-xl bg-amber-50 p-3 dark:bg-amber-950/30">
+              <p className="text-xs text-amber-700 dark:text-amber-300">Pending collection</p>
+              <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{formatDOP(weekPendingPayments)}</p>
+            </div>
+          )}
+          {weekByAccount.size === 0 && weekPendingPayments === 0 && (
+            <p className="col-span-full text-sm text-zinc-500">No payments logged with an account/method yet this week.</p>
+          )}
+        </div>
+        {expensesByAccount.size > 0 && (
+          <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Expenses withdrawn by account (week)</h4>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[...expensesByAccount.entries()].map(([account, amount]) => (
+                <div key={account} className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800">
+                  <p className="text-xs text-zinc-500">{account}</p>
+                  <p className="text-lg font-bold">{formatDOP(amount)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-500 to-purple-600 p-5 text-white">

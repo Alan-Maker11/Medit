@@ -13,13 +13,15 @@ export async function GET(request: Request) {
 
   const { data: trips } = await supabase
     .from("trips")
-    .select("total_fare, date, services(name), vehicles(name), drivers(name)")
+    .select(
+      "total_fare, date, services(name), vehicles(name), drivers(name), advance_payment_amount, advance_payment_method, advance_payment_status, final_payment_amount, final_payment_method, final_payment_status"
+    )
     .gte("date", periodStart)
     .lte("date", periodEnd);
 
   const { data: expenses } = await supabase
     .from("expenses")
-    .select("amount, category, date, vehicles(name)")
+    .select("amount, category, date, vehicles(name), withdrawal_account")
     .gte("date", periodStart)
     .lte("date", periodEnd);
 
@@ -61,6 +63,27 @@ export async function GET(request: Request) {
     (e) => (e.vehicles as unknown as { name: string } | null)?.name ?? "Unassigned",
     (e) => e.amount ?? 0
   );
+  const byExpenseAccount = groupSum(
+    expenses ?? [],
+    (e) => e.withdrawal_account ?? "Unspecified",
+    (e) => e.amount ?? 0
+  );
+
+  let byIncomeAccount: Record<string, number> = {};
+  let pendingPayments = 0;
+  for (const t of trips ?? []) {
+    if (t.advance_payment_status === "received" && t.advance_payment_method) {
+      byIncomeAccount[t.advance_payment_method] = (byIncomeAccount[t.advance_payment_method] ?? 0) + (t.advance_payment_amount ?? 0);
+    } else if (t.advance_payment_status === "pending") {
+      pendingPayments += t.advance_payment_amount ?? 0;
+    }
+    if ((t.final_payment_status === "received" || t.final_payment_status === "collected") && t.final_payment_method) {
+      byIncomeAccount[t.final_payment_method] = (byIncomeAccount[t.final_payment_method] ?? 0) + (t.final_payment_amount ?? 0);
+    } else if (t.final_payment_status === "pending") {
+      pendingPayments += t.final_payment_amount ?? 0;
+    }
+  }
+  const totalByAccount = Object.values(byIncomeAccount).reduce((sum, v) => sum + v, 0);
 
   return NextResponse.json({
     period_start: periodStart,
@@ -76,5 +99,9 @@ export async function GET(request: Request) {
     by_vehicle_expense: byVehicleExpense,
     by_driver: byDriver,
     by_expense_category: byCategory,
+    by_income_account: byIncomeAccount,
+    by_expense_account: byExpenseAccount,
+    pending_payments: pendingPayments,
+    reconciled_total: totalByAccount,
   });
 }

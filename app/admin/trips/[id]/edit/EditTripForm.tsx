@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDOP, STAIR_CLIMBER_PRICING, getStairClimberPrice } from "@/lib/fare";
 import { formatDateWithDay } from "@/lib/date-utils";
+import { PAYMENT_METHODS } from "@/lib/types";
 
 interface Option {
   id: string;
@@ -40,6 +41,14 @@ export default function EditTripForm({
     status: trip.status ?? "pending",
     total_fare: trip.total_fare != null ? String(trip.total_fare) : "",
     notes: trip.notes ?? "",
+    advance_payment_amount: trip.advance_payment_amount != null ? String(trip.advance_payment_amount) : "",
+    advance_payment_method: trip.advance_payment_method ?? "",
+    advance_payment_status: trip.advance_payment_status ?? "pending",
+    advance_payment_date: trip.advance_payment_date ?? "",
+    final_payment_amount: trip.final_payment_amount != null ? String(trip.final_payment_amount) : "",
+    final_payment_method: trip.final_payment_method ?? "",
+    final_payment_status: trip.final_payment_status ?? "pending",
+    final_payment_date: trip.final_payment_date ?? "",
   });
 
   // Equipment flags — shown for every trip type so the driver knows what to bring
@@ -88,6 +97,12 @@ export default function EditTripForm({
         needs_wheelchair: wheelchair,
         needs_stair_climber: stairsElevator,
         stair_climber_floor: stairFloor,
+        advance_payment_amount: form.advance_payment_amount === "" ? null : Number(form.advance_payment_amount),
+        advance_payment_method: form.advance_payment_method || null,
+        advance_payment_date: form.advance_payment_date || null,
+        final_payment_amount: form.final_payment_amount === "" ? null : Number(form.final_payment_amount),
+        final_payment_method: form.final_payment_method || null,
+        final_payment_date: form.final_payment_date || null,
       }),
     });
     setSubmitting(false);
@@ -354,6 +369,108 @@ export default function EditTripForm({
           </label>
         </fieldset>
       )}
+
+      <fieldset className="col-span-2 flex flex-col gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+        <legend className="px-1 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Payment tracking</legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <p className="col-span-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Advance payment</p>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Amount (DOP)
+            <input
+              type="number"
+              min={0}
+              value={form.advance_payment_amount}
+              onChange={(e) => update("advance_payment_amount", e.target.value)}
+              className="input"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Method
+            <select
+              value={form.advance_payment_method}
+              onChange={(e) => update("advance_payment_method", e.target.value)}
+              className="input"
+            >
+              <option value="">Select method</option>
+              {PAYMENT_METHODS.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Status
+            <select
+              value={form.advance_payment_status}
+              onChange={(e) => update("advance_payment_status", e.target.value)}
+              className="input"
+            >
+              <option value="pending">Pending</option>
+              <option value="received">Received</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Date
+            <input
+              type="date"
+              value={form.advance_payment_date}
+              onChange={(e) => update("advance_payment_date", e.target.value)}
+              className="input"
+            />
+          </label>
+        </div>
+
+        <div className="grid gap-3 border-t border-zinc-200 pt-3 dark:border-zinc-700 sm:grid-cols-2">
+          <p className="col-span-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Final payment</p>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Amount (DOP)
+            <input
+              type="number"
+              min={0}
+              value={form.final_payment_amount}
+              onChange={(e) => update("final_payment_amount", e.target.value)}
+              className="input"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Method
+            <select
+              value={form.final_payment_method}
+              onChange={(e) => update("final_payment_method", e.target.value)}
+              className="input"
+            >
+              <option value="">Select method</option>
+              {PAYMENT_METHODS.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Status
+            <select
+              value={form.final_payment_status}
+              onChange={(e) => update("final_payment_status", e.target.value)}
+              className="input"
+            >
+              <option value="pending">Pending</option>
+              <option value="received">Received</option>
+              <option value="collected">Collected</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Date
+            <input
+              type="date"
+              value={form.final_payment_date}
+              onChange={(e) => update("final_payment_date", e.target.value)}
+              className="input"
+            />
+          </label>
+        </div>
+      </fieldset>
 
       <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
         Notes

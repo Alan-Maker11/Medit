@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { EXPENSE_CATEGORIES } from "@/lib/types";
+import { EXPENSE_CATEGORIES, WITHDRAWAL_ACCOUNTS, WITHDRAWAL_METHODS } from "@/lib/types";
 import { todayLocalISO } from "@/lib/date";
 
 interface Option {
@@ -24,6 +24,8 @@ export default function NewExpensePage() {
     amount: "",
     km_at_fill: "",
     description: "",
+    withdrawal_account: "",
+    withdrawal_method: "",
   });
 
   useEffect(() => {
@@ -110,6 +112,28 @@ export default function NewExpensePage() {
             />
           </label>
         )}
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          Withdrawal account
+          <select value={form.withdrawal_account} onChange={(e) => update("withdrawal_account", e.target.value)} className="input">
+            <option value="">Select account</option>
+            {WITHDRAWAL_ACCOUNTS.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm font-medium">
+          Withdrawal method
+          <select value={form.withdrawal_method} onChange={(e) => update("withdrawal_method", e.target.value)} className="input">
+            <option value="">Select method</option>
+            {WITHDRAWAL_METHODS.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="flex flex-col gap-1 text-sm font-medium md:col-span-2">
           Notes
           <textarea value={form.description} onChange={(e) => update("description", e.target.value)} className="input" rows={3} />

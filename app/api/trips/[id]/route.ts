@@ -41,6 +41,14 @@ const TRIP_COLUMNS = [
   "needs_stair_climber",
   "stair_climber_floor",
   "client_owes",
+  "advance_payment_amount",
+  "advance_payment_method",
+  "advance_payment_status",
+  "advance_payment_date",
+  "final_payment_amount",
+  "final_payment_method",
+  "final_payment_status",
+  "final_payment_date",
 ] as const;
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {

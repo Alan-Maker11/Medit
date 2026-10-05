@@ -53,6 +53,14 @@ export async function POST(request: Request) {
     needs_wheelchair,
     needs_stair_climber,
     stair_climber_floor,
+    advance_payment_amount,
+    advance_payment_method,
+    advance_payment_status,
+    advance_payment_date,
+    final_payment_amount,
+    final_payment_method,
+    final_payment_status,
+    final_payment_date,
   } = body;
 
   if (!date || !pickup_address) {
@@ -127,6 +135,14 @@ export async function POST(request: Request) {
       needs_wheelchair: Boolean(needs_wheelchair),
       needs_stair_climber: Boolean(needs_stair_climber),
       stair_climber_floor: Number(stair_climber_floor) || 0,
+      advance_payment_amount: advance_payment_amount === "" || advance_payment_amount == null ? null : Number(advance_payment_amount),
+      advance_payment_method: advance_payment_method || null,
+      advance_payment_status: advance_payment_status || "pending",
+      advance_payment_date: advance_payment_date || null,
+      final_payment_amount: final_payment_amount === "" || final_payment_amount == null ? null : Number(final_payment_amount),
+      final_payment_method: final_payment_method || null,
+      final_payment_status: final_payment_status || "pending",
+      final_payment_date: final_payment_date || null,
     })
     .select()
     .single();
