@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDOP } from "@/lib/fare";
 import { startOfWeek, endOfWeek, startOfMonth, formatISO } from "date-fns";
 import DeliverCashButton from "@/components/admin/DeliverCashButton";
+import { PAYMENT_METHODS, WITHDRAWAL_ACCOUNTS } from "@/lib/types";
 
 interface PaymentTrip {
   advance_payment_amount: number | null;
@@ -12,9 +13,10 @@ interface PaymentTrip {
   final_payment_status: string | null;
 }
 
-/** Sums trip advance/final payments actually received, grouped by account/method; also totals what's still pending. */
+/** Sums trip advance/final payments actually received, grouped by account/method (every account
+ *  always present, $0 if untouched this period); also totals what's still pending. */
 function accountBreakdown(trips: PaymentTrip[] | null) {
-  const byAccount = new Map<string, number>();
+  const byAccount = new Map<string, number>(PAYMENT_METHODS.map((m) => [m, 0]));
   let pending = 0;
   for (const t of trips ?? []) {
     if (t.advance_payment_status === "received" && t.advance_payment_method) {
@@ -30,6 +32,16 @@ function accountBreakdown(trips: PaymentTrip[] | null) {
   }
   return { byAccount, pending };
 }
+
+function expenseBreakdown(expenses: { amount: number | null; withdrawal_account: string | null }[] | null) {
+  const byAccount = new Map<string, number>(WITHDRAWAL_ACCOUNTS.map((a) => [a, 0]));
+  for (const e of expenses ?? []) {
+    const key = e.withdrawal_account ?? "Unspecified";
+    byAccount.set(key, (byAccount.get(key) ?? 0) + (e.amount ?? 0));
+  }
+  return byAccount;
+}
+
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -64,8 +76,14 @@ export default async function AdminDashboard() {
     supabase.from("meditiko_expenses").select("amount").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("driver_uber_earnings").select("driver_id, gross_amount, amount, date").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("drivers").select("id, name"),
-    supabase.from("trips").select("total_fare, status, vehicle_id").gte("date", monthStart).lte("date", today),
-    supabase.from("expenses").select("amount").gte("date", monthStart).lte("date", today),
+    supabase
+      .from("trips")
+      .select(
+        "total_fare, status, vehicle_id, advance_payment_amount, advance_payment_method, advance_payment_status, final_payment_amount, final_payment_method, final_payment_status"
+      )
+      .gte("date", monthStart)
+      .lte("date", today),
+    supabase.from("expenses").select("amount, withdrawal_account").gte("date", monthStart).lte("date", today),
     supabase.from("meditiko_expenses").select("amount").gte("date", monthStart).lte("date", today),
     // All-time cash collected per driver — this money physically stays with the driver until
     // they spend it (e.g. gas), so it isn't scoped to the current week like the rest above.
@@ -123,11 +141,11 @@ export default async function AdminDashboard() {
 
   const { byAccount: weekByAccount, pending: weekPendingPayments } = accountBreakdown(weekTrips as PaymentTrip[] | null);
   const weekAccountTotal = [...weekByAccount.values()].reduce((sum, v) => sum + v, 0);
-  const expensesByAccount = new Map<string, number>();
-  for (const e of weekExpenses ?? []) {
-    const key = e.withdrawal_account ?? "Unspecified";
-    expensesByAccount.set(key, (expensesByAccount.get(key) ?? 0) + (e.amount ?? 0));
-  }
+  const weekExpensesByAccount = expenseBreakdown(weekExpenses);
+
+  const { byAccount: monthByAccount, pending: monthPendingPayments } = accountBreakdown(monthTrips as PaymentTrip[] | null);
+  const monthAccountTotal = [...monthByAccount.values()].reduce((sum, v) => sum + v, 0);
+  const monthExpensesByAccount = expenseBreakdown(monthExpenses as { amount: number | null; withdrawal_account: string | null }[] | null);
 
   // Cash-in-hand per driver: cash they've collected on their own trips (advance/final, received
   // or collected) minus cash expenses logged against them (e.g. gas paid from that cash) minus
@@ -218,39 +236,21 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h3 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Payments received by account (week)</h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[...weekByAccount.entries()].map(([account, amount]) => (
-            <div key={account} className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800">
-              <p className="text-xs text-zinc-500">{account}</p>
-              <p className="text-lg font-bold">{formatDOP(amount)}</p>
-              <p className="text-xs text-zinc-500">{weekAccountTotal > 0 ? Math.round((amount / weekAccountTotal) * 100) : 0}%</p>
-            </div>
-          ))}
-          {weekPendingPayments > 0 && (
-            <div className="rounded-xl bg-amber-50 p-3 dark:bg-amber-950/30">
-              <p className="text-xs text-amber-700 dark:text-amber-300">Pending collection</p>
-              <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{formatDOP(weekPendingPayments)}</p>
-            </div>
-          )}
-          {weekByAccount.size === 0 && weekPendingPayments === 0 && (
-            <p className="col-span-full text-sm text-zinc-500">No payments logged with an account/method yet this week.</p>
-          )}
-        </div>
-        {expensesByAccount.size > 0 && (
-          <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
-            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Expenses withdrawn by account (week)</h4>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[...expensesByAccount.entries()].map(([account, amount]) => (
-                <div key={account} className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800">
-                  <p className="text-xs text-zinc-500">{account}</p>
-                  <p className="text-lg font-bold">{formatDOP(amount)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <AccountBreakdownCard
+          title="Payments received by account (week)"
+          byAccount={weekByAccount}
+          total={weekAccountTotal}
+          pending={weekPendingPayments}
+          expensesByAccount={weekExpensesByAccount}
+        />
+        <AccountBreakdownCard
+          title="Payments received by account (month)"
+          byAccount={monthByAccount}
+          total={monthAccountTotal}
+          pending={monthPendingPayments}
+          expensesByAccount={monthExpensesByAccount}
+        />
       </div>
 
       {cashByDriver.size > 0 && (
@@ -311,6 +311,62 @@ export default async function AdminDashboard() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function AccountBreakdownCard({
+  title,
+  byAccount,
+  total,
+  pending,
+  expensesByAccount,
+}: {
+  title: string;
+  byAccount: Map<string, number>;
+  total: number;
+  pending: number;
+  expensesByAccount: Map<string, number>;
+}) {
+  const expensesTotal = [...expensesByAccount.values()].reduce((sum, v) => sum + v, 0);
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <h3 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">{title}</h3>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {[...byAccount.entries()].map(([account, amount]) => (
+          <div key={account} className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800">
+            <p className="text-xs text-zinc-500">{account}</p>
+            <p className="text-lg font-bold">{formatDOP(amount)}</p>
+            <p className="text-xs text-zinc-500">{total > 0 ? Math.round((amount / total) * 100) : 0}%</p>
+          </div>
+        ))}
+        {pending > 0 && (
+          <div className="rounded-xl bg-amber-50 p-3 dark:bg-amber-950/30">
+            <p className="text-xs text-amber-700 dark:text-amber-300">Pending collection</p>
+            <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{formatDOP(pending)}</p>
+          </div>
+        )}
+        <div className="rounded-xl bg-blue-50 p-3 dark:bg-blue-950/30">
+          <p className="text-xs text-blue-700 dark:text-blue-300">Total received</p>
+          <p className="text-lg font-bold text-blue-900 dark:text-blue-200">{formatDOP(total)}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Expenses withdrawn by account</h4>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[...expensesByAccount.entries()].map(([account, amount]) => (
+            <div key={account} className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800">
+              <p className="text-xs text-zinc-500">{account}</p>
+              <p className="text-lg font-bold">{formatDOP(amount)}</p>
+            </div>
+          ))}
+          <div className="rounded-xl bg-red-50 p-3 dark:bg-red-950/30">
+            <p className="text-xs text-red-700 dark:text-red-300">Total spent</p>
+            <p className="text-lg font-bold text-red-900 dark:text-red-200">{formatDOP(expensesTotal)}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
