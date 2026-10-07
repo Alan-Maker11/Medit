@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import "./booking.css";
+import DatePicker from "./DatePicker";
 import { ROUTE_DATA, AIRPORT_ROUTE_IDS, type Route } from "@/lib/routeData";
 
 type Region = "puj" | "sdq";
@@ -342,7 +343,7 @@ export default function BookingWizard() {
                 <div className="form-row">
                   <div>
                     <label className="form-label">Fecha</label>
-                    <input type="date" className="form-input" value={date} onChange={(e) => setDate(e.target.value)} />
+                    <DatePicker value={date} onChange={setDate} />
                   </div>
                   <div>
                     <label className="form-label">Hora</label>

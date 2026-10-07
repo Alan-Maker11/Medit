@@ -73,6 +73,32 @@
 .form-input:focus { outline: none; border-color: var(--bk-teal); }
 @media (max-width: 580px) { .form-row { grid-template-columns: 1fr; } }
 
+.date-field { position: relative; }
+.date-field-btn { display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; }
+.date-field-placeholder { color: var(--bk-fg2); }
+.date-popover {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 20;
+  background: var(--bk-bg2); border: 1px solid var(--bk-border); border-radius: var(--bk-r);
+  box-shadow: var(--bk-shadow2); padding: 14px; width: 280px;
+}
+.date-popover-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-weight: 700; font-size: 0.88rem; color: var(--bk-fg); }
+.date-popover-nav button {
+  background: var(--bk-bg); border: 1px solid var(--bk-border); border-radius: 8px;
+  width: 28px; height: 28px; font-size: 1rem; color: var(--bk-fg); cursor: pointer; font-family: inherit;
+}
+.date-popover-nav button:hover { background: var(--bk-accent); color: var(--bk-teal2); }
+.date-popover-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.date-popover-dow { text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--bk-fg2); padding-bottom: 4px; }
+.date-popover-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+  color: var(--bk-fg); cursor: pointer; font-family: inherit; transition: background 0.15s;
+}
+.date-popover-day:hover:not(:disabled) { background: var(--bk-accent); color: var(--bk-teal2); }
+.date-popover-day.today { border: 1px solid var(--bk-teal); }
+.date-popover-day.selected { background: var(--bk-teal); color: #fff; }
+.date-popover-day:disabled { color: var(--bk-border); cursor: not-allowed; }
+
 .pax-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
 .pax-ctrl { display: flex; align-items: center; gap: 10px; }
 .pax-btn {
