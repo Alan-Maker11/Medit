@@ -17,7 +17,7 @@ const FAQS = [
   },
   {
     q: "¿En qué zonas del país operan?",
-    a: "Santo Domingo, Punta Cana, Bávaro, La Romana y Las Terrenas. Para otras zonas, contáctanos por WhatsApp.",
+    a: "Santo Domingo, Punta Cana, Bávaro y La Romana. Para otras zonas, contáctanos por WhatsApp.",
   },
   {
     q: "¿Cómo pago el viaje?",

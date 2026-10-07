@@ -14,12 +14,14 @@ const FILTERS: { key: Filter; label: string }[] = [
 export default function ToursGallery() {
   const [filter, setFilter] = useState<Filter>("all");
 
-  const tours =
-    filter === "all"
-      ? [...ROUTE_DATA.puj.tour, ...ROUTE_DATA.sdq.tour]
-      : filter === "puj"
-        ? ROUTE_DATA.puj.tour
-        : ROUTE_DATA.sdq.tour;
+  const pujTours = ROUTE_DATA.puj.tour.map((t) => ({ ...t, region: "puj" as const }));
+  const sdqTours = ROUTE_DATA.sdq.tour.map((t) => ({ ...t, region: "sdq" as const }));
+  const tours = filter === "all" ? [...pujTours, ...sdqTours] : filter === "puj" ? pujTours : sdqTours;
+
+  function book(region: "puj" | "sdq", routeId: string) {
+    window.dispatchEvent(new CustomEvent("medit:book-route", { detail: { region, type: "tour", routeId } }));
+    document.getElementById("reservar")?.scrollIntoView({ behavior: "smooth" });
+  }
 
   return (
     <section id="tours" className="bg-white px-4 py-16 dark:bg-black sm:py-20">
@@ -45,15 +47,16 @@ export default function ToursGallery() {
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {tours.map((t) => (
-            <div
+            <button
               key={t.id}
-              className="rounded-2xl border border-zinc-200 bg-medit-bg p-5 transition-shadow hover:shadow-lg dark:border-zinc-800 dark:bg-[#0d1421]"
+              onClick={() => book(t.region, t.id)}
+              className="rounded-2xl border border-zinc-200 bg-medit-bg p-5 text-left transition-shadow hover:shadow-lg dark:border-zinc-800 dark:bg-[#0d1421]"
             >
               <span className="text-3xl">{t.icon}</span>
               <h3 className="font-display mt-3 text-lg font-bold text-medit-fg dark:text-white">{t.name}</h3>
               <p className="font-body mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t.desc}</p>
               <p className="font-body mt-3 text-sm font-bold text-medit-teal-2 dark:text-medit-teal">{t.price}</p>
-            </div>
+            </button>
           ))}
         </div>
       </div>

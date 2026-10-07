@@ -1,4 +1,4 @@
-const CITIES = ["Santo Domingo", "Punta Cana", "Bávaro", "Las Terrenas"];
+const CITIES = ["Santo Domingo", "Punta Cana", "Bávaro"];
 
 export default function Hero() {
   return (
