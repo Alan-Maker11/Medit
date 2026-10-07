@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import "./booking.css";
 import { ROUTE_DATA, AIRPORT_ROUTE_IDS, type Route } from "@/lib/routeData";
 
@@ -69,6 +70,8 @@ export default function BookingWizard() {
   const [calcWheelchair, setCalcWheelchair] = useState(false);
   const [calcStairclimber, setCalcStairclimber] = useState(false);
   const [calcFloor, setCalcFloor] = useState(0);
+  const calcOriginRef = useRef<HTMLInputElement>(null);
+  const calcDestRef = useRef<HTMLInputElement>(null);
 
   const routes: Route[] = ROUTE_DATA[region]?.[type] ?? [];
   const selectedRoute = routes.find((r) => r.id === routeId) ?? null;
@@ -88,18 +91,37 @@ export default function BookingWizard() {
       setAddons(EMPTY_ADDONS);
       setStep(1);
     }
-    function onPrefillFlight(e: Event) {
-      const num = (e as CustomEvent<string>).detail;
-      setTab("transfer");
-      setFlight(num ?? "");
-      setStep(3);
-    }
     window.addEventListener("medit:book-route", onBookRoute);
-    window.addEventListener("medit:prefill-flight", onPrefillFlight);
-    return () => {
-      window.removeEventListener("medit:book-route", onBookRoute);
-      window.removeEventListener("medit:prefill-flight", onPrefillFlight);
-    };
+    return () => window.removeEventListener("medit:book-route", onBookRoute);
+  }, []);
+
+  // Same Google Maps key/Places Autocomplete used by the real fare calculator — reused here
+  // so the Origen/Destino fields on the "Cotizar" tab get address suggestions too.
+  useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return;
+
+    setOptions({ key: apiKey });
+    importLibrary("places").then(() => {
+      if (calcOriginRef.current) {
+        const ac = new google.maps.places.Autocomplete(calcOriginRef.current, {
+          fields: ["formatted_address"],
+          componentRestrictions: { country: "do" },
+        });
+        ac.addListener("place_changed", () => {
+          setCalcOrigin(ac.getPlace().formatted_address ?? calcOriginRef.current?.value ?? "");
+        });
+      }
+      if (calcDestRef.current) {
+        const ac = new google.maps.places.Autocomplete(calcDestRef.current, {
+          fields: ["formatted_address"],
+          componentRestrictions: { country: "do" },
+        });
+        ac.addListener("place_changed", () => {
+          setCalcDest(ac.getPlace().formatted_address ?? calcDestRef.current?.value ?? "");
+        });
+      }
+    });
   }, []);
 
   function switchTab(next: "transfer" | "tour" | "calc") {
@@ -440,6 +462,7 @@ export default function BookingWizard() {
             <div className="calc-group">
               <label className="form-label">Origen</label>
               <input
+                ref={calcOriginRef}
                 className="form-input"
                 type="text"
                 placeholder="Ej: Hotel Jaragua, Piantini"
@@ -450,6 +473,7 @@ export default function BookingWizard() {
             <div className="calc-group">
               <label className="form-label">Destino</label>
               <input
+                ref={calcDestRef}
                 className="form-input"
                 type="text"
                 placeholder="Ej: Zona Colonial, Clínica Abel González"

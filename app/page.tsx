@@ -7,7 +7,6 @@ import Services from "@/components/public/Services";
 import Destinations from "@/components/public/Destinations";
 import ToursGallery from "@/components/public/ToursGallery";
 import BookingWizard from "@/components/public/BookingWizard";
-import FlightTracker from "@/components/public/FlightTracker";
 import TrustStrip from "@/components/public/TrustStrip";
 import Reviews from "@/components/public/Reviews";
 import FAQ from "@/components/public/FAQ";
@@ -26,7 +25,6 @@ export default function Home() {
       <Destinations />
       <ToursGallery />
       <BookingWizard />
-      <FlightTracker />
       <TrustStrip />
       <Reviews />
       <FAQ />
