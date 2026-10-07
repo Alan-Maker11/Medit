@@ -44,7 +44,7 @@ export default function DriverDashboard() {
 
   async function handleLogout() {
     await driverLogout();
-    router.push("/driver/login");
+    router.push("/");
     router.refresh();
   }
 
