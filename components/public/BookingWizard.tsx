@@ -62,6 +62,8 @@ export default function BookingWizard() {
   const [time, setTime] = useState("");
   const [pax, setPax] = useState(2);
   const [trip, setTrip] = useState<TripKind>("one");
+  const [returnTime, setReturnTime] = useState("");
+  const [waitingHours, setWaitingHours] = useState("");
   const [flight, setFlight] = useState("");
   const [passengerName, setPassengerName] = useState("");
 
@@ -97,13 +99,18 @@ export default function BookingWizard() {
   }, []);
 
   // Same Google Maps key/Places Autocomplete used by the real fare calculator — reused here
-  // so the Origen/Destino fields on the "Cotizar" tab get address suggestions too.
+  // so the Origen/Destino fields on the "Cotizar" tab get address suggestions too. These inputs
+  // only exist in the DOM once the user switches to that tab, so this must re-run on tab change,
+  // not just once on mount.
   useEffect(() => {
+    if (tab !== "calc") return;
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!apiKey) return;
 
+    let cancelled = false;
     setOptions({ key: apiKey });
     importLibrary("places").then(() => {
+      if (cancelled) return;
       if (calcOriginRef.current) {
         const ac = new google.maps.places.Autocomplete(calcOriginRef.current, {
           fields: ["formatted_address"],
@@ -123,7 +130,10 @@ export default function BookingWizard() {
         });
       }
     });
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
 
   function switchTab(next: "transfer" | "tour" | "calc") {
     setTab(next);
@@ -163,6 +173,8 @@ export default function BookingWizard() {
       `🕐 Hora: ${time || "—"}\n` +
       `👥 Pasajeros: ${pax}\n` +
       `↔️ Tipo: ${trip === "one" ? "Solo Ida" : "Ida y Vuelta"}\n` +
+      (trip === "round" && returnTime ? `🕐 Hora de regreso: ${returnTime}\n` : "") +
+      (trip === "round" && !returnTime && waitingHours ? `⏳ Espera en destino: ${waitingHours}h\n` : "") +
       (flight ? `✈️ Vuelo: *${flight}*\n` : "") +
       (addonLines ? `\n🎁 *Add-ons solicitados:*\n${addonLines}\n   Subtotal add-ons: $${addonsSubtotal} USD\n` : "") +
       `\nPor favor confirmar disponibilidad y precio final. ¡Gracias! 🙏`;
@@ -384,6 +396,27 @@ export default function BookingWizard() {
                   </button>
                 </div>
 
+                {trip === "round" && (
+                  <div className="form-row">
+                    <div>
+                      <label className="form-label">Hora de regreso (si la sabes)</label>
+                      <input type="time" className="form-input" value={returnTime} onChange={(e) => setReturnTime(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="form-label">O, horas de espera en destino</label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.5}
+                        className="form-input"
+                        placeholder="Ej: 2"
+                        value={waitingHours}
+                        onChange={(e) => setWaitingHours(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {isAirportFlight && (
                   <>
                     <label className="form-label mt-4">
@@ -430,6 +463,8 @@ export default function BookingWizard() {
                   <SummaryRow label="Hora" value={time || "—"} />
                   <SummaryRow label="Pasajeros" value={String(pax)} />
                   <SummaryRow label="Viaje" value={trip === "one" ? "Solo Ida" : "Ida y Vuelta"} />
+                  {trip === "round" && returnTime && <SummaryRow label="Hora de regreso" value={returnTime} />}
+                  {trip === "round" && !returnTime && waitingHours && <SummaryRow label="Espera en destino" value={`${waitingHours}h`} />}
                   {flight && <SummaryRow label="✈️ Vuelo" value={flight} />}
                   {ALL_ADDONS.filter((a) => addons[a.key] > 0).map((a) => (
                     <SummaryRow
