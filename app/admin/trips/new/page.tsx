@@ -17,6 +17,10 @@ interface Option {
   name: string;
 }
 
+interface DriverOption extends Option {
+  is_meditiko: boolean;
+}
+
 export default function NewTripPage({
   lockedVehicleName,
   redirectTo = "/admin/trips",
@@ -32,7 +36,7 @@ export default function NewTripPage({
   const destinationRef = useRef<HTMLInputElement>(null);
 
   const [services, setServices] = useState<Option[]>([]);
-  const [drivers, setDrivers] = useState<Option[]>([]);
+  const [drivers, setDrivers] = useState<DriverOption[]>([]);
   const [vehicles, setVehicles] = useState<Option[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -85,6 +89,19 @@ export default function NewTripPage({
   const selectedService = services.find((s) => s.id === form.service_id);
   const isSubirBajar = selectedService?.name === "Subir/Bajar";
 
+  // Meditiko drivers should only be assignable to Meditiko-vehicle trips, and regular Medit
+  // drivers shouldn't clutter the list for Meditiko trips.
+  const selectedVehicleName = lockedVehicleName ?? vehicles.find((v) => v.id === form.vehicle_id)?.name ?? "";
+  const isMeditikoTrip = selectedVehicleName.toLowerCase() === "meditiko";
+  const availableDrivers = drivers.filter((d) => Boolean(d.is_meditiko) === isMeditikoTrip);
+
+  useEffect(() => {
+    if (form.driver_id && !availableDrivers.some((d) => d.id === form.driver_id)) {
+      update("driver_id", "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMeditikoTrip, drivers]);
+
   // For Subir/Bajar: auto-compute breakdown live from fees — no Calculate button needed
   const subBajarMultiplier = subBajarRoundTrip ? 2 : 1;
   const subBajarTotal =
@@ -112,7 +129,7 @@ export default function NewTripPage({
   useEffect(() => {
     const supabase = createClient();
     supabase.from("services").select("id, name").then(({ data }) => setServices(data ?? []));
-    supabase.from("drivers").select("id, name").eq("status", "active").then(({ data }) => setDrivers(data ?? []));
+    supabase.from("drivers").select("id, name, is_meditiko").eq("status", "active").then(({ data }) => setDrivers(data ?? []));
     supabase
       .from("vehicles")
       .select("id, name")
@@ -460,7 +477,7 @@ export default function NewTripPage({
           <Field label="Driver">
             <select value={form.driver_id} onChange={(e) => update("driver_id", e.target.value)} className="input">
               <option value="">Select driver</option>
-              {drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+              {availableDrivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </Field>
           <Field label="Vehicle">

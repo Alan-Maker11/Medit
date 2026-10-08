@@ -20,7 +20,7 @@ export default async function MeditikoTripsPage() {
 
   const [{ data: bookings, error }, { data: drivers }, { data: registeredTrips }] = await Promise.all([
     supabase.from("meditiko_bookings").select("*, drivers(name)").order("created_at", { ascending: false }),
-    supabase.from("drivers").select("id, name").eq("status", "active").order("name", { ascending: true }),
+    supabase.from("drivers").select("id, name").eq("status", "active").eq("is_meditiko", true).order("name", { ascending: true }),
     registeredTripsQuery,
   ]);
 

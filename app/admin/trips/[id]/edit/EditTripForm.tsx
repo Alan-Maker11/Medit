@@ -11,6 +11,10 @@ interface Option {
   name: string;
 }
 
+interface DriverOption extends Option {
+  is_meditiko: boolean;
+}
+
 export default function EditTripForm({
   trip,
   services,
@@ -19,7 +23,7 @@ export default function EditTripForm({
 }: {
   trip: Record<string, any>;
   services: Option[];
-  drivers: Option[];
+  drivers: DriverOption[];
   vehicles: Option[];
 }) {
   const router = useRouter();
@@ -62,6 +66,13 @@ export default function EditTripForm({
 
   const selectedService = services.find((s) => s.id === form.service_id);
   const isSubirBajar = selectedService?.name === "Subir/Bajar";
+
+  // Meditiko drivers should only be assignable to Meditiko-vehicle trips, and vice versa. Always
+  // keep the trip's currently assigned driver selectable even if they fall outside that filter,
+  // so switching vehicle doesn't silently blank out an existing assignment.
+  const selectedVehicleName = vehicles.find((v) => v.id === form.vehicle_id)?.name ?? "";
+  const isMeditikoTrip = selectedVehicleName.toLowerCase() === "meditiko";
+  const availableDrivers = drivers.filter((d) => Boolean(d.is_meditiko) === isMeditikoTrip || d.id === trip.driver_id);
 
   const subBajarMultiplier = subBajarRoundTrip ? 2 : 1;
   const subBajarTotal =
@@ -166,7 +177,7 @@ export default function EditTripForm({
         Driver
         <select value={form.driver_id} onChange={(e) => update("driver_id", e.target.value)} className="input">
           <option value="">Select driver</option>
-          {drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+          {availableDrivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </label>
       <label className="flex flex-col gap-1 text-sm font-medium">
