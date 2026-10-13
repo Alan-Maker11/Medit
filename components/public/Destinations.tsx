@@ -1,8 +1,8 @@
 "use client";
 
 const DESTINATIONS = [
-  { icon: "🌴", name: "Punta Cana", desc: "Resorts y playas de arena blanca", gradient: "from-cyan-500 to-blue-700", region: "puj" as const, routeId: "puj-bavaro" },
-  { icon: "🏛️", name: "Santo Domingo", desc: "Capital histórica y moderna", gradient: "from-indigo-600 to-purple-800", region: "sdq" as const, routeId: "sdq-centro" },
+  { icon: "🌴", name: "Punta Cana", desc: "Resorts and white sand beaches", gradient: "from-cyan-500 to-blue-700", region: "puj" as const, routeId: "puj-bavaro" },
+  { icon: "🏛️", name: "Santo Domingo", desc: "Historic and modern capital", gradient: "from-indigo-600 to-purple-800", region: "sdq" as const, routeId: "sdq-centro" },
   { icon: "⛵", name: "La Romana", desc: "Casa de Campo & Altos de Chavón", gradient: "from-amber-500 to-orange-700", region: "puj" as const, routeId: "puj-la-romana" },
 ];
 
@@ -16,7 +16,7 @@ export default function Destinations() {
     <section id="destinos" className="bg-medit-bg px-4 py-16 dark:bg-[#0d1421] sm:py-20">
       <div className="mx-auto max-w-6xl">
         <h2 className="font-display text-center text-3xl font-bold text-medit-fg dark:text-white sm:text-4xl">
-          Destinos populares
+          Popular destinations
         </h2>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {DESTINATIONS.map((d) => (

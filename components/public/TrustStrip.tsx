@@ -1,8 +1,8 @@
 const ITEMS = [
-  { icon: "📍", label: "GPS en tiempo real" },
-  { icon: "🛡️", label: "Certificado seguro" },
-  { icon: "♿", label: "Vehículo accesible" },
-  { icon: "🕐", label: "Soporte 24/7" },
+  { icon: "📍", label: "Real-time GPS" },
+  { icon: "🛡️", label: "Certified & insured" },
+  { icon: "♿", label: "Accessible vehicle" },
+  { icon: "🕐", label: "24/7 Support" },
 ];
 
 export default function TrustStrip() {

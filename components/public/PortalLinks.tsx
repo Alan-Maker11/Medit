@@ -1,14 +1,14 @@
 const LINKS = [
-  { href: "/calculator", icon: "🧮", title: "Calculadora de tarifa", desc: "Cotiza tu viaje con el motor de precios real" },
-  { href: "/driver/login", icon: "🚐", title: "Portal del conductor", desc: "Acceso para conductores Medit" },
-  { href: "/login", icon: "🔐", title: "Panel administrativo", desc: "Acceso para personal de Medit" },
+  { href: "/calculator", icon: "🧮", title: "Fare Calculator", desc: "Get a quote for your trip with the real pricing engine" },
+  { href: "/driver/login", icon: "🚐", title: "Driver Portal", desc: "Access for Medit drivers" },
+  { href: "/login", icon: "🔐", title: "Admin Panel", desc: "Access for Medit staff" },
 ];
 
 export default function PortalLinks() {
   return (
     <section className="bg-medit-bg px-4 py-14 dark:bg-[#0d1421]">
       <div className="mx-auto max-w-5xl">
-        <h2 className="font-body text-center text-xs font-bold uppercase tracking-widest text-zinc-500">Accesos</h2>
+        <h2 className="font-body text-center text-xs font-bold uppercase tracking-widest text-zinc-500">Quick Links</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           {LINKS.map((l) => (
             <a

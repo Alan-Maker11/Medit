@@ -21,15 +21,15 @@ interface AddonDef {
 }
 
 const ACCESS_ADDONS: AddonDef[] = [
-  { key: "wheelchair", emoji: "♿", label: "Silla de ruedas", hint: "Asistencia y manejo de silla", price: 10, unit: "", max: 3 },
-  { key: "stairclimber", emoji: "🪜", label: "Sube-escaleras eléctrico", hint: "Para edificios sin ascensor", price: 15, unit: "", max: 3 },
-  { key: "carseat", emoji: "🧒", label: "Silla para niño", hint: "Car seat certificado", price: 10, unit: "", max: 3 },
+  { key: "wheelchair", emoji: "♿", label: "Wheelchair", hint: "Assistance and wheelchair handling", price: 10, unit: "", max: 3 },
+  { key: "stairclimber", emoji: "🪜", label: "Electric stair climber", hint: "For buildings without an elevator", price: 15, unit: "", max: 3 },
+  { key: "carseat", emoji: "🧒", label: "Car seat", hint: "Certified car seat", price: 10, unit: "", max: 3 },
 ];
 
 const DRINK_ADDONS: AddonDef[] = [
-  { key: "champagne", emoji: "🍾", label: "Champán", hint: "Botella fría a bordo", price: 65, unit: "btl", max: 4 },
-  { key: "beer", emoji: "🍺", label: "Cerveza", hint: "Presidente, Corona o similar", price: 5, unit: "c/u", max: 12 },
-  { key: "water", emoji: "💧", label: "Agua embotellada", hint: "Botella 500ml", price: 2, unit: "c/u", max: 12 },
+  { key: "champagne", emoji: "🍾", label: "Champagne", hint: "Chilled bottle on board", price: 65, unit: "btl", max: 4 },
+  { key: "beer", emoji: "🍺", label: "Beer", hint: "Presidente, Corona or similar", price: 5, unit: "ea", max: 12 },
+  { key: "water", emoji: "💧", label: "Bottled water", hint: "500ml bottle", price: 2, unit: "ea", max: 12 },
 ];
 
 const ALL_ADDONS = [...ACCESS_ADDONS, ...DRINK_ADDONS];
@@ -156,45 +156,45 @@ export default function BookingWizard() {
   }
 
   function submitBooking() {
-    const serviceLabel = type === "transfer" ? "Transfer" : type === "tour" ? "Tour" : "Personalizado";
+    const serviceLabel = type === "transfer" ? "Transfer" : type === "tour" ? "Tour" : "Custom";
     const regionLabel = region === "puj" ? "Punta Cana (PUJ)" : "Santo Domingo (SDQ)";
     const addonLines = ALL_ADDONS.filter((a) => addons[a.key] > 0)
       .map((a) => `   • ${a.emoji} ${a.label}${addons[a.key] > 1 ? ` ×${addons[a.key]}` : ""} (+$${a.price * addons[a.key]} USD)`)
       .join("\n");
 
     const message =
-      `🔵 *RESERVA MEDIT TRANSPORT*\n` +
+      `🔵 *MEDIT TRANSPORT BOOKING*\n` +
       `━━━━━━━━━━━━━━━━━━━━━━\n` +
-      (passengerName ? `👤 Pasajero: ${passengerName}\n` : "") +
-      `📍 Región: ${regionLabel}\n` +
-      `🗺️ Servicio: ${serviceLabel}\n` +
-      (selectedRoute ? `🎯 Ruta: ${selectedRoute.name}\n💰 Precio ref.: ${selectedRoute.price}\n` : "") +
-      `📅 Fecha: ${date || "—"}\n` +
-      `🕐 Hora: ${time || "—"}\n` +
-      `👥 Pasajeros: ${pax}\n` +
-      `↔️ Tipo: ${trip === "one" ? "Solo Ida" : "Ida y Vuelta"}\n` +
-      (trip === "round" && returnTime ? `🕐 Hora de regreso: ${returnTime}\n` : "") +
-      (trip === "round" && !returnTime && waitingHours ? `⏳ Espera en destino: ${waitingHours}h\n` : "") +
-      (flight ? `✈️ Vuelo: *${flight}*\n` : "") +
-      (addonLines ? `\n🎁 *Add-ons solicitados:*\n${addonLines}\n   Subtotal add-ons: $${addonsSubtotal} USD\n` : "") +
-      `\nPor favor confirmar disponibilidad y precio final. ¡Gracias! 🙏`;
+      (passengerName ? `👤 Passenger: ${passengerName}\n` : "") +
+      `📍 Region: ${regionLabel}\n` +
+      `🗺️ Service: ${serviceLabel}\n` +
+      (selectedRoute ? `🎯 Route: ${selectedRoute.name}\n💰 Ref. price: ${selectedRoute.price}\n` : "") +
+      `📅 Date: ${date || "—"}\n` +
+      `🕐 Time: ${time || "—"}\n` +
+      `👥 Passengers: ${pax}\n` +
+      `↔️ Type: ${trip === "one" ? "One Way" : "Round Trip"}\n` +
+      (trip === "round" && returnTime ? `🕐 Return time: ${returnTime}\n` : "") +
+      (trip === "round" && !returnTime && waitingHours ? `⏳ Waiting at destination: ${waitingHours}h\n` : "") +
+      (flight ? `✈️ Flight: *${flight}*\n` : "") +
+      (addonLines ? `\n🎁 *Requested add-ons:*\n${addonLines}\n   Add-ons subtotal: $${addonsSubtotal} USD\n` : "") +
+      `\nPlease confirm availability and final price. Thank you! 🙏`;
 
     window.open(`https://wa.me/18293296920?text=${encodeURIComponent(message)}`, "_blank");
   }
 
   function whaCalc() {
-    const addonsLabel = [calcWheelchair ? "Silla de ruedas" : "", calcStairclimber ? "Sube-escaleras" : ""]
+    const addonsLabel = [calcWheelchair ? "Wheelchair" : "", calcStairclimber ? "Stair climber" : ""]
       .filter(Boolean)
       .join(", ");
     const { range } = fareRange;
     const message =
-      `🧮 *COTIZACIÓN MEDIT TRANSPORT*\n` +
-      `📍 Origen: ${calcOrigin || "—"}\n` +
-      `🏁 Destino: ${calcDest || "—"}\n` +
-      `↔️ Tipo: Recorrido ida y vuelta (hasta 3h)\n` +
+      `🧮 *MEDIT TRANSPORT QUOTE*\n` +
+      `📍 Origin: ${calcOrigin || "—"}\n` +
+      `🏁 Destination: ${calcDest || "—"}\n` +
+      `↔️ Type: Round trip (up to 3h)\n` +
       (addonsLabel ? `♿ Add-ons: ${addonsLabel}\n` : "") +
-      `💰 Estimado: ${range}\n\n` +
-      `Por favor confirmar tarifa exacta y disponibilidad. ¡Gracias!`;
+      `💰 Estimate: ${range}\n\n` +
+      `Please confirm the exact fare and availability. Thank you!`;
     window.open(`https://wa.me/18293296920?text=${encodeURIComponent(message)}`, "_blank");
   }
 
@@ -224,10 +224,10 @@ export default function BookingWizard() {
   return (
     <section id="reservar" className="booking-section">
       <div className="mx-auto max-w-2xl text-center">
-        <p className="font-body text-xs font-bold uppercase tracking-widest text-medit-teal">Reserva Online</p>
-        <h2 className="font-display mt-2 text-3xl font-bold text-medit-fg dark:text-white">Reserva tu Transporte</h2>
+        <p className="font-body text-xs font-bold uppercase tracking-widest text-medit-teal">Book Online</p>
+        <h2 className="font-display mt-2 text-3xl font-bold text-medit-fg dark:text-white">Book Your Transportation</h2>
         <p className="font-body mx-auto mt-2 max-w-md text-sm text-zinc-500">
-          Completa los datos y te contactamos por WhatsApp en minutos.
+          Fill in the details and we will contact you on WhatsApp within minutes.
         </p>
       </div>
 
@@ -240,7 +240,7 @@ export default function BookingWizard() {
             🗺️ Tour
           </button>
           <button className={`booking-tab ${tab === "calc" ? "active" : ""}`} onClick={() => switchTab("calc")}>
-            🧮 Calculadora
+            🧮 Calculator
           </button>
         </div>
 
@@ -257,7 +257,7 @@ export default function BookingWizard() {
 
             {step === 1 && (
               <div className="wizard-step show">
-                <label className="form-label">Región / Aeropuerto</label>
+                <label className="form-label">Region / Airport</label>
                 <div className="pill-group">
                   <button
                     className={`pill ${region === "puj" ? "active" : ""}`}
@@ -279,7 +279,7 @@ export default function BookingWizard() {
                   </button>
                 </div>
 
-                <label className="form-label">Tipo de Servicio</label>
+                <label className="form-label">Service Type</label>
                 <div className="pill-group">
                   {(["transfer", "tour", "custom"] as ServiceType[]).map((t) => (
                     <button
@@ -290,12 +290,12 @@ export default function BookingWizard() {
                         setRouteId(null);
                       }}
                     >
-                      {t === "transfer" ? "🚗 Transfer" : t === "tour" ? "🗺️ Tour" : "✏️ Personalizado"}
+                      {t === "transfer" ? "🚗 Transfer" : t === "tour" ? "🗺️ Tour" : "✏️ Custom"}
                     </button>
                   ))}
                 </div>
 
-                <label className="form-label">Ruta / Tour</label>
+                <label className="form-label">Route / Tour</label>
                 <div className="route-grid">
                   {routes.map((r) => (
                     <button key={r.id} className={`route-opt ${routeId === r.id ? "active" : ""}`} onClick={() => setRouteId(r.id)}>
@@ -308,7 +308,7 @@ export default function BookingWizard() {
                 </div>
 
                 <button className="btn-next" onClick={() => goStep(2)}>
-                  Siguiente →
+                  Next →
                 </button>
               </div>
             )}
@@ -317,17 +317,17 @@ export default function BookingWizard() {
               <div className="wizard-step show">
                 <h3 className="font-display mb-1.5 text-base text-medit-fg dark:text-white">Extras &amp; Add-ons</h3>
                 <p className="mb-5 text-sm text-zinc-500">
-                  Personaliza tu servicio. Agrega lo que necesitas y confirmaremos el total por WhatsApp.
+                  Customize your service. Add what you need and we will confirm the total via WhatsApp.
                 </p>
 
-                <label className="form-label">♿ Accesibilidad</label>
+                <label className="form-label">♿ Accessibility</label>
                 <div className="addon-list">
                   {ACCESS_ADDONS.map((a) => (
                     <AddonRow key={a.key} def={a} qty={addons[a.key] || 0} onChange={(d) => changeAddon(a.key, d)} />
                   ))}
                 </div>
 
-                <label className="form-label mt-5">🥂 Bebidas &amp; Confort</label>
+                <label className="form-label mt-5">🥂 Drinks &amp; Comfort</label>
                 <div className="addon-list">
                   {DRINK_ADDONS.map((a) => (
                     <AddonRow key={a.key} def={a} qty={addons[a.key] || 0} onChange={(d) => changeAddon(a.key, d)} />
@@ -336,16 +336,16 @@ export default function BookingWizard() {
 
                 {addonsSubtotal > 0 && (
                   <div className="addon-subtotal">
-                    <span>Subtotal add-ons:</span>
+                    <span>Add-ons subtotal:</span>
                     <strong>${addonsSubtotal} USD</strong>
                   </div>
                 )}
 
                 <button className="btn-next" onClick={() => goStep(3)}>
-                  Siguiente →
+                  Next →
                 </button>
                 <button className="btn-back" onClick={() => goStep(1)}>
-                  ← Atrás
+                  ← Back
                 </button>
               </div>
             )}
@@ -354,22 +354,22 @@ export default function BookingWizard() {
               <div className="wizard-step show">
                 <div className="form-row">
                   <div>
-                    <label className="form-label">Fecha</label>
+                    <label className="form-label">Date</label>
                     <DatePicker value={date} onChange={setDate} />
                   </div>
                   <div>
-                    <label className="form-label">Hora</label>
+                    <label className="form-label">Time</label>
                     <input type="time" className="form-input" value={time} onChange={(e) => setTime(e.target.value)} />
                   </div>
                 </div>
 
                 <label className="form-label">
-                  Pasajeros{" "}
+                  Passengers{" "}
                   <span className="font-normal text-zinc-500">
                     {type === "transfer"
-                      ? "(máx. 3 incl. usuario silla + 2 acompañantes)"
+                      ? "(max. 3 incl. wheelchair user + 2 companions)"
                       : type === "tour"
-                        ? "(máx. 5 incl. usuario silla + 4 acompañantes)"
+                        ? "(max. 5 incl. wheelchair user + 4 companions)"
                         : ""}
                   </span>
                 </label>
@@ -383,33 +383,33 @@ export default function BookingWizard() {
                       +
                     </button>
                   </div>
-                  <span className="text-sm text-zinc-500">pasajeros</span>
+                  <span className="text-sm text-zinc-500">passengers</span>
                 </div>
 
-                <label className="form-label">Tipo de Viaje</label>
+                <label className="form-label">Trip Type</label>
                 <div className="trip-toggle">
                   <button className={`trip-opt ${trip === "one" ? "active" : ""}`} onClick={() => setTrip("one")}>
-                    Solo Ida
+                    One Way
                   </button>
                   <button className={`trip-opt ${trip === "round" ? "active" : ""}`} onClick={() => setTrip("round")}>
-                    Ida y Vuelta
+                    Round Trip
                   </button>
                 </div>
 
                 {trip === "round" && (
                   <div className="form-row">
                     <div>
-                      <label className="form-label">Hora de regreso (si la sabes)</label>
+                      <label className="form-label">Return time (if known)</label>
                       <input type="time" className="form-input" value={returnTime} onChange={(e) => setReturnTime(e.target.value)} />
                     </div>
                     <div>
-                      <label className="form-label">O, horas de espera en destino</label>
+                      <label className="form-label">Or, waiting hours at destination</label>
                       <input
                         type="number"
                         min={0}
                         step={0.5}
                         className="form-input"
-                        placeholder="Ej: 2"
+                        placeholder="E.g.: 2"
                         value={waitingHours}
                         onChange={(e) => setWaitingHours(e.target.value)}
                       />
@@ -420,52 +420,52 @@ export default function BookingWizard() {
                 {isAirportFlight && (
                   <>
                     <label className="form-label mt-4">
-                      ✈️ Número de vuelo <span className="font-normal text-zinc-500">(opcional — monitoreamos tu llegada)</span>
+                      ✈️ Flight number <span className="font-normal text-zinc-500">(optional — we track your arrival)</span>
                     </label>
                     <input
                       className="form-input uppercase"
                       type="text"
-                      placeholder="Ej: AA 1234, JBU 456, IB 6547"
+                      placeholder="E.g.: AA 1234, JBU 456, IB 6547"
                       value={flight}
                       onChange={(e) => setFlight(e.target.value.toUpperCase())}
                     />
                   </>
                 )}
 
-                <label className="form-label mt-4">📝 Nombre del pasajero</label>
+                <label className="form-label mt-4">📝 Passenger Name</label>
                 <input
                   className="form-input"
                   type="text"
-                  placeholder="Nombre completo"
+                  placeholder="Full name"
                   value={passengerName}
                   onChange={(e) => setPassengerName(e.target.value)}
                 />
 
                 <button className="btn-next" onClick={() => goStep(4)}>
-                  Revisar Reserva →
+                  Review Booking →
                 </button>
                 <button className="btn-back" onClick={() => goStep(2)}>
-                  ← Atrás
+                  ← Back
                 </button>
               </div>
             )}
 
             {step === 4 && (
               <div className="wizard-step show">
-                <h3 className="font-display mb-4 text-base text-medit-fg dark:text-white">Resumen de tu Reserva</h3>
+                <h3 className="font-display mb-4 text-base text-medit-fg dark:text-white">Your Booking Summary</h3>
                 <div className="summary-card">
-                  {passengerName && <SummaryRow label="Pasajero" value={passengerName} />}
-                  <SummaryRow label="Región" value={region === "puj" ? "Punta Cana (PUJ)" : "Santo Domingo (SDQ)"} />
-                  <SummaryRow label="Servicio" value={type === "transfer" ? "Transfer" : type === "tour" ? "Tour" : "Personalizado"} />
-                  <SummaryRow label="Ruta/Tour" value={selectedRoute?.name ?? "—"} />
-                  <SummaryRow label="Precio ref." value={selectedRoute?.price ?? "—"} />
-                  <SummaryRow label="Fecha" value={date || "—"} />
-                  <SummaryRow label="Hora" value={time || "—"} />
-                  <SummaryRow label="Pasajeros" value={String(pax)} />
-                  <SummaryRow label="Viaje" value={trip === "one" ? "Solo Ida" : "Ida y Vuelta"} />
-                  {trip === "round" && returnTime && <SummaryRow label="Hora de regreso" value={returnTime} />}
-                  {trip === "round" && !returnTime && waitingHours && <SummaryRow label="Espera en destino" value={`${waitingHours}h`} />}
-                  {flight && <SummaryRow label="✈️ Vuelo" value={flight} />}
+                  {passengerName && <SummaryRow label="Passenger" value={passengerName} />}
+                  <SummaryRow label="Region" value={region === "puj" ? "Punta Cana (PUJ)" : "Santo Domingo (SDQ)"} />
+                  <SummaryRow label="Service" value={type === "transfer" ? "Transfer" : type === "tour" ? "Tour" : "Custom"} />
+                  <SummaryRow label="Route/Tour" value={selectedRoute?.name ?? "—"} />
+                  <SummaryRow label="Ref. price" value={selectedRoute?.price ?? "—"} />
+                  <SummaryRow label="Date" value={date || "—"} />
+                  <SummaryRow label="Time" value={time || "—"} />
+                  <SummaryRow label="Passengers" value={String(pax)} />
+                  <SummaryRow label="Trip" value={trip === "one" ? "One Way" : "Round Trip"} />
+                  {trip === "round" && returnTime && <SummaryRow label="Return time" value={returnTime} />}
+                  {trip === "round" && !returnTime && waitingHours && <SummaryRow label="Waiting at destination" value={`${waitingHours}h`} />}
+                  {flight && <SummaryRow label="✈️ Flight" value={flight} />}
                   {ALL_ADDONS.filter((a) => addons[a.key] > 0).map((a) => (
                     <SummaryRow
                       key={a.key}
@@ -481,10 +481,10 @@ export default function BookingWizard() {
                   )}
                 </div>
                 <button className="btn-whatsapp" onClick={submitBooking}>
-                  📱 Confirmar por WhatsApp
+                  📱 Confirm via WhatsApp
                 </button>
                 <button className="btn-back" onClick={() => goStep(3)}>
-                  ← Editar
+                  ← Edit
                 </button>
               </div>
             )}
@@ -492,52 +492,52 @@ export default function BookingWizard() {
         ) : (
           <div className="calc-inner">
             <p className="mb-4 text-sm text-zinc-500">
-              Estima el costo de tu viaje en Santo Domingo. Para transfers de aeropuerto o tours consulta las tarifas fijas arriba.
+              Estimate the cost of your trip in Santo Domingo. For airport transfers or tours, check the fixed rates above.
             </p>
 
             <div className="calc-group">
-              <label className="form-label">Origen</label>
+              <label className="form-label">Origin</label>
               <input
                 ref={calcOriginRef}
                 className="form-input"
                 type="text"
-                placeholder="Ej: Hotel Jaragua, Piantini"
+                placeholder="E.g.: Hotel Jaragua, Piantini"
                 value={calcOrigin}
                 onChange={(e) => setCalcOrigin(e.target.value)}
               />
             </div>
             <div className="calc-group">
-              <label className="form-label">Destino</label>
+              <label className="form-label">Destination</label>
               <input
                 ref={calcDestRef}
                 className="form-input"
                 type="text"
-                placeholder="Ej: Zona Colonial, Clínica Abel González"
+                placeholder="E.g.: Zona Colonial, Clínica Abel González"
                 value={calcDest}
                 onChange={(e) => setCalcDest(e.target.value)}
               />
             </div>
 
             <div className="calc-group">
-              <label className="form-label">Add-ons de Accesibilidad</label>
+              <label className="form-label">Accessibility Add-ons</label>
               <div className="addons-grid">
                 <label className={`addon-check ${calcWheelchair ? "checked" : ""}`}>
                   <input type="checkbox" checked={calcWheelchair} onChange={(e) => setCalcWheelchair(e.target.checked)} />
                   <span>
-                    ♿ Silla de ruedas <small>+$10</small>
+                    ♿ Wheelchair <small>+$10</small>
                   </span>
                 </label>
                 <label className={`addon-check ${calcStairclimber ? "checked" : ""}`}>
                   <input type="checkbox" checked={calcStairclimber} onChange={(e) => setCalcStairclimber(e.target.checked)} />
                   <span>
-                    🪜 Sube-escaleras <small>+$15</small>
+                    🪜 Stair climber <small>+$15</small>
                   </span>
                 </label>
               </div>
             </div>
 
             <div className="calc-group">
-              <label className="form-label">Piso (escaleras en destino)</label>
+              <label className="form-label">Floor (stairs at destination)</label>
               <div className="pill-group">
                 {["PB", "2°", "3°", "4°+"].map((label, i) => (
                   <button key={label} className={`pill ${calcFloor === i ? "active" : ""}`} onClick={() => setCalcFloor(i)}>
@@ -550,41 +550,41 @@ export default function BookingWizard() {
             {showFareResult && (
               <div className="fare-result">
                 <div className="fare-row">
-                  <span>Recorrido ida y vuelta (hasta 3h)</span>
+                  <span>Round trip (up to 3h)</span>
                   <span>
                     ${fareRange.baseMin} USD – ${fareRange.baseMax} USD
                   </span>
                 </div>
                 {fareRange.stairFee > 0 && (
                   <div className="fare-row">
-                    <span>Escaleras (piso {calcFloor + 1})</span>
+                    <span>Stairs (floor {calcFloor + 1})</span>
                     <span>+${fareRange.stairFee} USD</span>
                   </div>
                 )}
                 {fareRange.wcFee > 0 && (
                   <div className="fare-row">
-                    <span>Silla de ruedas</span>
+                    <span>Wheelchair</span>
                     <span>+${fareRange.wcFee} USD</span>
                   </div>
                 )}
                 {fareRange.scFee > 0 && (
                   <div className="fare-row">
-                    <span>Sube-escaleras eléctrico</span>
+                    <span>Electric stair climber</span>
                     <span>+${fareRange.scFee} USD</span>
                   </div>
                 )}
                 <div className="fare-row fare-total">
-                  <span>ESTIMADO TOTAL</span>
+                  <span>ESTIMATED TOTAL</span>
                   <span>{fareRange.range}</span>
                 </div>
                 <p className="fare-note">
-                  ⚠️ Estimado referencial para viajes dentro de SD. La tarifa exacta se confirma por WhatsApp antes del servicio.
+                  ⚠️ Reference estimate for trips within SD. The exact fare is confirmed via WhatsApp before the service.
                 </p>
               </div>
             )}
             {showFareResult && (
               <button className="fare-wha" onClick={whaCalc}>
-                📱 Confirmar por WhatsApp
+                📱 Confirm via WhatsApp
               </button>
             )}
           </div>

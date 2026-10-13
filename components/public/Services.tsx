@@ -3,23 +3,23 @@
 const SERVICES = [
   {
     icon: "✈️",
-    title: "Transfer Aeropuerto",
-    desc: "Recogida y entrega directa desde/hacia el aeropuerto, con rastreo de vuelo incluido.",
-    cta: "Reservar Transfer →",
+    title: "Airport Transfer",
+    desc: "Direct pickup and drop-off to/from the airport, with flight tracking included.",
+    cta: "Book Transfer →",
     type: "transfer" as const,
   },
   {
     icon: "🌴",
-    title: "Tours & Excursiones",
-    desc: "Playas, ciudad colonial y atracciones — accesibles, con guía y vehículo adaptado.",
-    cta: "Ver Tours →",
+    title: "Tours & Excursions",
+    desc: "Beaches, the colonial city and attractions — accessible, with a guide and adapted vehicle.",
+    cta: "View Tours →",
     type: "tour" as const,
   },
   {
     icon: "🏥",
-    title: "Transporte Médico",
-    desc: "Citas médicas, terapias y procedimientos, con acompañamiento y puntualidad.",
-    cta: "Solicitar →",
+    title: "Medical Transportation",
+    desc: "Medical appointments, therapy sessions and procedures, with escort and punctuality.",
+    cta: "Request →",
     type: "transfer" as const,
   },
 ];
@@ -38,7 +38,7 @@ export default function Services() {
     <section id="servicios" className="bg-white px-4 py-16 dark:bg-black sm:py-20">
       <div className="mx-auto max-w-6xl">
         <h2 className="font-display text-center text-3xl font-bold text-medit-fg dark:text-white sm:text-4xl">
-          Nuestros servicios
+          Our services
         </h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {SERVICES.map((s) => (

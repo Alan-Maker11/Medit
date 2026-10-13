@@ -7,11 +7,11 @@ export default function Footer() {
           <span className="font-display bg-gradient-to-r from-medit-teal to-cyan-300 bg-clip-text text-xl font-bold text-transparent">
             MEDIT
           </span>
-          <p className="font-body mt-3 text-sm">Transporte accesible y confiable en República Dominicana.</p>
+          <p className="font-body mt-3 text-sm">Accessible and reliable transportation in the Dominican Republic.</p>
         </div>
 
         <div>
-          <h3 className="font-body text-sm font-bold uppercase tracking-wide text-white">Contacto</h3>
+          <h3 className="font-body text-sm font-bold uppercase tracking-wide text-white">Contact</h3>
           <ul className="font-body mt-3 flex flex-col gap-2 text-sm">
             <li>
               <a href="https://wa.me/18293296920" target="_blank" rel="noopener noreferrer" className="hover:text-white">
@@ -31,12 +31,12 @@ export default function Footer() {
           <ul className="font-body mt-3 flex flex-col gap-2 text-sm">
             <li>
               <a href="/login" className="hover:text-white">
-                Panel administrativo
+                Admin Panel
               </a>
             </li>
             <li>
               <a href="/driver/login" className="hover:text-white">
-                Portal del conductor
+                Driver Portal
               </a>
             </li>
           </ul>
@@ -44,7 +44,7 @@ export default function Footer() {
       </div>
 
       <div className="mx-auto mt-10 max-w-6xl border-t border-white/10 pt-6 text-center">
-        <p className="font-body text-xs text-white/50">© {year} Medit Transport. Todos los derechos reservados.</p>
+        <p className="font-body text-xs text-white/50">© {year} Medit Transport. All rights reserved.</p>
       </div>
     </footer>
   );

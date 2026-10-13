@@ -6,7 +6,7 @@ import { ROUTE_DATA } from "@/lib/routeData";
 type Filter = "puj" | "sdq" | "all";
 
 const FILTERS: { key: Filter; label: string }[] = [
-  { key: "all", label: "Todos" },
+  { key: "all", label: "All" },
   { key: "puj", label: "PUJ" },
   { key: "sdq", label: "SDQ" },
 ];
@@ -27,7 +27,7 @@ export default function ToursGallery() {
     <section id="tours" className="bg-white px-4 py-16 dark:bg-black sm:py-20">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-          <h2 className="font-display text-3xl font-bold text-medit-fg dark:text-white sm:text-4xl">Tours & Excursiones</h2>
+          <h2 className="font-display text-3xl font-bold text-medit-fg dark:text-white sm:text-4xl">Tours & Excursions</h2>
           <div className="flex gap-2 rounded-full bg-medit-bg p-1 dark:bg-zinc-900">
             {FILTERS.map((f) => (
               <button

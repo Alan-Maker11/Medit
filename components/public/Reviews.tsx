@@ -1,7 +1,7 @@
 const REVIEWS = [
   {
     name: "Carmen R.",
-    text: "El conductor fue puntual y muy atento con mi madre en silla de ruedas. Todo el viaje al aeropuerto sin estrés.",
+    text: "The driver was punctual and very attentive to my mother, who uses a wheelchair. The whole trip to the airport was stress-free.",
   },
   {
     name: "James T.",
@@ -9,7 +9,7 @@ const REVIEWS = [
   },
   {
     name: "Luisa M.",
-    text: "Uso Medit para las terapias de mi hijo cada semana. Siempre llegan a tiempo y son muy amables.",
+    text: "I use Medit for my son's therapy sessions every week. They always arrive on time and are very friendly.",
   },
 ];
 
@@ -18,10 +18,10 @@ export default function Reviews() {
     <section className="bg-medit-bg px-4 py-16 dark:bg-[#0d1421] sm:py-20">
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-col items-center text-center">
-          <h2 className="font-display text-3xl font-bold text-medit-fg dark:text-white sm:text-4xl">Lo que dicen nuestros clientes</h2>
+          <h2 className="font-display text-3xl font-bold text-medit-fg dark:text-white sm:text-4xl">What our customers say</h2>
           <div className="mt-3 flex items-center gap-2">
             <span className="text-medit-gold">★★★★★</span>
-            <span className="font-body text-sm font-semibold text-zinc-600 dark:text-zinc-400">4.9 de 5</span>
+            <span className="font-body text-sm font-semibold text-zinc-600 dark:text-zinc-400">4.9 out of 5</span>
           </div>
         </div>
 

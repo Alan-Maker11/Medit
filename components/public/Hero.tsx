@@ -17,14 +17,14 @@ export default function Hero() {
         </div>
 
         <h1 className="font-display text-4xl font-bold leading-tight text-white sm:text-5xl md:text-6xl">
-          Transporte accesible,
+          Accessible transportation,
           <br />
-          <span className="bg-gradient-to-r from-medit-teal to-cyan-300 bg-clip-text text-transparent">a tu ritmo</span>
+          <span className="bg-gradient-to-r from-medit-teal to-cyan-300 bg-clip-text text-transparent">at your own pace</span>
         </h1>
 
         <p className="font-body mt-6 max-w-2xl text-lg text-white/80">
-          Vehículos adaptados, conductores certificados y seguimiento en tiempo real — para que viajar en silla de
-          ruedas por República Dominicana sea simple, seguro y cómodo.
+          Adapted vehicles, certified drivers and real-time tracking — so traveling in a wheelchair across the
+          Dominican Republic is simple, safe and comfortable.
         </p>
 
         <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -32,7 +32,7 @@ export default function Hero() {
             href="#reservar"
             className="rounded-full bg-medit-teal px-8 py-4 text-base font-bold text-medit-navy shadow-lg shadow-medit-teal/20 transition-transform duration-150 hover:scale-105 hover:bg-medit-teal-2"
           >
-            Reservar mi viaje
+            Book my trip
           </a>
           <a
             href="https://wa.me/18293296920"
@@ -40,7 +40,7 @@ export default function Hero() {
             rel="noopener noreferrer"
             className="rounded-full border border-white/20 bg-white/5 px-8 py-4 text-base font-bold text-white backdrop-blur transition-colors hover:bg-white/10"
           >
-            💬 Hablar por WhatsApp
+            💬 Chat on WhatsApp
           </a>
         </div>
       </div>

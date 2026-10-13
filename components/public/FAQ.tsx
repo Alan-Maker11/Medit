@@ -4,24 +4,24 @@ import { useState } from "react";
 
 const FAQS = [
   {
-    q: "¿Qué tipo de vehículos usan?",
-    a: "Vans y camionetas adaptadas con rampa o elevador para silla de ruedas, con espacio para acompañantes y equipaje.",
+    q: "What kind of vehicles do you use?",
+    a: "Vans and SUVs adapted with a ramp or wheelchair lift, with room for companions and luggage.",
   },
   {
-    q: "¿Puedo reservar sin crear una cuenta?",
-    a: "Sí. Toda reserva se confirma directamente por WhatsApp con nuestro equipo — no necesitas registrarte.",
+    q: "Can I book without creating an account?",
+    a: "Yes. Every booking is confirmed directly on WhatsApp with our team — no sign-up required.",
   },
   {
-    q: "¿Monitorean mi vuelo si llega tarde?",
-    a: "Sí, para transfers de aeropuerto puedes dejarnos tu número de vuelo y ajustamos la recogida según tu hora real de llegada.",
+    q: "Do you monitor my flight if it's delayed?",
+    a: "Yes, for airport transfers you can give us your flight number and we adjust the pickup to your actual arrival time.",
   },
   {
-    q: "¿En qué zonas del país operan?",
-    a: "Santo Domingo, Punta Cana, Bávaro y La Romana. Para otras zonas, contáctanos por WhatsApp.",
+    q: "Which areas of the country do you serve?",
+    a: "Santo Domingo, Punta Cana, Bávaro and La Romana. For other areas, contact us on WhatsApp.",
   },
   {
-    q: "¿Cómo pago el viaje?",
-    a: "El precio final se confirma por WhatsApp antes del viaje. Aceptamos efectivo y transferencia.",
+    q: "How do I pay for the trip?",
+    a: "The final price is confirmed on WhatsApp before the trip. We accept cash and bank transfer.",
   },
 ];
 
@@ -32,7 +32,7 @@ export default function FAQ() {
     <section id="faq" className="bg-white px-4 py-16 dark:bg-black sm:py-20">
       <div className="mx-auto max-w-3xl">
         <h2 className="font-display text-center text-3xl font-bold text-medit-fg dark:text-white sm:text-4xl">
-          Preguntas frecuentes
+          Frequently asked questions
         </h2>
         <div className="mt-10 flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
           {FAQS.map((item, i) => {

@@ -12,7 +12,7 @@ export default function CalculatorPage() {
           <span className="text-2xl">🚗</span>
           <div className="text-left">
             <p className="font-bold">Meditiko Express</p>
-            <p className="text-xs text-orange-100">Calcula tu tarifa express (0-7km) — público</p>
+            <p className="text-xs text-orange-100">Calculate your express fare (0-7km) — public</p>
           </div>
         </a>
       </div>
@@ -27,7 +27,7 @@ export default function CalculatorPage() {
       <FareCalculator />
       <div className="mt-12 flex gap-4 text-xs text-zinc-400 dark:text-zinc-600">
         <Link href="/" className="underline-offset-2 hover:underline">
-          ← Volver al inicio
+          ← Back to home
         </Link>
         <Link href="/login" className="underline-offset-2 hover:underline">
           Staff login

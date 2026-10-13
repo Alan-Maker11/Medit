@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 const NAV_LINKS = [
-  { href: "#servicios", label: "Servicios" },
-  { href: "#destinos", label: "Destinos" },
+  { href: "#servicios", label: "Services" },
+  { href: "#destinos", label: "Destinations" },
   { href: "#tours", label: "Tours" },
-  { href: "#reservar", label: "Reservar" },
+  { href: "#reservar", label: "Book" },
   { href: "#faq", label: "FAQ" },
 ];
 
@@ -54,14 +54,14 @@ export default function Navbar({ hasLogo }: { hasLogo: boolean }) {
             href="#reservar"
             className="rounded-full bg-medit-teal px-5 py-2 text-sm font-bold text-medit-navy transition-transform duration-150 hover:scale-105 hover:bg-medit-teal-2"
           >
-            Reservar Ahora
+            Book Now
           </a>
         </div>
 
         <button
           onClick={() => setMenuOpen((v) => !v)}
           className="rounded-lg p-2 text-white lg:hidden"
-          aria-label="Abrir menú"
+          aria-label="Open menu"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             {menuOpen ? <path d="M6 6l12 12M6 18L18 6" /> : <path d="M3 6h18M3 12h18M3 18h18" />}
@@ -89,7 +89,7 @@ export default function Navbar({ hasLogo }: { hasLogo: boolean }) {
             onClick={() => setMenuOpen(false)}
             className="mt-2 rounded-full bg-medit-teal px-5 py-2 text-center text-sm font-bold text-medit-navy"
           >
-            Reservar Ahora
+            Book Now
           </a>
         </div>
       )}

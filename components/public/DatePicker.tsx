@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { todayLocalISO } from "@/lib/date";
 
 const MONTH_NAMES = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
-const DAY_NAMES = ["D", "L", "M", "M", "J", "V", "S"];
+const DAY_NAMES = ["S", "M", "T", "W", "T", "F", "S"];
 
 function toISO(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -48,8 +48,8 @@ export default function DatePicker({ value, onChange }: { value: string; onChang
   }
 
   const displayLabel = value
-    ? new Date(`${value}T00:00:00`).toLocaleDateString("es-DO", { day: "2-digit", month: "long", year: "numeric" })
-    : "Seleccionar fecha";
+    ? new Date(`${value}T00:00:00`).toLocaleDateString("en-US", { day: "2-digit", month: "long", year: "numeric" })
+    : "Select date";
 
   return (
     <div ref={rootRef} className="date-field">
