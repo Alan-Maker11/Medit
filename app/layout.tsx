@@ -28,10 +28,6 @@ export const metadata: Metadata = {
   title: "Medica Patrans",
   description: "Fare calculator and operations management for Medit transportation services.",
   manifest: "/manifest.json",
-  icons: {
-    icon: "/medit-logo.png",
-    apple: "/medit-logo.png",
-  },
   openGraph: {
     title: "Medit",
     description: "Fare calculator and operations management for Medit transportation services.",
