@@ -24,9 +24,36 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://meditrd.site"),
   title: "Medica Patrans",
   description: "Fare calculator and operations management for Medit transportation services.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/medit-logo.png",
+    apple: "/medit-logo.png",
+  },
+  openGraph: {
+    title: "Medit",
+    description: "Fare calculator and operations management for Medit transportation services.",
+    url: "https://meditrd.site",
+    siteName: "Medit",
+    images: [
+      {
+        url: "/medit-logo.png",
+        width: 512,
+        height: 512,
+        alt: "Medit",
+      },
+    ],
+    locale: "es_DO",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Medit",
+    description: "Fare calculator and operations management for Medit transportation services.",
+    images: ["/medit-logo.png"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -56,9 +83,6 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${nunito.variable} h-full antialiased`}
     >
-      <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-      </head>
       <body className="min-h-full flex flex-col">
         <ServiceWorkerRegister />
         {children}
