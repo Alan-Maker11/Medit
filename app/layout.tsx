@@ -25,12 +25,14 @@ const nunito = Nunito({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://meditrd.site"),
-  title: "Medica Patrans",
-  description: "Fare calculator and operations management for Medit transportation services.",
+  title: "Medit",
+  description:
+    "Premium wheelchair-accessible transportation across the Dominican Republic. Providing luxury private transfers from all major national airports to your resort, top tourist spots, and medical appointments. Travel with a secure ramp, certified anchors, and high-end cabin amenities. Book today!",
   manifest: "/manifest.json",
   openGraph: {
     title: "Medit",
-    description: "Fare calculator and operations management for Medit transportation services.",
+    description:
+      "Premium wheelchair-accessible transportation across the Dominican Republic. Providing luxury private transfers from all major national airports to your resort, top tourist spots, and medical appointments. Travel with a secure ramp, certified anchors, and high-end cabin amenities. Book today!",
     url: "https://meditrd.site",
     siteName: "Medit",
     images: [
@@ -41,13 +43,14 @@ export const metadata: Metadata = {
         alt: "Medit",
       },
     ],
-    locale: "es_DO",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Medit",
-    description: "Fare calculator and operations management for Medit transportation services.",
+    description:
+      "Premium wheelchair-accessible transportation across the Dominican Republic. Providing luxury private transfers from all major national airports to your resort, top tourist spots, and medical appointments. Travel with a secure ramp, certified anchors, and high-end cabin amenities. Book today!",
     images: ["/medit-logo.png"],
   },
   appleWebApp: {
