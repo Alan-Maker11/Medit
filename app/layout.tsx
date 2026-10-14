@@ -24,34 +24,64 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://meditrd.site"),
-  title: "Medit",
+  metadataBase: new URL("https://www.meditrd.site"),
+  title: {
+    default: "Wheelchair-Accessible Transfers & Tours in Punta Cana | Medit RD",
+    template: "%s | Medit RD",
+  },
   description:
-    "Premium wheelchair-accessible transportation across the Dominican Republic. Providing luxury private transfers from all major national airports to your resort, top tourist spots, and medical appointments. Travel with a secure ramp, certified anchors, and high-end cabin amenities. Book today!",
+    "Private wheelchair-accessible airport transfers, resort pickups & tours across Punta Cana & Santo Domingo. GPS-tracked fleet. Certified drivers. 24/7 support. Book via WhatsApp.",
+  keywords: [
+    "wheelchair accessible transport punta cana",
+    "accessible airport transfer dominican republic",
+    "transporte accesible punta cana",
+    "wheelchair tour santo domingo",
+    "accessible mobility dominican republic",
+    "silla de ruedas punta cana transfer",
+    "handicap transport DR",
+    "medit rd transport",
+  ],
+  authors: [{ name: "Medit RD", url: "https://www.meditrd.site" }],
+  creator: "Medit RD",
+  publisher: "Medit RD",
   manifest: "/manifest.json",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    title: "Medit",
+    type: "website",
+    locale: "en_US",
+    alternateLocale: "es_DO",
+    url: "https://www.meditrd.site",
+    siteName: "Medit RD",
+    title: "Wheelchair-Accessible Transfers & Tours in Punta Cana | Medit RD",
     description:
-      "Premium wheelchair-accessible transportation across the Dominican Republic. Providing luxury private transfers from all major national airports to your resort, top tourist spots, and medical appointments. Travel with a secure ramp, certified anchors, and high-end cabin amenities. Book today!",
-    url: "https://meditrd.site",
-    siteName: "Medit",
+      "The Dominican Republic's premier accessible transportation service. Airport transfers, resort pickups & private tours for wheelchair users. 24/7.",
     images: [
       {
-        url: "/medit-logo.png",
-        width: 512,
-        height: 512,
-        alt: "Medit",
+        url: "/api/og",
+        width: 1200,
+        height: 630,
+        alt: "Medit RD — Wheelchair-Accessible Transportation in Punta Cana, Dominican Republic",
       },
     ],
-    locale: "en_US",
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Medit",
-    description:
-      "Premium wheelchair-accessible transportation across the Dominican Republic. Providing luxury private transfers from all major national airports to your resort, top tourist spots, and medical appointments. Travel with a secure ramp, certified anchors, and high-end cabin amenities. Book today!",
-    images: ["/medit-logo.png"],
+    title: "Wheelchair-Accessible Transfers & Tours in Punta Cana | Medit RD",
+    description: "Private accessible airport transfers & tours across the Dominican Republic. GPS-tracked fleet. 24/7 support.",
+    images: ["/api/og"],
+  },
+  alternates: {
+    canonical: "https://www.meditrd.site",
   },
   appleWebApp: {
     capable: true,
@@ -66,10 +96,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
-  themeColor: "#2563eb",
+  themeColor: "#0B1F42",
 };
 
 export default function RootLayout({
