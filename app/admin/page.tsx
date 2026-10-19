@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
     supabase.from("expenses").select("amount, withdrawal_account").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("meditiko_expenses").select("amount").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("driver_uber_earnings").select("driver_id, gross_amount, amount, date").gte("date", weekStart).lte("date", weekEnd),
-    supabase.from("drivers").select("id, name"),
+    supabase.from("drivers").select("id, name, status"),
     supabase
       .from("trips")
       .select(
@@ -172,6 +172,13 @@ export default async function AdminDashboard() {
     const acc = cashByDriver.get(h.driver_id) ?? { collected: 0, spent: 0, handedOff: 0 };
     acc.handedOff += h.amount ?? 0;
     cashByDriver.set(h.driver_id, acc);
+  }
+
+  // Only show currently active drivers in the cash-in-hand card — a disabled driver's
+  // historical balance stays tracked internally, it just doesn't need admin attention anymore.
+  const activeDriverIds = new Set((drivers ?? []).filter((d) => d.status === "active").map((d) => d.id));
+  for (const driverId of [...cashByDriver.keys()]) {
+    if (!activeDriverIds.has(driverId)) cashByDriver.delete(driverId);
   }
 
   const stats = [
