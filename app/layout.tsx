@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s | Medit RD",
   },
   description:
-    "Private wheelchair-accessible airport transfers, resort pickups & tours across Punta Cana & Santo Domingo. GPS-tracked fleet. Certified drivers. 24/7 support. Book via WhatsApp.",
+    "Private wheelchair-accessible transfers & tours in Punta Cana, Santo Domingo & La Romana. GPS-tracked fleet, certified drivers. Book via WhatsApp.",
   keywords: [
     "wheelchair accessible transport punta cana",
     "accessible airport transfer dominican republic",

@@ -17,14 +17,16 @@ export default function Hero() {
         </div>
 
         <h1 className="font-display text-4xl font-bold leading-tight text-white sm:text-5xl md:text-6xl">
-          Accessible transportation,
+          Wheelchair-Accessible Transportation
           <br />
-          <span className="bg-gradient-to-r from-medit-teal to-cyan-300 bg-clip-text text-transparent">at your own pace</span>
+          <span className="bg-gradient-to-r from-medit-teal to-cyan-300 bg-clip-text text-transparent">
+            in Punta Cana & Santo Domingo
+          </span>
         </h1>
 
         <p className="font-body mt-6 max-w-2xl text-lg text-white/80">
-          Adapted vehicles, certified drivers and real-time tracking — so traveling in a wheelchair across the
-          Dominican Republic is simple, safe and comfortable.
+          Private transfers, airport pickups, and guided tours — fully adapted for wheelchair users and post-surgery
+          travelers across the Dominican Republic.
         </p>
 
         <div className="mt-10 flex flex-col gap-4 sm:flex-row">
