@@ -89,10 +89,16 @@ export default async function AdminDashboard() {
     // they spend it (e.g. gas), so it isn't scoped to the current week like the rest above.
     supabase
       .from("trips")
-      .select("driver_id, advance_payment_amount, advance_payment_method, advance_payment_status, final_payment_amount, final_payment_method, final_payment_status")
+      .select(
+        "driver_id, date, client_name, advance_payment_amount, advance_payment_method, advance_payment_status, final_payment_amount, final_payment_method, final_payment_status"
+      )
       .not("driver_id", "is", null)
       .or("advance_payment_method.eq.Cash,final_payment_method.eq.Cash"),
-    supabase.from("expenses").select("driver_id, amount").eq("withdrawal_account", "Cash on hand").not("driver_id", "is", null),
+    supabase
+      .from("expenses")
+      .select("driver_id, date, description, category, amount")
+      .eq("withdrawal_account", "Cash on hand")
+      .not("driver_id", "is", null),
     supabase.from("driver_cash_handoffs").select("driver_id, amount"),
   ]);
 
@@ -149,27 +155,49 @@ export default async function AdminDashboard() {
 
   // Cash-in-hand per driver: cash they've collected on their own trips (advance/final, received
   // or collected) minus cash expenses logged against them (e.g. gas paid from that cash) minus
-  // cash they've handed off to the admin (regardless of what it was later used for).
-  const cashByDriver = new Map<string, { collected: number; spent: number; handedOff: number }>();
+  // cash they've handed off to the admin (regardless of what it was later used for). Also keeps
+  // an itemized trail — which client the cash came from, and what each expense was for.
+  interface CashSource {
+    date: string | null;
+    clientName: string | null;
+    amount: number;
+  }
+  interface CashSpend {
+    date: string | null;
+    description: string | null;
+    category: string | null;
+    amount: number;
+  }
+  const cashByDriver = new Map<
+    string,
+    { collected: number; spent: number; handedOff: number; sources: CashSource[]; spends: CashSpend[] }
+  >();
+  const getCashAcc = (driverId: string) =>
+    cashByDriver.get(driverId) ?? { collected: 0, spent: 0, handedOff: 0, sources: [], spends: [] };
   for (const t of cashTrips ?? []) {
     if (!t.driver_id) continue;
-    const acc = cashByDriver.get(t.driver_id) ?? { collected: 0, spent: 0, handedOff: 0 };
+    const acc = getCashAcc(t.driver_id);
     if (t.advance_payment_method === "Cash" && t.advance_payment_status === "received") {
-      acc.collected += t.advance_payment_amount ?? 0;
+      const amount = t.advance_payment_amount ?? 0;
+      acc.collected += amount;
+      acc.sources.push({ date: t.date, clientName: t.client_name, amount });
     }
     if (t.final_payment_method === "Cash" && (t.final_payment_status === "received" || t.final_payment_status === "collected")) {
-      acc.collected += t.final_payment_amount ?? 0;
+      const amount = t.final_payment_amount ?? 0;
+      acc.collected += amount;
+      acc.sources.push({ date: t.date, clientName: t.client_name, amount });
     }
     cashByDriver.set(t.driver_id, acc);
   }
   for (const e of cashExpenses ?? []) {
     if (!e.driver_id) continue;
-    const acc = cashByDriver.get(e.driver_id) ?? { collected: 0, spent: 0, handedOff: 0 };
+    const acc = getCashAcc(e.driver_id);
     acc.spent += e.amount ?? 0;
+    acc.spends.push({ date: e.date, description: e.description, category: e.category, amount: e.amount ?? 0 });
     cashByDriver.set(e.driver_id, acc);
   }
   for (const h of cashHandoffs ?? []) {
-    const acc = cashByDriver.get(h.driver_id) ?? { collected: 0, spent: 0, handedOff: 0 };
+    const acc = getCashAcc(h.driver_id);
     acc.handedOff += h.amount ?? 0;
     cashByDriver.set(h.driver_id, acc);
   }
@@ -267,7 +295,7 @@ export default async function AdminDashboard() {
             Cash each driver has collected on their trips, minus cash they've spent directly (e.g. gas) and cash
             they've delivered to you.
           </p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {[...cashByDriver.entries()]
               .sort(
                 (a, b) =>
@@ -286,6 +314,46 @@ export default async function AdminDashboard() {
                       {c.handedOff > 0 && <> − {formatDOP(c.handedOff)} delivered</>}
                     </p>
                     <DeliverCashButton driverId={driverId} driverName={driverNameById.get(driverId) ?? "Driver"} />
+
+                    {(c.sources.length > 0 || c.spends.length > 0) && (
+                      <details className="mt-2 text-xs">
+                        <summary className="cursor-pointer text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+                          See clients & expenses
+                        </summary>
+                        <div className="mt-2 flex flex-col gap-2">
+                          {c.sources.length > 0 && (
+                            <div>
+                              <p className="font-semibold text-emerald-700 dark:text-emerald-300">Cash came from</p>
+                              <ul className="mt-1 flex flex-col gap-0.5">
+                                {c.sources.map((s, i) => (
+                                  <li key={i} className="flex justify-between gap-2 text-zinc-600 dark:text-zinc-400">
+                                    <span className="truncate">
+                                      {s.clientName ?? "Unnamed client"} {s.date && <span className="text-zinc-400">· {s.date}</span>}
+                                    </span>
+                                    <span className="shrink-0">{formatDOP(s.amount)}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {c.spends.length > 0 && (
+                            <div>
+                              <p className="font-semibold text-red-600 dark:text-red-400">Cash was used for</p>
+                              <ul className="mt-1 flex flex-col gap-0.5">
+                                {c.spends.map((s, i) => (
+                                  <li key={i} className="flex justify-between gap-2 text-zinc-600 dark:text-zinc-400">
+                                    <span className="truncate">
+                                      {s.description || s.category || "Expense"} {s.date && <span className="text-zinc-400">· {s.date}</span>}
+                                    </span>
+                                    <span className="shrink-0">{formatDOP(s.amount)}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </details>
+                    )}
                   </div>
                 );
               })}
