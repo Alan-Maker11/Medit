@@ -51,13 +51,25 @@ export default async function AdminDashboard() {
   const monthStart = formatISO(startOfMonth(new Date()), { representation: "date" });
   const today = formatISO(new Date(), { representation: "date" });
 
+  // cash_reset_at may not exist yet if that migration hasn't been run — fall back to selecting
+  // without it rather than letting the whole drivers query (and everything derived from it) fail.
+  let drivers: { id: string; name: string; status: string; cash_reset_at: string | null }[] | null = null;
+  {
+    const withReset = await supabase.from("drivers").select("id, name, status, cash_reset_at");
+    if (withReset.error) {
+      const fallback = await supabase.from("drivers").select("id, name, status");
+      drivers = (fallback.data ?? []).map((d) => ({ ...d, cash_reset_at: null }));
+    } else {
+      drivers = withReset.data;
+    }
+  }
+
   const [
     { data: meditikoVehicle },
     { data: weekTrips },
     { data: weekExpenses },
     { data: weekMeditikoExpenses },
     { data: uberEarnings },
-    { data: drivers },
     { data: monthTrips },
     { data: monthExpenses },
     { data: monthMeditikoExpenses },
@@ -77,7 +89,6 @@ export default async function AdminDashboard() {
     supabase.from("expenses").select("amount, withdrawal_account").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("meditiko_expenses").select("amount").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("driver_uber_earnings").select("driver_id, gross_amount, amount, date").gte("date", weekStart).lte("date", weekEnd),
-    supabase.from("drivers").select("id, name, status, cash_reset_at"),
     supabase
       .from("trips")
       .select(
