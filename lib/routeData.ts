@@ -36,7 +36,7 @@ export const ROUTE_DATA: { puj: RegionRoutes; sdq: RegionRoutes } = {
       { id: "sdq-aeropuerto", icon: "✈️", name: "SDQ Airport → City", desc: "Transfer from Las Américas", price: "$120 USD" },
       { id: "sdq-centro", icon: "🏙️", name: "City Tour / Night Out", desc: "Hotel pickup, up to 3h", price: "From $60 USD" },
       { id: "sdq-colonial", icon: "🏛️", name: "Zona Colonial", desc: "UNESCO old town", price: "From $60 USD" },
-      { id: "sdq-las-am", icon: "✈️", name: "SDQ → PUJ", desc: "Overland transfer, ~3h", price: "Price on request" },
+      { id: "sdq-las-am", icon: "✈️", name: "SDQ → PUJ", desc: "Overland transfer, ~3h", price: "$250 USD" },
     ],
     tour: [
       { id: "sdq-colonial-full", icon: "🏛️", name: "City Tour — Zona Colonial", desc: "Tour of the UNESCO old town (transport only, lunch not included)", price: "$60 – $80 USD" },
