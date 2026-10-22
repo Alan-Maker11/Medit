@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BANK_ACCOUNTS, CASH_HANDOFF_USES, VEHICLE_CASH_HANDOFF_USES, type CashHandoffUse } from "@/lib/types";
+import { BANK_ACCOUNTS, CASH_USES, EXPENSE_CASH_USES, CASH_USE_EXPENSE_CATEGORY, type CashUse } from "@/lib/types";
 import { todayLocalISO } from "@/lib/date";
 
-const USE_LABELS: Record<CashHandoffUse, string> = {
+const USE_LABELS: Record<CashUse, string> = {
   gas: "Gas",
   toll: "Toll",
   maintenance: "Maintenance",
@@ -24,7 +24,7 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
 
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayLocalISO());
-  const [usedFor, setUsedFor] = useState<CashHandoffUse>("gas");
+  const [usedFor, setUsedFor] = useState<CashUse>("gas");
   const [bankAccount, setBankAccount] = useState<string>(BANK_ACCOUNTS[0]);
   const [vehicleId, setVehicleId] = useState("");
   const [notes, setNotes] = useState("");
@@ -38,7 +38,7 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
       .then(({ data }) => setVehicles(data ?? []));
   }, [open, vehicles.length]);
 
-  const needsVehicle = VEHICLE_CASH_HANDOFF_USES.includes(usedFor);
+  const isExpense = EXPENSE_CASH_USES.includes(usedFor);
 
   function reset() {
     setAmount("");
@@ -54,23 +54,41 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
     e.preventDefault();
     setSubmitting(true);
     setError(null);
-    const res = await fetch("/api/driver-cash-handoffs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        driver_id: driverId,
-        date,
-        amount,
-        used_for: usedFor,
-        bank_account: usedFor === "bank_deposit" ? bankAccount : undefined,
-        vehicle_id: needsVehicle ? vehicleId : undefined,
-        notes,
-      }),
-    });
+
+    // Gas/toll/maintenance are real vehicle expenses — record them in the same expenses table
+    // the Expenses page uses, so they show up there by category/vehicle, not just as cash moved.
+    const res = isExpense
+      ? await fetch("/api/expenses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date,
+            category: CASH_USE_EXPENSE_CATEGORY[usedFor],
+            vehicle_id: vehicleId,
+            amount,
+            description: notes,
+            withdrawal_account: "Cash on hand",
+            withdrawal_method: "Cash payment",
+            driver_id: driverId,
+          }),
+        })
+      : await fetch("/api/driver-cash-handoffs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            driver_id: driverId,
+            date,
+            amount,
+            used_for: usedFor,
+            bank_account: usedFor === "bank_deposit" ? bankAccount : undefined,
+            notes,
+          }),
+        });
+
     setSubmitting(false);
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error ?? "Failed to record handoff");
+      setError(data.error ?? "Failed to record");
       return;
     }
     setOpen(false);
@@ -84,15 +102,16 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
         onClick={() => setOpen(true)}
         className="mt-1 text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-300"
       >
-        Deliver cash →
+        Record cash use →
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg dark:bg-zinc-900">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Deliver cash — {driverName}</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Cash use — {driverName}</h3>
             <p className="mt-1 text-xs text-zinc-500">
-              Records that this cash has left {driverName.split(" ")[0]}'s hand and been handed to you.
+              Records what {driverName.split(" ")[0]} did with this cash — a vehicle expense (shows up in
+              Expenses), a bank deposit, or handed over for another reason.
             </p>
             <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
               <label className="flex flex-col gap-1 text-sm font-medium">
@@ -121,10 +140,10 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
                 Used for
                 <select
                   value={usedFor}
-                  onChange={(e) => setUsedFor(e.target.value as CashHandoffUse)}
+                  onChange={(e) => setUsedFor(e.target.value as CashUse)}
                   className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
                 >
-                  {CASH_HANDOFF_USES.map((u) => (
+                  {CASH_USES.map((u) => (
                     <option key={u} value={u}>
                       {USE_LABELS[u]}
                     </option>
@@ -147,7 +166,7 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
                   </select>
                 </label>
               )}
-              {needsVehicle && (
+              {isExpense && (
                 <label className="flex flex-col gap-1 text-sm font-medium">
                   Vehicle
                   <select
@@ -193,7 +212,7 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
                   disabled={submitting}
                   className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
                 >
-                  {submitting ? "Saving..." : "Record handoff"}
+                  {submitting ? "Saving..." : "Record"}
                 </button>
               </div>
             </form>

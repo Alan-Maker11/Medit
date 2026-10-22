@@ -45,17 +45,29 @@ export type WithdrawalMethod = (typeof WITHDRAWAL_METHODS)[number];
 
 export const BANK_ACCOUNTS = ["Banreservas - 7314", "Popular - 4389", "BHD - 0021"] as const;
 export type BankAccount = (typeof BANK_ACCOUNTS)[number];
-export const CASH_HANDOFF_USES = ["gas", "toll", "maintenance", "salary", "bank_deposit", "other"] as const;
-export type CashHandoffUse = (typeof CASH_HANDOFF_USES)[number];
-// used_for values that are tied to a specific vehicle
-export const VEHICLE_CASH_HANDOFF_USES: CashHandoffUse[] = ["gas", "toll", "maintenance"];
+
+// What a driver's cash can be recorded as being used for. "gas"/"toll"/"maintenance" are real
+// vehicle expenses — recording one of those creates a row in `expenses` (same table and fields
+// as the Expenses page) so it shows up in expense reports by category/vehicle, not just as a
+// generic cash handoff. "salary"/"bank_deposit"/"other" aren't vehicle expenses, so those stay as
+// `driver_cash_handoffs` rows instead.
+export const CASH_USES = ["gas", "toll", "maintenance", "salary", "bank_deposit", "other"] as const;
+export type CashUse = (typeof CASH_USES)[number];
+export const EXPENSE_CASH_USES: CashUse[] = ["gas", "toll", "maintenance"];
+export const CASH_USE_EXPENSE_CATEGORY: Partial<Record<CashUse, ExpenseCategory>> = {
+  gas: "gas",
+  toll: "tolls",
+  maintenance: "maintenance",
+};
+// used_for values that remain a driver_cash_handoffs row (not a vehicle expense)
+export const HANDOFF_CASH_USES: CashUse[] = ["salary", "bank_deposit", "other"];
 
 export interface DriverCashHandoff {
   id: string;
   driver_id: string;
   date: string;
   amount: number;
-  used_for: CashHandoffUse;
+  used_for: CashUse;
   bank_account: BankAccount | null;
   notes: string | null;
 }

@@ -109,10 +109,10 @@ export default async function AdminDashboard() {
       .or("advance_payment_method.eq.Cash,final_payment_method.eq.Cash"),
     supabase
       .from("expenses")
-      .select("driver_id, date, description, category, amount")
+      .select("driver_id, date, description, category, amount, vehicle_id")
       .eq("withdrawal_account", "Cash on hand")
       .not("driver_id", "is", null),
-    supabase.from("driver_cash_handoffs").select("driver_id, date, amount, used_for, bank_account, vehicle_id, notes"),
+    supabase.from("driver_cash_handoffs").select("driver_id, date, amount, used_for, bank_account, notes"),
     supabase.from("vehicles").select("id, name"),
   ]);
 
@@ -181,6 +181,7 @@ export default async function AdminDashboard() {
     date: string | null;
     description: string | null;
     category: string | null;
+    vehicleId: string | null;
     amount: number;
   }
   interface CashHandoffItem {
@@ -232,7 +233,7 @@ export default async function AdminDashboard() {
     if (!e.driver_id || !isAfterReset(e.driver_id, e.date)) continue;
     const acc = getCashAcc(e.driver_id);
     acc.spent += e.amount ?? 0;
-    acc.spends.push({ date: e.date, description: e.description, category: e.category, amount: e.amount ?? 0 });
+    acc.spends.push({ date: e.date, description: e.description, category: e.category, vehicleId: e.vehicle_id, amount: e.amount ?? 0 });
     cashByDriver.set(e.driver_id, acc);
   }
   for (const h of cashHandoffs ?? []) {
@@ -241,7 +242,6 @@ export default async function AdminDashboard() {
     acc.handedOff += h.amount ?? 0;
     let label = USED_FOR_LABELS[h.used_for] ?? h.used_for;
     if (h.used_for === "bank_deposit" && h.bank_account) label += ` — ${h.bank_account}`;
-    else if (h.vehicle_id) label += ` — ${vehicleNameById.get(h.vehicle_id) ?? "Unknown vehicle"}`;
     acc.handoffs.push({ date: h.date, label, notes: h.notes, amount: h.amount ?? 0 });
     cashByDriver.set(h.driver_id, acc);
   }
@@ -403,7 +403,9 @@ export default async function AdminDashboard() {
                                 {c.spends.map((s, i) => (
                                   <li key={`e${i}`} className="flex justify-between gap-2 text-zinc-600 dark:text-zinc-400">
                                     <span className="truncate">
-                                      {s.description || s.category || "Expense"} {s.date && <span className="text-zinc-400">· {s.date}</span>}
+                                      {s.category ?? "Expense"}
+                                      {s.vehicleId && <> — {vehicleNameById.get(s.vehicleId) ?? "Unknown vehicle"}</>}
+                                      {s.description && <> ({s.description})</>} {s.date && <span className="text-zinc-400">· {s.date}</span>}
                                     </span>
                                     <span className="shrink-0">{formatDOP(s.amount)}</span>
                                   </li>
