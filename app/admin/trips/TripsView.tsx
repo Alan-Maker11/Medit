@@ -17,6 +17,12 @@ interface TripRow {
   needs_wheelchair: boolean;
   needs_stair_climber: boolean;
   client_owes?: boolean;
+  advance_payment_amount?: number | null;
+  advance_payment_method?: string | null;
+  advance_payment_status?: string | null;
+  final_payment_amount?: number | null;
+  final_payment_method?: string | null;
+  final_payment_status?: string | null;
   services: { name: string } | null;
   drivers: { name: string } | null;
   vehicles: { name: string } | null;
@@ -43,7 +49,7 @@ export default function TripsView({
 }) {
   const { lang } = useAdminLang();
   const t = ADMIN_T[lang];
-  const [view, setView] = useState<"list" | "calendar">("list");
+  const [view, setView] = useState<"list" | "calendar">("calendar");
   const [serviceId, setServiceId] = useState("");
   const [owesOnly, setOwesOnly] = useState(false);
 

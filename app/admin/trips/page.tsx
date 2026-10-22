@@ -10,7 +10,9 @@ export default async function TripsPage() {
 
   let tripsQuery = supabase
     .from("trips")
-    .select("id, date, time, client_name, trip_type, status, total_fare, driver_id, service_id, needs_wheelchair, needs_stair_climber, client_owes, services(name), drivers(name), vehicles(name)")
+    .select(
+      "id, date, time, client_name, trip_type, status, total_fare, driver_id, service_id, needs_wheelchair, needs_stair_climber, client_owes, advance_payment_amount, advance_payment_method, advance_payment_status, final_payment_amount, final_payment_method, final_payment_status, services(name), drivers(name), vehicles(name)"
+    )
     .order("date", { ascending: false });
   if (meditikoVehicle) tripsQuery = tripsQuery.neq("vehicle_id", meditikoVehicle.id);
 

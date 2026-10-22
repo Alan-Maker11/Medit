@@ -20,9 +20,41 @@ interface TripRow {
   needs_wheelchair?: boolean;
   needs_stair_climber?: boolean;
   client_owes?: boolean;
+  advance_payment_amount?: number | null;
+  advance_payment_method?: string | null;
+  advance_payment_status?: string | null;
+  final_payment_amount?: number | null;
+  final_payment_method?: string | null;
+  final_payment_status?: string | null;
   services: { name: string } | null;
   drivers: { name: string } | null;
   vehicles: { name: string } | null;
+}
+
+/** Builds a plain-language "paid X via Y, owes Z" line from a trip's payment fields. */
+function paymentSummary(trip: TripRow) {
+  const paid: { amount: number; method: string }[] = [];
+  if (trip.advance_payment_status === "received" && trip.advance_payment_amount) {
+    paid.push({ amount: trip.advance_payment_amount, method: trip.advance_payment_method ?? "unspecified" });
+  }
+  if (
+    (trip.final_payment_status === "received" || trip.final_payment_status === "collected") &&
+    trip.final_payment_amount
+  ) {
+    paid.push({ amount: trip.final_payment_amount, method: trip.final_payment_method ?? "unspecified" });
+  }
+  const paidTotal = paid.reduce((sum, p) => sum + p.amount, 0);
+  const owed = Math.max((trip.total_fare ?? 0) - paidTotal, 0);
+
+  const pendingLines: string[] = [];
+  if (trip.advance_payment_status === "pending" && trip.advance_payment_amount) {
+    pendingLines.push(`Advance ${trip.advance_payment_amount} pending${trip.advance_payment_method ? ` (${trip.advance_payment_method})` : ""}`);
+  }
+  if (trip.final_payment_status === "pending" && trip.final_payment_amount) {
+    pendingLines.push(`Final ${trip.final_payment_amount} pending${trip.final_payment_method ? ` (${trip.final_payment_method})` : ""}`);
+  }
+
+  return { paid, paidTotal, owed, pendingLines };
 }
 
 interface DriverOption {
@@ -192,39 +224,57 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
 
         {selectedDate && dayTrips.length > 0 && (
           <div className="flex flex-col gap-3">
-            {dayTrips.map((trip) => (
-              <Link
-                key={trip.id}
-                href={`/admin/trips/${trip.id}/edit`}
-                className="block rounded-xl border border-zinc-200 p-4 transition-colors hover:border-blue-500 hover:bg-blue-50 dark:border-zinc-800 dark:hover:bg-blue-950/20"
-              >
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <h4 className="flex items-center gap-1.5 font-bold text-zinc-900 dark:text-white">
-                    {trip.client_name ?? "-"}
-                    <AccessibilityIcons wheelchair={trip.needs_wheelchair} stairClimber={trip.needs_stair_climber} />
-                  </h4>
-                  <span className="whitespace-nowrap rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                    {formatTime12(trip.time)}
-                  </span>
-                </div>
-                <p className="text-sm text-zinc-500">
-                  {trip.services?.name ?? "-"} · {trip.drivers?.name ?? "-"}
-                </p>
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <span className="font-semibold text-green-600">{formatDOP(trip.total_fare ?? 0)}</span>
-                  <div className="flex items-center gap-2">
-                    <PaymentStatusToggle
-                      tripId={trip.id}
-                      owes={Boolean(trip.client_owes)}
-                      onToggled={(next) => handleOwesToggled(trip.id, next)}
-                    />
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
-                      {trip.status}
+            {dayTrips.map((trip) => {
+              const { paid, owed, pendingLines } = paymentSummary(trip);
+              return (
+                <Link
+                  key={trip.id}
+                  href={`/admin/trips/${trip.id}/edit`}
+                  className="block rounded-xl border border-zinc-200 p-4 transition-colors hover:border-blue-500 hover:bg-blue-50 dark:border-zinc-800 dark:hover:bg-blue-950/20"
+                >
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    <h4 className="flex items-center gap-1.5 font-bold text-zinc-900 dark:text-white">
+                      {trip.client_name ?? "-"}
+                      <AccessibilityIcons wheelchair={trip.needs_wheelchair} stairClimber={trip.needs_stair_climber} />
+                    </h4>
+                    <span className="whitespace-nowrap rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                      {formatTime12(trip.time)}
                     </span>
                   </div>
-                </div>
-              </Link>
-            ))}
+                  <p className="text-sm text-zinc-500">
+                    {trip.services?.name ?? "-"} · {trip.drivers?.name ?? "-"}
+                  </p>
+
+                  <div className="mt-2 flex flex-col gap-0.5 text-xs">
+                    {paid.map((p, i) => (
+                      <p key={i} className="text-green-700 dark:text-green-400">
+                        Paid {formatDOP(p.amount)} — {p.method}
+                      </p>
+                    ))}
+                    {pendingLines.map((line, i) => (
+                      <p key={i} className="text-amber-700 dark:text-amber-400">
+                        {line}
+                      </p>
+                    ))}
+                    {owed > 0 && <p className="font-semibold text-red-600 dark:text-red-400">Owes {formatDOP(owed)}</p>}
+                  </div>
+
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <span className="font-semibold text-green-600">{formatDOP(trip.total_fare ?? 0)}</span>
+                    <div className="flex items-center gap-2">
+                      <PaymentStatusToggle
+                        tripId={trip.id}
+                        owes={Boolean(trip.client_owes)}
+                        onToggled={(next) => handleOwesToggled(trip.id, next)}
+                      />
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[trip.status] ?? STATUS_STYLES.pending}`}>
+                        {trip.status}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
 
