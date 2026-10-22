@@ -51,14 +51,15 @@ export default async function AdminDashboard() {
   const monthStart = formatISO(startOfMonth(new Date()), { representation: "date" });
   const today = formatISO(new Date(), { representation: "date" });
 
-  // cash_reset_at may not exist yet if that migration hasn't been run — fall back to selecting
-  // without it rather than letting the whole drivers query (and everything derived from it) fail.
-  let drivers: { id: string; name: string; status: string; cash_reset_at: string | null }[] | null = null;
+  // cash_reset_at/cash_reset_balance may not exist yet if those migrations haven't been run —
+  // fall back to selecting without them rather than letting the whole drivers query (and
+  // everything derived from it) fail.
+  let drivers: { id: string; name: string; status: string; cash_reset_at: string | null; cash_reset_balance: number }[] | null = null;
   {
-    const withReset = await supabase.from("drivers").select("id, name, status, cash_reset_at");
+    const withReset = await supabase.from("drivers").select("id, name, status, cash_reset_at, cash_reset_balance");
     if (withReset.error) {
       const fallback = await supabase.from("drivers").select("id, name, status");
-      drivers = (fallback.data ?? []).map((d) => ({ ...d, cash_reset_at: null }));
+      drivers = (fallback.data ?? []).map((d) => ({ ...d, cash_reset_at: null, cash_reset_balance: 0 }));
     } else {
       drivers = withReset.data;
     }
@@ -209,6 +210,7 @@ export default async function AdminDashboard() {
   // anything dated before it is excluded, so a reconciled balance doesn't need every historical
   // transaction accounted for.
   const cashResetAtByDriver = new Map((drivers ?? []).map((d) => [d.id, d.cash_reset_at as string | null]));
+  const cashResetBalanceByDriver = new Map((drivers ?? []).map((d) => [d.id, d.cash_reset_balance ?? 0]));
   const isAfterReset = (driverId: string, date: string | null) => {
     const resetAt = cashResetAtByDriver.get(driverId);
     return !resetAt || !date || date >= resetAt;
@@ -350,12 +352,16 @@ export default async function AdminDashboard() {
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {[...cashByDriver.entries()]
-              .sort(
-                (a, b) =>
-                  b[1].collected - b[1].spent - b[1].handedOff - (a[1].collected - a[1].spent - a[1].handedOff)
-              )
+              .sort((a, b) => {
+                const balA =
+                  (cashResetBalanceByDriver.get(a[0]) ?? 0) + a[1].collected - a[1].spent - a[1].handedOff;
+                const balB =
+                  (cashResetBalanceByDriver.get(b[0]) ?? 0) + b[1].collected - b[1].spent - b[1].handedOff;
+                return balB - balA;
+              })
               .map(([driverId, c]) => {
-                const balance = c.collected - c.spent - c.handedOff;
+                const resetBalance = cashResetBalanceByDriver.get(driverId) ?? 0;
+                const balance = resetBalance + c.collected - c.spent - c.handedOff;
                 return (
                   <div key={driverId} className="rounded-xl bg-white p-3 dark:bg-zinc-900">
                     <p className="text-xs text-zinc-500">{driverNameById.get(driverId) ?? "Unknown"}</p>
@@ -363,6 +369,7 @@ export default async function AdminDashboard() {
                       {formatDOP(balance)}
                     </p>
                     <p className="text-xs text-zinc-500">
+                      {resetBalance > 0 && <>{formatDOP(resetBalance)} starting balance + </>}
                       {formatDOP(c.collected)} collected − {formatDOP(c.spent)} spent
                       {c.handedOff > 0 && <> − {formatDOP(c.handedOff)} delivered</>}
                     </p>
@@ -372,6 +379,7 @@ export default async function AdminDashboard() {
                         driverId={driverId}
                         driverName={driverNameById.get(driverId) ?? "Driver"}
                         currentResetAt={cashResetAtByDriver.get(driverId) ?? null}
+                        currentResetBalance={resetBalance}
                       />
                     </div>
 

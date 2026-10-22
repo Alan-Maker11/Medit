@@ -168,14 +168,13 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
               )}
               {isExpense && (
                 <label className="flex flex-col gap-1 text-sm font-medium">
-                  Vehicle
+                  Vehicle (optional)
                   <select
-                    required
                     value={vehicleId}
                     onChange={(e) => setVehicleId(e.target.value)}
                     className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
                   >
-                    <option value="">Select vehicle</option>
+                    <option value="">Not vehicle-specific</option>
                     {vehicles.map((v) => (
                       <option key={v.id} value={v.id}>
                         {v.name}
