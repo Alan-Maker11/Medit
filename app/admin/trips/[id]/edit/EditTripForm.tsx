@@ -91,6 +91,11 @@ export default function EditTripForm({
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  const advanceAmount = Number(form.advance_payment_amount) || 0;
+  const finalAmount = Number(form.final_payment_amount) || 0;
+  const totalFare = Number(form.total_fare) || 0;
+  const trackedSoFar = advanceAmount + finalAmount;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
@@ -127,9 +132,10 @@ export default function EditTripForm({
   }
 
   return (
+    <div className="grid max-w-5xl gap-6 md:grid-cols-2">
     <form
       onSubmit={handleSubmit}
-      className="grid max-w-2xl gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-2"
+      className="grid gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-2"
     >
       <label className="flex flex-col gap-1 text-sm font-medium">
         Date
@@ -500,5 +506,34 @@ export default function EditTripForm({
         </button>
       </div>
     </form>
+
+      <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="text-lg font-semibold">Trip summary</h2>
+        <dl className="flex flex-col gap-2 text-sm">
+          <Row label="Total fare" value={formatDOP(totalFare)} />
+          <Row
+            label="Advance payment"
+            value={advanceAmount > 0 ? `${formatDOP(advanceAmount)} — ${form.advance_payment_status}` : "—"}
+          />
+          <Row
+            label="Final payment"
+            value={finalAmount > 0 ? `${formatDOP(finalAmount)} — ${form.final_payment_status}` : "—"}
+          />
+          <div className="mt-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+            <p className="text-sm text-zinc-500">Still owed</p>
+            <p className="text-3xl font-bold">{formatDOP(Math.max(totalFare - trackedSoFar, 0))}</p>
+          </div>
+        </dl>
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <dt className="text-zinc-500">{label}</dt>
+      <dd className="font-medium">{value}</dd>
+    </div>
   );
 }
