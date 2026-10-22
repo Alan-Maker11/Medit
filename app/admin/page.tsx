@@ -246,6 +246,15 @@ export default async function AdminDashboard() {
     cashByDriver.set(h.driver_id, acc);
   }
 
+  // A driver who just "started fresh" may have zero cash activity since their reset date — keep
+  // their card visible at RD$0 rather than letting them (and the whole section, if they were the
+  // only one with history) vanish just because there's nothing to show yet.
+  for (const d of drivers ?? []) {
+    if (d.cash_reset_at && !cashByDriver.has(d.id)) {
+      cashByDriver.set(d.id, getCashAcc(d.id));
+    }
+  }
+
   // Only show currently active drivers in the cash-in-hand card — a disabled driver's
   // historical balance stays tracked internally, it just doesn't need admin attention anymore.
   const activeDriverIds = new Set((drivers ?? []).filter((d) => d.status === "active").map((d) => d.id));
