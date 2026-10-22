@@ -63,6 +63,7 @@ export default async function AdminDashboard() {
     { data: cashTrips },
     { data: cashExpenses },
     { data: cashHandoffs },
+    { data: vehicles },
   ] = await Promise.all([
     supabase.from("vehicles").select("id").ilike("name", "Meditiko").maybeSingle(),
     supabase
@@ -99,10 +100,12 @@ export default async function AdminDashboard() {
       .select("driver_id, date, description, category, amount")
       .eq("withdrawal_account", "Cash on hand")
       .not("driver_id", "is", null),
-    supabase.from("driver_cash_handoffs").select("driver_id, amount"),
+    supabase.from("driver_cash_handoffs").select("driver_id, date, amount, used_for, bank_account, vehicle_id, notes"),
+    supabase.from("vehicles").select("id, name"),
   ]);
 
   const meditikoVehicleId = meditikoVehicle?.id ?? null;
+  const vehicleNameById = new Map((vehicles ?? []).map((v) => [v.id, v.name]));
 
   const splitRevenue = (trips: { total_fare: number | null; vehicle_id: string | null }[] | null) => {
     let medit = 0;
@@ -168,12 +171,26 @@ export default async function AdminDashboard() {
     category: string | null;
     amount: number;
   }
+  interface CashHandoffItem {
+    date: string | null;
+    label: string;
+    notes: string | null;
+    amount: number;
+  }
+  const USED_FOR_LABELS: Record<string, string> = {
+    gas: "Gas",
+    toll: "Toll",
+    maintenance: "Maintenance",
+    salary: "Salary",
+    bank_deposit: "Bank deposit",
+    other: "Other",
+  };
   const cashByDriver = new Map<
     string,
-    { collected: number; spent: number; handedOff: number; sources: CashSource[]; spends: CashSpend[] }
+    { collected: number; spent: number; handedOff: number; sources: CashSource[]; spends: CashSpend[]; handoffs: CashHandoffItem[] }
   >();
   const getCashAcc = (driverId: string) =>
-    cashByDriver.get(driverId) ?? { collected: 0, spent: 0, handedOff: 0, sources: [], spends: [] };
+    cashByDriver.get(driverId) ?? { collected: 0, spent: 0, handedOff: 0, sources: [], spends: [], handoffs: [] };
   for (const t of cashTrips ?? []) {
     if (!t.driver_id) continue;
     const acc = getCashAcc(t.driver_id);
@@ -199,6 +216,10 @@ export default async function AdminDashboard() {
   for (const h of cashHandoffs ?? []) {
     const acc = getCashAcc(h.driver_id);
     acc.handedOff += h.amount ?? 0;
+    let label = USED_FOR_LABELS[h.used_for] ?? h.used_for;
+    if (h.used_for === "bank_deposit" && h.bank_account) label += ` — ${h.bank_account}`;
+    else if (h.vehicle_id) label += ` — ${vehicleNameById.get(h.vehicle_id) ?? "Unknown vehicle"}`;
+    acc.handoffs.push({ date: h.date, label, notes: h.notes, amount: h.amount ?? 0 });
     cashByDriver.set(h.driver_id, acc);
   }
 
@@ -293,7 +314,7 @@ export default async function AdminDashboard() {
           <h3 className="mb-1 text-sm font-semibold text-emerald-800 dark:text-emerald-300">💵 Cash in hand by driver</h3>
           <p className="mb-3 text-xs text-zinc-500">
             Cash each driver has collected on their trips, minus cash they've spent directly (e.g. gas) and cash
-            they've delivered to you.
+            they've delivered to you — see "clients & expenses" below for what each payment and use was for.
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {[...cashByDriver.entries()]
@@ -315,7 +336,7 @@ export default async function AdminDashboard() {
                     </p>
                     <DeliverCashButton driverId={driverId} driverName={driverNameById.get(driverId) ?? "Driver"} />
 
-                    {(c.sources.length > 0 || c.spends.length > 0) && (
+                    {(c.sources.length > 0 || c.spends.length > 0 || c.handoffs.length > 0) && (
                       <details className="mt-2 text-xs">
                         <summary className="cursor-pointer text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
                           See clients & expenses
@@ -336,16 +357,25 @@ export default async function AdminDashboard() {
                               </ul>
                             </div>
                           )}
-                          {c.spends.length > 0 && (
+                          {(c.spends.length > 0 || c.handoffs.length > 0) && (
                             <div>
                               <p className="font-semibold text-red-600 dark:text-red-400">Cash was used for</p>
                               <ul className="mt-1 flex flex-col gap-0.5">
                                 {c.spends.map((s, i) => (
-                                  <li key={i} className="flex justify-between gap-2 text-zinc-600 dark:text-zinc-400">
+                                  <li key={`e${i}`} className="flex justify-between gap-2 text-zinc-600 dark:text-zinc-400">
                                     <span className="truncate">
                                       {s.description || s.category || "Expense"} {s.date && <span className="text-zinc-400">· {s.date}</span>}
                                     </span>
                                     <span className="shrink-0">{formatDOP(s.amount)}</span>
+                                  </li>
+                                ))}
+                                {c.handoffs.map((h, i) => (
+                                  <li key={`h${i}`} className="flex justify-between gap-2 text-zinc-600 dark:text-zinc-400">
+                                    <span className="truncate">
+                                      {h.label}
+                                      {h.notes && <> — {h.notes}</>} {h.date && <span className="text-zinc-400">· {h.date}</span>}
+                                    </span>
+                                    <span className="shrink-0">{formatDOP(h.amount)}</span>
                                   </li>
                                 ))}
                               </ul>

@@ -45,8 +45,10 @@ export type WithdrawalMethod = (typeof WITHDRAWAL_METHODS)[number];
 
 export const BANK_ACCOUNTS = ["Banreservas - 7314", "Popular - 4389", "BHD - 0021"] as const;
 export type BankAccount = (typeof BANK_ACCOUNTS)[number];
-export const CASH_HANDOFF_USES = ["gas", "salary", "bank_deposit", "other"] as const;
+export const CASH_HANDOFF_USES = ["gas", "toll", "maintenance", "salary", "bank_deposit", "other"] as const;
 export type CashHandoffUse = (typeof CASH_HANDOFF_USES)[number];
+// used_for values that are tied to a specific vehicle
+export const VEHICLE_CASH_HANDOFF_USES: CashHandoffUse[] = ["gas", "toll", "maintenance"];
 
 export interface DriverCashHandoff {
   id: string;

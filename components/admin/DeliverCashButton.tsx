@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BANK_ACCOUNTS, CASH_HANDOFF_USES, type CashHandoffUse } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
+import { BANK_ACCOUNTS, CASH_HANDOFF_USES, VEHICLE_CASH_HANDOFF_USES, type CashHandoffUse } from "@/lib/types";
 import { todayLocalISO } from "@/lib/date";
 
 const USE_LABELS: Record<CashHandoffUse, string> = {
   gas: "Gas",
+  toll: "Toll",
+  maintenance: "Maintenance",
   salary: "Salary",
   bank_deposit: "Bank deposit",
   other: "Other",
@@ -17,18 +20,32 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [vehicles, setVehicles] = useState<{ id: string; name: string }[]>([]);
 
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayLocalISO());
   const [usedFor, setUsedFor] = useState<CashHandoffUse>("gas");
   const [bankAccount, setBankAccount] = useState<string>(BANK_ACCOUNTS[0]);
+  const [vehicleId, setVehicleId] = useState("");
   const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    if (!open || vehicles.length > 0) return;
+    const supabase = createClient();
+    supabase
+      .from("vehicles")
+      .select("id, name")
+      .then(({ data }) => setVehicles(data ?? []));
+  }, [open, vehicles.length]);
+
+  const needsVehicle = VEHICLE_CASH_HANDOFF_USES.includes(usedFor);
 
   function reset() {
     setAmount("");
     setDate(todayLocalISO());
     setUsedFor("gas");
     setBankAccount(BANK_ACCOUNTS[0]);
+    setVehicleId("");
     setNotes("");
     setError(null);
   }
@@ -46,6 +63,7 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
         amount,
         used_for: usedFor,
         bank_account: usedFor === "bank_deposit" ? bankAccount : undefined,
+        vehicle_id: needsVehicle ? vehicleId : undefined,
         notes,
       }),
     });
@@ -124,6 +142,24 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
                     {BANK_ACCOUNTS.map((a) => (
                       <option key={a} value={a}>
                         {a}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              {needsVehicle && (
+                <label className="flex flex-col gap-1 text-sm font-medium">
+                  Vehicle
+                  <select
+                    required
+                    value={vehicleId}
+                    onChange={(e) => setVehicleId(e.target.value)}
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+                  >
+                    <option value="">Select vehicle</option>
+                    {vehicles.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.name}
                       </option>
                     ))}
                   </select>

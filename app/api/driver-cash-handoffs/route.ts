@@ -17,16 +17,19 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const supabase = await createClient();
   const body = await request.json();
-  const { driver_id, date, amount, used_for, bank_account, notes } = body;
+  const { driver_id, date, amount, used_for, bank_account, vehicle_id, notes } = body;
 
   if (!driver_id || !amount || Number(amount) <= 0) {
     return NextResponse.json({ error: "driver_id and a positive amount are required" }, { status: 400 });
   }
-  if (!["gas", "salary", "bank_deposit", "other"].includes(used_for)) {
+  if (!["gas", "toll", "maintenance", "salary", "bank_deposit", "other"].includes(used_for)) {
     return NextResponse.json({ error: "used_for is required" }, { status: 400 });
   }
   if (used_for === "bank_deposit" && !bank_account) {
     return NextResponse.json({ error: "bank_account is required when used_for is bank_deposit" }, { status: 400 });
+  }
+  if (["gas", "toll", "maintenance"].includes(used_for) && !vehicle_id) {
+    return NextResponse.json({ error: "vehicle_id is required for gas, toll, and maintenance" }, { status: 400 });
   }
 
   const { data, error } = await supabase
@@ -37,6 +40,7 @@ export async function POST(request: Request) {
       amount: Number(amount),
       used_for,
       bank_account: used_for === "bank_deposit" ? bank_account : null,
+      vehicle_id: ["gas", "toll", "maintenance"].includes(used_for) ? vehicle_id : null,
       notes: notes || null,
     })
     .select()
