@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDOP } from "@/lib/fare";
 import { startOfWeek, endOfWeek, startOfMonth, formatISO } from "date-fns";
 import DeliverCashButton from "@/components/admin/DeliverCashButton";
+import ResetCashTrackingButton from "@/components/admin/ResetCashTrackingButton";
 import { PAYMENT_METHODS, WITHDRAWAL_ACCOUNTS } from "@/lib/types";
 
 interface PaymentTrip {
@@ -76,7 +77,7 @@ export default async function AdminDashboard() {
     supabase.from("expenses").select("amount, withdrawal_account").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("meditiko_expenses").select("amount").gte("date", weekStart).lte("date", weekEnd),
     supabase.from("driver_uber_earnings").select("driver_id, gross_amount, amount, date").gte("date", weekStart).lte("date", weekEnd),
-    supabase.from("drivers").select("id, name, status"),
+    supabase.from("drivers").select("id, name, status, cash_reset_at"),
     supabase
       .from("trips")
       .select(
@@ -191,8 +192,18 @@ export default async function AdminDashboard() {
   >();
   const getCashAcc = (driverId: string) =>
     cashByDriver.get(driverId) ?? { collected: 0, spent: 0, handedOff: 0, sources: [], spends: [], handoffs: [] };
+
+  // A driver's cash_reset_at lets the admin "start fresh" on their cash-in-hand tracking —
+  // anything dated before it is excluded, so a reconciled balance doesn't need every historical
+  // transaction accounted for.
+  const cashResetAtByDriver = new Map((drivers ?? []).map((d) => [d.id, d.cash_reset_at as string | null]));
+  const isAfterReset = (driverId: string, date: string | null) => {
+    const resetAt = cashResetAtByDriver.get(driverId);
+    return !resetAt || !date || date >= resetAt;
+  };
+
   for (const t of cashTrips ?? []) {
-    if (!t.driver_id) continue;
+    if (!t.driver_id || !isAfterReset(t.driver_id, t.date)) continue;
     const acc = getCashAcc(t.driver_id);
     if (t.advance_payment_method === "Cash" && t.advance_payment_status === "received") {
       const amount = t.advance_payment_amount ?? 0;
@@ -207,13 +218,14 @@ export default async function AdminDashboard() {
     cashByDriver.set(t.driver_id, acc);
   }
   for (const e of cashExpenses ?? []) {
-    if (!e.driver_id) continue;
+    if (!e.driver_id || !isAfterReset(e.driver_id, e.date)) continue;
     const acc = getCashAcc(e.driver_id);
     acc.spent += e.amount ?? 0;
     acc.spends.push({ date: e.date, description: e.description, category: e.category, amount: e.amount ?? 0 });
     cashByDriver.set(e.driver_id, acc);
   }
   for (const h of cashHandoffs ?? []) {
+    if (!isAfterReset(h.driver_id, h.date)) continue;
     const acc = getCashAcc(h.driver_id);
     acc.handedOff += h.amount ?? 0;
     let label = USED_FOR_LABELS[h.used_for] ?? h.used_for;
@@ -334,7 +346,14 @@ export default async function AdminDashboard() {
                       {formatDOP(c.collected)} collected − {formatDOP(c.spent)} spent
                       {c.handedOff > 0 && <> − {formatDOP(c.handedOff)} delivered</>}
                     </p>
-                    <DeliverCashButton driverId={driverId} driverName={driverNameById.get(driverId) ?? "Driver"} />
+                    <div className="flex flex-wrap items-center gap-x-3">
+                      <DeliverCashButton driverId={driverId} driverName={driverNameById.get(driverId) ?? "Driver"} />
+                      <ResetCashTrackingButton
+                        driverId={driverId}
+                        driverName={driverNameById.get(driverId) ?? "Driver"}
+                        currentResetAt={cashResetAtByDriver.get(driverId) ?? null}
+                      />
+                    </div>
 
                     {(c.sources.length > 0 || c.spends.length > 0 || c.handoffs.length > 0) && (
                       <details className="mt-2 text-xs">
