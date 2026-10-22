@@ -3,6 +3,7 @@ import { formatDOP } from "@/lib/fare";
 import { startOfWeek, endOfWeek, startOfMonth, formatISO } from "date-fns";
 import DeliverCashButton from "@/components/admin/DeliverCashButton";
 import ResetCashTrackingButton from "@/components/admin/ResetCashTrackingButton";
+import CashEntryActions from "@/components/admin/CashEntryActions";
 import { PAYMENT_METHODS, WITHDRAWAL_ACCOUNTS } from "@/lib/types";
 
 interface PaymentTrip {
@@ -110,10 +111,10 @@ export default async function AdminDashboard() {
       .or("advance_payment_method.eq.Cash,final_payment_method.eq.Cash"),
     supabase
       .from("expenses")
-      .select("driver_id, date, description, category, amount, vehicle_id")
+      .select("id, driver_id, date, description, category, amount, vehicle_id")
       .eq("withdrawal_account", "Cash on hand")
       .not("driver_id", "is", null),
-    supabase.from("driver_cash_handoffs").select("driver_id, date, amount, used_for, bank_account, notes"),
+    supabase.from("driver_cash_handoffs").select("id, driver_id, date, amount, used_for, bank_account, notes"),
     supabase.from("vehicles").select("id, name"),
   ]);
 
@@ -179,6 +180,7 @@ export default async function AdminDashboard() {
     amount: number;
   }
   interface CashSpend {
+    id: string;
     date: string | null;
     description: string | null;
     category: string | null;
@@ -186,6 +188,7 @@ export default async function AdminDashboard() {
     amount: number;
   }
   interface CashHandoffItem {
+    id: string;
     date: string | null;
     label: string;
     notes: string | null;
@@ -235,7 +238,7 @@ export default async function AdminDashboard() {
     if (!e.driver_id || !isAfterReset(e.driver_id, e.date)) continue;
     const acc = getCashAcc(e.driver_id);
     acc.spent += e.amount ?? 0;
-    acc.spends.push({ date: e.date, description: e.description, category: e.category, vehicleId: e.vehicle_id, amount: e.amount ?? 0 });
+    acc.spends.push({ id: e.id, date: e.date, description: e.description, category: e.category, vehicleId: e.vehicle_id, amount: e.amount ?? 0 });
     cashByDriver.set(e.driver_id, acc);
   }
   for (const h of cashHandoffs ?? []) {
@@ -244,7 +247,7 @@ export default async function AdminDashboard() {
     acc.handedOff += h.amount ?? 0;
     let label = USED_FOR_LABELS[h.used_for] ?? h.used_for;
     if (h.used_for === "bank_deposit" && h.bank_account) label += ` — ${h.bank_account}`;
-    acc.handoffs.push({ date: h.date, label, notes: h.notes, amount: h.amount ?? 0 });
+    acc.handoffs.push({ id: h.id, date: h.date, label, notes: h.notes, amount: h.amount ?? 0 });
     cashByDriver.set(h.driver_id, acc);
   }
 
@@ -408,23 +411,29 @@ export default async function AdminDashboard() {
                             <div>
                               <p className="font-semibold text-red-600 dark:text-red-400">Cash was used for</p>
                               <ul className="mt-1 flex flex-col gap-0.5">
-                                {c.spends.map((s, i) => (
-                                  <li key={`e${i}`} className="flex justify-between gap-2 text-zinc-600 dark:text-zinc-400">
+                                {c.spends.map((s) => (
+                                  <li key={s.id} className="flex items-center justify-between gap-2 text-zinc-600 dark:text-zinc-400">
                                     <span className="truncate">
                                       {s.category ?? "Expense"}
                                       {s.vehicleId && <> — {vehicleNameById.get(s.vehicleId) ?? "Unknown vehicle"}</>}
                                       {s.description && <> ({s.description})</>} {s.date && <span className="text-zinc-400">· {s.date}</span>}
                                     </span>
-                                    <span className="shrink-0">{formatDOP(s.amount)}</span>
+                                    <span className="flex shrink-0 items-center gap-2">
+                                      {formatDOP(s.amount)}
+                                      <CashEntryActions kind="expense" id={s.id} currentDate={s.date} />
+                                    </span>
                                   </li>
                                 ))}
-                                {c.handoffs.map((h, i) => (
-                                  <li key={`h${i}`} className="flex justify-between gap-2 text-zinc-600 dark:text-zinc-400">
+                                {c.handoffs.map((h) => (
+                                  <li key={h.id} className="flex items-center justify-between gap-2 text-zinc-600 dark:text-zinc-400">
                                     <span className="truncate">
                                       {h.label}
                                       {h.notes && <> — {h.notes}</>} {h.date && <span className="text-zinc-400">· {h.date}</span>}
                                     </span>
-                                    <span className="shrink-0">{formatDOP(h.amount)}</span>
+                                    <span className="flex shrink-0 items-center gap-2">
+                                      {formatDOP(h.amount)}
+                                      <CashEntryActions kind="handoff" id={h.id} currentDate={h.date} />
+                                    </span>
                                   </li>
                                 ))}
                               </ul>
