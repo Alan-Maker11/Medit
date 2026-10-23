@@ -377,7 +377,11 @@ export default async function AdminDashboard() {
                       {c.handedOff > 0 && <> − {formatDOP(c.handedOff)} delivered</>}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-3">
-                      <DeliverCashButton driverId={driverId} driverName={driverNameById.get(driverId) ?? "Driver"} />
+                      <DeliverCashButton
+                        driverId={driverId}
+                        driverName={driverNameById.get(driverId) ?? "Driver"}
+                        vehicles={vehicles ?? []}
+                      />
                       <ResetCashTrackingButton
                         driverId={driverId}
                         driverName={driverNameById.get(driverId) ?? "Driver"}

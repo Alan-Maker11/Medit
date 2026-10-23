@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { BANK_ACCOUNTS, CASH_USES, EXPENSE_CASH_USES, CASH_USE_EXPENSE_CATEGORY, type CashUse } from "@/lib/types";
 import { todayLocalISO } from "@/lib/date";
 
@@ -15,12 +14,19 @@ const USE_LABELS: Record<CashUse, string> = {
   other: "Other",
 };
 
-export default function DeliverCashButton({ driverId, driverName }: { driverId: string; driverName: string }) {
+export default function DeliverCashButton({
+  driverId,
+  driverName,
+  vehicles,
+}: {
+  driverId: string;
+  driverName: string;
+  vehicles: { id: string; name: string }[];
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [vehicles, setVehicles] = useState<{ id: string; name: string }[]>([]);
 
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayLocalISO());
@@ -28,15 +34,6 @@ export default function DeliverCashButton({ driverId, driverName }: { driverId: 
   const [bankAccount, setBankAccount] = useState<string>(BANK_ACCOUNTS[0]);
   const [vehicleId, setVehicleId] = useState("");
   const [notes, setNotes] = useState("");
-
-  useEffect(() => {
-    if (!open || vehicles.length > 0) return;
-    const supabase = createClient();
-    supabase
-      .from("vehicles")
-      .select("id, name")
-      .then(({ data }) => setVehicles(data ?? []));
-  }, [open, vehicles.length]);
 
   const isExpense = EXPENSE_CASH_USES.includes(usedFor);
 
