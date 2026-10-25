@@ -33,9 +33,11 @@ export default function DeliverCashButton({
   const [usedFor, setUsedFor] = useState<CashUse>("gas");
   const [bankAccount, setBankAccount] = useState<string>(BANK_ACCOUNTS[0]);
   const [vehicleId, setVehicleId] = useState("");
+  const [kmAtFill, setKmAtFill] = useState("");
   const [notes, setNotes] = useState("");
 
   const isExpense = EXPENSE_CASH_USES.includes(usedFor);
+  const showOdometer = usedFor === "gas" && Boolean(vehicleId);
 
   function reset() {
     setAmount("");
@@ -43,6 +45,7 @@ export default function DeliverCashButton({
     setUsedFor("gas");
     setBankAccount(BANK_ACCOUNTS[0]);
     setVehicleId("");
+    setKmAtFill("");
     setNotes("");
     setError(null);
   }
@@ -63,6 +66,7 @@ export default function DeliverCashButton({
             category: CASH_USE_EXPENSE_CATEGORY[usedFor],
             vehicle_id: vehicleId,
             amount,
+            km_at_fill: showOdometer ? kmAtFill : undefined,
             description: notes,
             withdrawal_account: "Cash on hand",
             withdrawal_method: "Cash payment",
@@ -178,6 +182,18 @@ export default function DeliverCashButton({
                       </option>
                     ))}
                   </select>
+                </label>
+              )}
+              {showOdometer && (
+                <label className="flex flex-col gap-1 text-sm font-medium">
+                  Odometer reading (km)
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={kmAtFill}
+                    onChange={(e) => setKmAtFill(e.target.value)}
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+                  />
                 </label>
               )}
               <label className="flex flex-col gap-1 text-sm font-medium">
