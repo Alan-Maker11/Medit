@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { createClient } from "@/lib/supabase/client";
 import { calculateFare, formatDOP, STAIR_CLIMBER_PRICING, getStairClimberPrice } from "@/lib/fare";
@@ -32,6 +32,8 @@ export default function NewTripPage({
   heading?: string;
 } = {}) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get("date");
   const pickupRef = useRef<HTMLInputElement>(null);
   const destinationRef = useRef<HTMLInputElement>(null);
 
@@ -49,7 +51,7 @@ export default function NewTripPage({
   );
 
   const [form, setForm] = useState({
-    date: todayLocalISO(),
+    date: dateParam || todayLocalISO(),
     pickup_time: "",
     service_id: "",
     client_name: "",

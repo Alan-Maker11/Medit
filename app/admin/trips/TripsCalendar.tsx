@@ -210,9 +210,19 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
       </div>
 
       <div className="sticky top-8 h-fit rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h3 className="mb-4 text-base font-bold text-zinc-900 dark:text-white">
-          {selectedDate ? `${t.tripsFor} — ${selectedDate}` : t.tripsFor}
-        </h3>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+            {selectedDate ? `${t.tripsFor} — ${selectedDate}` : t.tripsFor}
+          </h3>
+          {selectedDate && (
+            <Link
+              href={`/admin/trips/new?date=${selectedDate}`}
+              className="whitespace-nowrap rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
+            >
+              + {lang === "es" ? "Registrar viaje" : "New trip"}
+            </Link>
+          )}
+        </div>
 
         {!selectedDate && <p className="text-sm text-zinc-500">{t.selectDayHint}</p>}
 
