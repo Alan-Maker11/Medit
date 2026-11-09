@@ -18,6 +18,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const infoPages = ["/about", "/contact"];
 
+  const faqPages = ["/faq"];
+
   return [
     { url: baseUrl, lastModified: now, changeFrequency: "weekly", priority: 1 },
     ...servicePages.map((slug) => ({
@@ -37,6 +39,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.6,
+    })),
+    ...faqPages.map((slug) => ({
+      url: `${baseUrl}${slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
     })),
   ];
 }
