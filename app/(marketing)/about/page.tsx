@@ -48,34 +48,33 @@ export default function AboutPage() {
 
           <div className="mt-8 grid gap-6 sm:grid-cols-2">
             <div className="rounded-2xl border border-zinc-200 bg-medit-bg p-6 dark:border-zinc-800 dark:bg-[#0d1421]">
-              <h3 className="font-display text-xl font-bold text-medit-fg dark:text-white">Alan — Founder</h3>
+              <h3 className="font-display text-xl font-bold text-medit-fg dark:text-white">Lemic Melo — CEO</h3>
               <p className="font-body mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                Alan founded Medit RD after seeing firsthand how difficult it was for wheelchair users and their
-                families to find reliable, respectful transportation in Punta Cana and Santo Domingo. He oversees
-                the business day to day, from fleet upkeep to making sure every booking gets a real, personal
-                response rather than a canned one.
+                Lemic Melo leads Medit RD, overseeing the business day to day and making sure every booking gets a
+                real, personal response rather than a canned one.
               </p>
             </div>
             <div className="rounded-2xl border border-zinc-200 bg-medit-bg p-6 dark:border-zinc-800 dark:bg-[#0d1421]">
-              <h3 className="font-display text-xl font-bold text-medit-fg dark:text-white">Fernando — Lead Driver</h3>
+              <h3 className="font-display text-xl font-bold text-medit-fg dark:text-white">Our drivers</h3>
               <p className="font-body mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                Fernando has years of experience navigating Punta Cana and Santo Domingo, from airport pickups to
-                hospital transfers to cobblestoned tours of the Colonial Zone. He knows which resort entrances are
-                easiest to approach, which routes avoid the worst traffic, and how to help a passenger get settled
-                without making a fuss about it.
+                Every driver on our team is trained and highly professional, with deep experience navigating Punta
+                Cana and Santo Domingo — from airport pickups to hospital transfers to cobblestoned tours of the
+                Colonial Zone. They know which resort entrances are easiest to approach, which routes avoid the
+                worst traffic, and how to help a passenger get settled without making a fuss about it.
               </p>
             </div>
           </div>
 
           <h2 className="font-display mt-14 text-2xl font-bold text-medit-fg dark:text-white">Our fleet</h2>
           <p className="font-body mt-4 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-            We run four vehicles, each with a specific job:
+            Every van in our fleet is built around comfort and accessibility — not just a ramp bolted onto a
+            standard vehicle:
           </p>
           <ul className="mt-5 flex flex-col gap-4">
             <li className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-              <p className="font-body font-semibold text-medit-fg dark:text-white">1 wheelchair-accessible ramp van</p>
+              <p className="font-body font-semibold text-medit-fg dark:text-white">Rear ramp & secure tie-downs</p>
               <p className="font-body mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Our core vehicle — rear ramp, four-point tie-downs, and wide doors, used for{" "}
+                Wide doors, a rear ramp, and four-point tie-downs on every vehicle, used for{" "}
                 <a href="/punta-cana-airport-transfer" className="font-semibold text-medit-teal-2 underline dark:text-medit-teal">
                   airport transfers
                 </a>
@@ -87,17 +86,17 @@ export default function AboutPage() {
               </p>
             </li>
             <li className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-              <p className="font-body font-semibold text-medit-fg dark:text-white">2 regular vans</p>
+              <p className="font-body font-semibold text-medit-fg dark:text-white">On-board TV & WiFi</p>
               <p className="font-body mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Used for companions traveling alongside a wheelchair user, larger groups, and standard transfers
-                that don&apos;t require the ramp vehicle.
+                Stay connected and entertained on longer transfers, like the drive between Punta Cana and Santo
+                Domingo.
               </p>
             </li>
             <li className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-              <p className="font-body font-semibold text-medit-fg dark:text-white">1 Meditiko van</p>
+              <p className="font-body font-semibold text-medit-fg dark:text-white">Climate-controlled comfort</p>
               <p className="font-body mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Our Uber X-style sister service, mainly used for Colonial Zone tours and shorter city trips that
-                don&apos;t need the full accessible setup.
+                Cool, comfortable seating for the whole group, with room for companions and luggage alongside a
+                secured wheelchair.
               </p>
             </li>
           </ul>
@@ -128,7 +127,7 @@ export default function AboutPage() {
 
       <CtaBand
         heading="Ready to work with us?"
-        subheading="Message Alan and the team directly on WhatsApp — no call centers, no hold music."
+        subheading="Message our team directly on WhatsApp — no call centers, no hold music."
         ctaMessage="Hi, I'd like to learn more about Medit RD's services."
       />
     </>
