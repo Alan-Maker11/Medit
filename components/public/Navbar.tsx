@@ -90,6 +90,9 @@ export default function Navbar({ hasLogo }: { hasLogo: boolean }) {
           <a href="/about" className="font-body text-sm font-medium text-white/80 transition-colors hover:text-white">
             About
           </a>
+          <a href="/faq" className="font-body text-sm font-medium text-white/80 transition-colors hover:text-white">
+            FAQ
+          </a>
           <a href="/contact" className="font-body text-sm font-medium text-white/80 transition-colors hover:text-white">
             Contact
           </a>
@@ -151,6 +154,13 @@ export default function Navbar({ hasLogo }: { hasLogo: boolean }) {
               className="font-body rounded-lg px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/5 hover:text-white"
             >
               About
+            </a>
+            <a
+              href="/faq"
+              onClick={() => setMenuOpen(false)}
+              className="font-body rounded-lg px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/5 hover:text-white"
+            >
+              FAQ
             </a>
             <a
               href="/contact"

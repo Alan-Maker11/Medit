@@ -8,6 +8,7 @@ const EXPLORE_LINKS = [
   { href: "/post-surgery-transport", label: "Post-Surgery Transport" },
   { href: "/punta-cana-wheelchair-guide", label: "Punta Cana Wheelchair Guide" },
   { href: "/accessible-resorts-punta-cana", label: "Accessible Resorts Guide" },
+  { href: "/faq", label: "FAQ" },
   { href: "/about", label: "About Medit RD" },
   { href: "/contact", label: "Contact / Book" },
 ];
