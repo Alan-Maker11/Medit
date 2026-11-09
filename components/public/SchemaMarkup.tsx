@@ -17,7 +17,7 @@ export default function SchemaMarkup() {
     image: "https://www.meditrd.site/api/og",
     priceRange: "$60 – $180 USD",
     currenciesAccepted: "USD",
-    paymentAccepted: "Cash, Credit Card, Bank Transfer",
+    paymentAccepted: "Cash, Credit Card, Debit Card, Bank Transfer, CashApp, Zelle, PayPal, Revolut",
     areaServed: [
       { "@type": "City", name: "Punta Cana", containedInPlace: { "@type": "Country", name: "Dominican Republic" } },
       { "@type": "City", name: "Santo Domingo", containedInPlace: { "@type": "Country", name: "Dominican Republic" } },

@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: "How do I pay for the trip?",
-    a: "The final price is confirmed on WhatsApp before the trip. We accept cash and bank transfer.",
+    a: "The final price is confirmed on WhatsApp before the trip. We accept cash, bank transfer, and all major credit/debit cards, plus CashApp, Zelle, PayPal, and Revolut. A 6% processing fee applies to card and app payments (CashApp, Zelle, PayPal, Revolut, and other card transactions).",
   },
 ];
 
