@@ -123,6 +123,18 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
     [filteredTrips, selectedDate]
   );
 
+  // Flags trips that share a client name with another trip the same day — usually a duplicate
+  // entry (e.g. the same booking saved twice), occasionally a real repeat trip. Worth a second look.
+  const duplicateClientNames = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const trip of dayTrips) {
+      const key = (trip.client_name ?? "").trim().toLowerCase();
+      if (!key) continue;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return new Set([...counts.entries()].filter(([, n]) => n > 1).map(([name]) => name));
+  }, [dayTrips]);
+
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfWeek = new Date(year, month, 1).getDay();
   const cells: (number | null)[] = [...Array(firstDayOfWeek).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
@@ -236,16 +248,26 @@ export default function TripsCalendar({ trips, drivers }: { trips: TripRow[]; dr
           <div className="flex flex-col gap-3">
             {dayTrips.map((trip) => {
               const { paid, owed, pendingLines } = paymentSummary(trip);
+              const isDuplicate = duplicateClientNames.has((trip.client_name ?? "").trim().toLowerCase());
               return (
                 <Link
                   key={trip.id}
                   href={`/admin/trips/${trip.id}/edit`}
-                  className="block rounded-xl border border-zinc-200 p-4 transition-colors hover:border-blue-500 hover:bg-blue-50 dark:border-zinc-800 dark:hover:bg-blue-950/20"
+                  className={`block rounded-xl border p-4 transition-colors hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20 ${
+                    isDuplicate
+                      ? "border-amber-400 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/20"
+                      : "border-zinc-200 dark:border-zinc-800"
+                  }`}
                 >
                   <div className="mb-2 flex items-start justify-between gap-2">
                     <h4 className="flex items-center gap-1.5 font-bold text-zinc-900 dark:text-white">
                       {trip.client_name ?? "-"}
                       <AccessibilityIcons wheelchair={trip.needs_wheelchair} stairClimber={trip.needs_stair_climber} />
+                      {isDuplicate && (
+                        <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-semibold text-amber-900 dark:bg-amber-900 dark:text-amber-200">
+                          Possible duplicate
+                        </span>
+                      )}
                     </h4>
                     <span className="whitespace-nowrap rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
                       {formatTime12(trip.time)}
