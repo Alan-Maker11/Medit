@@ -137,7 +137,11 @@ export default async function AdminDashboard() {
   const weekCombinedExpenses = weekExpenseTotal + weekMeditikoExpenseTotal;
   const profit = weekRevenue.medit - weekExpenseTotal;
   const meditikoProfit = weekRevenue.meditiko - weekMeditikoExpenseTotal;
-  const tripCount = weekTrips?.length ?? 0;
+  // Split the same way revenue is split — the main Viajes calendar excludes Meditiko trips
+  // (they live under their own tab), so the headline count needs to match that scope instead of
+  // silently including Meditiko trips and looking like data went missing.
+  const tripCount = (weekTrips ?? []).filter((t) => !meditikoVehicleId || t.vehicle_id !== meditikoVehicleId).length;
+  const meditikoTripCount = (weekTrips ?? []).filter((t) => meditikoVehicleId && t.vehicle_id === meditikoVehicleId).length;
 
   // Medit's Uber income is the day's whole take minus the driver's 20% commission (their cut),
   // not the driver's commission itself — that part belongs to the driver, not to Medit.
@@ -271,7 +275,11 @@ export default async function AdminDashboard() {
     { label: "Weekly revenue", value: formatDOP(weekRevenue.total) },
     { label: "Weekly expenses", value: formatDOP(weekCombinedExpenses) },
     { label: "Weekly profit", value: formatDOP(profit + meditikoProfit) },
-    { label: "Trips this week", value: String(tripCount) },
+    {
+      label: "Trips this week",
+      value: String(tripCount),
+      hint: meditikoTripCount > 0 ? `+${meditikoTripCount} Meditiko` : undefined,
+    },
   ];
 
   return (
@@ -284,7 +292,10 @@ export default async function AdminDashboard() {
             className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
           >
             <p className="text-sm text-zinc-500">{s.label}</p>
-            <p className="mt-1 text-2xl font-bold">{s.value}</p>
+            <p className="mt-1 text-2xl font-bold">
+              {s.value}
+              {s.hint && <span className="ml-2 text-sm font-normal text-amber-600 dark:text-amber-400">{s.hint}</span>}
+            </p>
           </div>
         ))}
       </div>
