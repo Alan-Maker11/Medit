@@ -26,11 +26,11 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.meditrd.site"),
   title: {
-    default: "Wheelchair-Accessible Transfers & Tours in Punta Cana | Medit RD",
+    default: "Wheelchair Accessible Transport Dominican Republic | Medit RD",
     template: "%s | Medit RD",
   },
   description:
-    "Private wheelchair-accessible transfers & tours in Punta Cana, Santo Domingo & La Romana. GPS-tracked fleet, certified drivers. Book via WhatsApp.",
+    "The only certified wheelchair-accessible transport in Punta Cana & Santo Domingo. Airport transfers, medical transport & tours. Book via WhatsApp in 2 minutes.",
   keywords: [
     "wheelchair accessible transport punta cana",
     "accessible airport transfer dominican republic",
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
     alternateLocale: "es_DO",
     url: "https://www.meditrd.site",
     siteName: "Medit RD",
-    title: "Wheelchair-Accessible Transfers & Tours in Punta Cana | Medit RD",
+    title: "Wheelchair Accessible Transport Dominican Republic | Medit RD",
     description:
-      "The Dominican Republic's premier accessible transportation service. Airport transfers, resort pickups & private tours for wheelchair users. 24/7.",
+      "The only certified wheelchair-accessible transport in Punta Cana & Santo Domingo. Airport transfers, medical transport & tours. Book via WhatsApp in 2 minutes.",
     images: [
       {
         url: "/api/og",
@@ -76,8 +76,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Wheelchair-Accessible Transfers & Tours in Punta Cana | Medit RD",
-    description: "Private accessible airport transfers & tours across the Dominican Republic. GPS-tracked fleet. 24/7 support.",
+    title: "Wheelchair Accessible Transport Dominican Republic | Medit RD",
+    description:
+      "The only certified wheelchair-accessible transport in Punta Cana & Santo Domingo. Airport transfers, medical transport & tours. Book via WhatsApp in 2 minutes.",
     images: ["/api/og"],
   },
   alternates: {

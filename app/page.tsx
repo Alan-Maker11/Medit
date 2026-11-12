@@ -16,16 +16,16 @@ import PortalLinks from "@/components/public/PortalLinks";
 import Footer from "@/components/public/Footer";
 
 export const metadata: Metadata = {
-  title: "Wheelchair-Accessible Transfers & Tours in Punta Cana",
+  title: "Wheelchair Accessible Transport Dominican Republic",
   description:
-    "Private wheelchair-accessible airport transfers, resort pickups & tours across Punta Cana & Santo Domingo, Dominican Republic. GPS-tracked vehicles. Certified drivers. Available 24/7. Book instantly via WhatsApp.",
+    "The only certified wheelchair-accessible transport in Punta Cana & Santo Domingo. Airport transfers, medical transport & tours. Book via WhatsApp in 2 minutes.",
   alternates: {
     canonical: "https://www.meditrd.site",
   },
   openGraph: {
-    title: "Wheelchair-Accessible Transfers & Tours — Dominican Republic | Medit RD",
+    title: "Wheelchair Accessible Transport Dominican Republic | Medit RD",
     description:
-      "The DR's premier accessible transport service. Airport transfers, resort pickups & private tours for wheelchair users. Punta Cana · Santo Domingo · 24/7.",
+      "The only certified wheelchair-accessible transport in Punta Cana & Santo Domingo. Airport transfers, medical transport & tours. Book via WhatsApp in 2 minutes.",
     url: "https://www.meditrd.site",
     images: [{ url: "/api/og", width: 1200, height: 630, alt: "Medit RD — Accessible Transport in Dominican Republic" }],
   },

@@ -150,7 +150,80 @@ export default function SchemaMarkup() {
           text: "Yes. Round-trip transfers are available and can be selected during the booking process. The return journey is priced the same as the outbound transfer.",
         },
       },
+      {
+        "@type": "Question",
+        name: "Is there wheelchair accessible transport in Punta Cana?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. Medit RD is the only certified wheelchair-accessible transportation company operating in Punta Cana. We provide airport transfers, resort-to-resort transport, medical transport, and accessible tours with ramp-equipped vans and trained drivers, available 24/7.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "How much does a wheelchair accessible airport transfer from PUJ cost?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Wheelchair accessible airport transfers from Punta Cana International Airport (PUJ) start at $80 USD for Cap Cana, $120 USD for Bávaro/Punta Cana hotel zone, and $180 USD for La Romana. All prices include the ramp-equipped van, driver assistance, and wheelchair securement.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Can I bring my power wheelchair on a flight to Punta Cana?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. All major airlines flying into PUJ must accept power wheelchairs in the cargo hold with advance notice. Notify your airline at the time of booking, not at check-in. Remove lithium batteries per airline policy. Medit RD will transport you in your own wheelchair from the moment you land.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Does Medit RD offer medical transport for dialysis patients in Santo Domingo?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. Medit RD provides recurring wheelchair-accessible medical transport for dialysis patients, chemotherapy patients, and other regular medical appointments in Santo Domingo and Punta Cana. We work with all major private hospitals including UCE, Plaza de la Salud, Abreu, CEDIMAT, and Corominas.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Are there wheelchair accessible tours in Punta Cana?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. Medit RD offers wheelchair-accessible tours from Punta Cana including the Zona Colonial UNESCO heritage tour in Santo Domingo ($60-80), Punta Cana city tour ($120), cigar and rum distillery tour ($130), Dinner in the Sky ($200), and full-day island tours. All tours use adapted vans with ramps.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "How do I book wheelchair accessible transport in Dominican Republic?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Book Medit RD via WhatsApp at +1 (829) 329-6920. Send a message with your pickup location, destination, date, time, and wheelchair type. We respond within 15 minutes and confirm your booking with a price quote. No app required.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Is Medit RD available in Santo Domingo?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. Medit RD operates in Santo Domingo, Punta Cana, La Romana, Cap Cana, and routes between all cities. In Santo Domingo we serve airport transfers (SDQ), medical transport to all major hospitals, and guided tours of the Zona Colonial.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "What type of wheelchair accessible vehicles does Medit RD use?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Medit RD uses full-size accessible vans equipped with ramps, four-point wheelchair tie-down securement systems, and air conditioning. Vehicles accommodate manual and power wheelchairs up to 700 lbs / 318 kg combined passenger and chair weight.",
+        },
+      },
     ],
+  };
+
+  const airportTransferService = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: "Wheelchair Accessible Airport Transfer — Punta Cana (PUJ)",
+    provider: { "@type": "LocalBusiness", name: "Medit RD" },
+    areaServed: "Punta Cana, Dominican Republic",
+    offers: { "@type": "AggregateOffer", priceCurrency: "USD", lowPrice: "80", highPrice: "250" },
   };
 
   const touristTripService = {
@@ -214,6 +287,7 @@ export default function SchemaMarkup() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusiness) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPage) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(touristTripService) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(airportTransferService) }} />
     </>
   );
 }
