@@ -21,6 +21,9 @@ interface TripDetail {
   notes: string | null;
   needs_wheelchair: boolean;
   needs_stair_climber: boolean;
+  return_time: string | null;
+  down_completed_at: string | null;
+  up_completed_at: string | null;
   services: { name: string } | null;
 }
 
@@ -106,6 +109,25 @@ export default function TripDetailsPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: nextStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "No se pudo actualizar el viaje");
+      setTrip(data.trip);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo actualizar el estado del viaje");
+    } finally {
+      setUpdating(false);
+    }
+  }
+
+  async function toggleLeg(leg: "down" | "up") {
+    if (!trip) return;
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/driver/trips/${trip.id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leg }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "No se pudo actualizar el viaje");
@@ -243,7 +265,35 @@ export default function TripDetailsPage() {
             />
           </div>
 
-          {trip.status !== "cancelled" && (
+          {trip.status !== "cancelled" && trip.return_time && (
+            <div className="mb-4 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/30">
+              <p className="mb-3 text-sm font-semibold text-blue-900 dark:text-blue-300">
+                Este viaje tiene dos partes — regreso aprox. {formatTime12(trip.return_time)}
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => toggleLeg("down")}
+                  disabled={updating}
+                  className={`w-full rounded-xl px-5 py-3 text-base font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.98] disabled:opacity-50 ${
+                    trip.down_completed_at ? "bg-zinc-600 hover:bg-zinc-700" : "bg-green-600 hover:bg-green-700"
+                  }`}
+                >
+                  {trip.down_completed_at ? "✓ Bajada completada" : "Marcar bajada completada"}
+                </button>
+                <button
+                  onClick={() => toggleLeg("up")}
+                  disabled={updating}
+                  className={`w-full rounded-xl px-5 py-3 text-base font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.98] disabled:opacity-50 ${
+                    trip.up_completed_at ? "bg-zinc-600 hover:bg-zinc-700" : "bg-green-600 hover:bg-green-700"
+                  }`}
+                >
+                  {trip.up_completed_at ? "✓ Subida completada" : "Marcar subida completada"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {trip.status !== "cancelled" && !trip.return_time && (
             <button
               onClick={toggleStatus}
               disabled={updating}

@@ -65,6 +65,7 @@ export default function NewTripPage({
     trip_type: "one-way" as TripType,
     transportation_mode: (lockedVehicleName ? "public" : "private") as TransportationMode,
     waiting_hours: "0",
+    return_time: "",
     notes: "",
     advance_payment_amount: "",
     advance_payment_method: "",
@@ -590,6 +591,17 @@ export default function NewTripPage({
                     onChange={(e) => setSubBajarRoundTrip(e.target.checked)}
                   />
                   Round-trip (×2 — client goes down and comes back up)
+                </label>
+              )}
+              {isSubirBajar && subBajarRoundTrip && (
+                <label className="flex items-center gap-2">
+                  Return pickup time (optional — if coming back later, not right away)
+                  <input
+                    type="time"
+                    value={form.return_time}
+                    onChange={(e) => update("return_time", e.target.value)}
+                    className="input w-40"
+                  />
                 </label>
               )}
               <label className="flex items-center gap-2">

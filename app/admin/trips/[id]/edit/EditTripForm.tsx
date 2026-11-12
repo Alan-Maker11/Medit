@@ -44,6 +44,7 @@ export default function EditTripForm({
     transportation_mode: trip.transportation_mode ?? "private",
     status: trip.status ?? "pending",
     total_fare: trip.total_fare != null ? String(trip.total_fare) : "",
+    return_time: trip.return_time ?? "",
     notes: trip.notes ?? "",
     advance_payment_amount: trip.advance_payment_amount != null ? String(trip.advance_payment_amount) : "",
     advance_payment_method: trip.advance_payment_method ?? "",
@@ -62,7 +63,7 @@ export default function EditTripForm({
 
   // Subir/Bajar fee helper state
   const [transportFee, setTransportFee] = useState("0");
-  const [subBajarRoundTrip, setSubBajarRoundTrip] = useState(false);
+  const [subBajarRoundTrip, setSubBajarRoundTrip] = useState(Boolean(trip.return_time));
 
   const selectedService = services.find((s) => s.id === form.service_id);
   const isSubirBajar = selectedService?.name === "Subir/Bajar";
@@ -110,6 +111,7 @@ export default function EditTripForm({
         driver_id: form.driver_id || null,
         vehicle_id: form.vehicle_id || null,
         total_fare: form.total_fare === "" ? null : Number(form.total_fare),
+        return_time: form.return_time || null,
         needs_wheelchair: wheelchair,
         needs_stair_climber: stairsElevator,
         stair_climber_floor: stairFloor,
@@ -297,6 +299,17 @@ export default function EditTripForm({
               />
               Round-trip (×2 — client goes down and comes back up)
             </label>
+            {subBajarRoundTrip && (
+              <label className="flex items-center gap-2">
+                Return pickup time (optional — if coming back later, not right away)
+                <input
+                  type="time"
+                  value={form.return_time}
+                  onChange={(e) => update("return_time", e.target.value)}
+                  className="input w-40"
+                />
+              </label>
+            )}
             <label className="flex items-center gap-2">
               Transportation fee per way (optional, DOP)
               <input

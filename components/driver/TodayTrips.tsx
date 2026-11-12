@@ -10,6 +10,7 @@ interface TripRow {
   status: string;
   needs_wheelchair?: boolean;
   needs_stair_climber?: boolean;
+  return_time?: string | null;
   services: { name: string } | null;
 }
 
@@ -59,6 +60,11 @@ export default function TodayTrips({ trips }: { trips: TripRow[] }) {
                   {STATUS_LABELS[trip.status] ?? trip.status}
                 </span>
               </div>
+              {trip.return_time && (
+                <p className="mt-1 text-xs font-medium text-blue-700 dark:text-blue-400">
+                  ↩ Regreso aprox. {formatTime12(trip.return_time)}
+                </p>
+              )}
             </Link>
           ))}
         </div>
