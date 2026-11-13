@@ -22,6 +22,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const blogIndexPages = ["/blog"];
 
+  const newsPages = ["/news"];
+
   const blogPages = [
     "/blog/wheelchair-accessible-airport-transfer-punta-cana",
     "/blog/transporte-silla-ruedas-santo-domingo",
@@ -70,6 +72,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.8,
+    })),
+    ...newsPages.map((slug) => ({
+      url: `${baseUrl}${slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.6,
     })),
   ];
 }

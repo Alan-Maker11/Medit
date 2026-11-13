@@ -10,6 +10,7 @@ const EXPLORE_LINKS = [
   { href: "/accessible-resorts-punta-cana", label: "Accessible Resorts Guide" },
   { href: "/faq", label: "FAQ" },
   { href: "/blog", label: "Blog" },
+  { href: "/news", label: "News" },
   { href: "/about", label: "About Medit RD" },
   { href: "/contact", label: "Contact / Book" },
 ];
