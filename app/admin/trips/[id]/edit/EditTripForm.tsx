@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDOP, STAIR_CLIMBER_PRICING, getStairClimberPrice } from "@/lib/fare";
 import { formatDateWithDay } from "@/lib/date-utils";
@@ -81,12 +81,14 @@ export default function EditTripForm({
     (wheelchair ? 350 : 0) +
     (stairsElevator ? getStairClimberPrice(stairFloor) * subBajarMultiplier : 0);
 
-  // Keep total_fare in sync with fee calculator when in Subir/Bajar mode
-  function handleFeeChange(newTransport: string, newWheelchair: boolean, newStairs: boolean, newFloor: number) {
-    const m = subBajarRoundTrip ? 2 : 1;
-    const total = (Number(newTransport) || 0) * m + (newWheelchair ? 350 : 0) + (newStairs ? getStairClimberPrice(newFloor) * m : 0);
-    setForm((prev) => ({ ...prev, total_fare: total > 0 ? String(total) : prev.total_fare }));
-  }
+  // Keep total_fare always in sync with the fee calculator for Subir/Bajar trips — recomputed
+  // directly from the live toggles on every change, instead of relying on each individual
+  // control's onChange handler to recompute it (which could go stale and mismatch the toggles).
+  useEffect(() => {
+    if (!isSubirBajar) return;
+    setForm((prev) => ({ ...prev, total_fare: String(subBajarTotal) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSubirBajar, subBajarTotal]);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -289,13 +291,7 @@ export default function EditTripForm({
               <input
                 type="checkbox"
                 checked={subBajarRoundTrip}
-                onChange={(e) => {
-                  setSubBajarRoundTrip(e.target.checked);
-                  // recalc with new multiplier
-                  const m = e.target.checked ? 2 : 1;
-                  const total = (Number(transportFee) || 0) * m + (wheelchair ? 350 : 0) + (stairsElevator ? getStairClimberPrice(stairFloor) * m : 0);
-                  if (total > 0) setForm((prev) => ({ ...prev, total_fare: String(total) }));
-                }}
+                onChange={(e) => setSubBajarRoundTrip(e.target.checked)}
               />
               Round-trip (×2 — client goes down and comes back up)
             </label>
@@ -316,10 +312,7 @@ export default function EditTripForm({
                 type="number"
                 min={0}
                 value={transportFee}
-                onChange={(e) => {
-                  setTransportFee(e.target.value);
-                  handleFeeChange(e.target.value, wheelchair, stairsElevator, stairFloor);
-                }}
+                onChange={(e) => setTransportFee(e.target.value)}
                 className="input w-32"
               />
               {subBajarRoundTrip && Number(transportFee) > 0 && (
@@ -330,10 +323,7 @@ export default function EditTripForm({
               <input
                 type="checkbox"
                 checked={wheelchair}
-                onChange={(e) => {
-                  setWheelchair(e.target.checked);
-                  handleFeeChange(transportFee, e.target.checked, stairsElevator, stairFloor);
-                }}
+                onChange={(e) => setWheelchair(e.target.checked)}
               />
               Wheelchair (+{formatDOP(350)} — one-time rental)
             </label>
@@ -344,9 +334,7 @@ export default function EditTripForm({
                 onChange={(e) => {
                   const checked = e.target.checked;
                   setStairsElevator(checked);
-                  const nextFloor = checked ? (stairFloor || 2) : 0;
-                  setStairFloor(nextFloor);
-                  handleFeeChange(transportFee, wheelchair, checked, nextFloor);
+                  setStairFloor(checked ? (stairFloor || 2) : 0);
                 }}
               />
               Stair climber / Elevator
@@ -358,10 +346,7 @@ export default function EditTripForm({
                   <button
                     key={p.floor}
                     type="button"
-                    onClick={() => {
-                      setStairFloor(p.floor);
-                      handleFeeChange(transportFee, wheelchair, stairsElevator, p.floor);
-                    }}
+                    onClick={() => setStairFloor(p.floor)}
                     className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                       stairFloor === p.floor
                         ? "border-orange-500 bg-orange-500 text-white"
@@ -377,15 +362,6 @@ export default function EditTripForm({
           <div className="mt-1 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
             <p className="text-xs text-zinc-500">Total charge</p>
             <p className="text-2xl font-bold">{formatDOP(Number(form.total_fare) || 0)}</p>
-            {subBajarTotal > 0 && subBajarTotal !== Number(form.total_fare) && (
-              <button
-                type="button"
-                onClick={() => update("total_fare", String(subBajarTotal))}
-                className="mt-1 text-xs text-blue-600 hover:underline"
-              >
-                Apply fee total ({formatDOP(subBajarTotal)})
-              </button>
-            )}
           </div>
           {/* Allow manual override */}
           <label className="flex flex-col gap-1 text-sm font-normal">
