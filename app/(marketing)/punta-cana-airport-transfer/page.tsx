@@ -25,14 +25,25 @@ const FEATURES = [
 ];
 
 const PRICING = [
-  { route: "Airport → Bávaro / Punta Cana resort area", price: "from $45", notes: "1–4 pax" },
-  { route: "Airport → Cap Cana", price: "from $55", notes: "1–4 pax" },
-  { route: "Airport → Uvero Alto", price: "from $65", notes: "1–4 pax" },
+  { route: "Airport → Bávaro / Punta Cana resort area", price: "$120", notes: "1–4 pax" },
+  { route: "Airport → Cap Cana", price: "$80", notes: "1–4 pax" },
+  { route: "Airport → Macao", price: "$180", notes: "1–4 pax" },
+  { route: "Airport → Higüey", price: "$100", notes: "1–4 pax" },
+  { route: "Airport → La Romana", price: "$120", notes: "1–4 pax" },
+  { route: "Airport → Santo Domingo", price: "$250", notes: "1–4 pax" },
   { route: "Additional passengers (5+)", price: "+$10 each", notes: "" },
   { route: "Power wheelchair surcharge", price: "+$0", notes: "Included" },
 ];
 
-const SERVICE_AREA = ["Bávaro", "Cap Cana", "Uvero Alto", "Macao", "Punta Cana Village", "Higüey", "La Altagracia province"];
+const SERVICE_AREA = [
+  "Bávaro",
+  "Cap Cana",
+  "Macao",
+  "Punta Cana Village",
+  "Higüey",
+  "La Romana",
+  "La Altagracia province",
+];
 
 const FAQS: FAQItem[] = [
   {
@@ -49,7 +60,7 @@ const FAQS: FAQItem[] = [
   },
   {
     q: "Do you go to Cap Cana?",
-    a: "Yes — Cap Cana is one of our most frequent drop-off areas, including the marina, golf communities, and resorts like Hyatt Ziva and Eden Roc. The transfer from PUJ runs from $55 for up to 4 passengers.",
+    a: "Yes — Cap Cana is one of our most frequent drop-off areas, including the marina, golf communities, and resorts like Hyatt Ziva and Eden Roc. The transfer from PUJ runs $80 for up to 4 passengers.",
   },
 ];
 
@@ -60,7 +71,7 @@ export default function PuntaCanaAirportTransferPage() {
     serviceType: "Wheelchair-accessible airport transfer",
     name: "Wheelchair Airport Transfer — Punta Cana (PUJ)",
     description:
-      "Private wheelchair-accessible van transfer from Punta Cana International Airport (PUJ) to resorts in Bávaro, Cap Cana, Uvero Alto and beyond. Flight tracking, ramp-equipped van, certified driver.",
+      "Private wheelchair-accessible van transfer from Punta Cana International Airport (PUJ) to resorts in Bávaro, Cap Cana, Macao and beyond. Flight tracking, ramp-equipped van, certified driver.",
     provider: { "@type": "LocalBusiness", name: "Medit RD", url: "https://www.meditrd.site", telephone: "+18293296920" },
     areaServed: SERVICE_AREA.map((name) => ({ "@type": "Place", name })),
     offers: PRICING.filter((p) => p.price.startsWith("from")).map((p) => ({

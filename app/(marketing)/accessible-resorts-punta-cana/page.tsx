@@ -40,7 +40,7 @@ const RESORTS = [
     score: 5,
     works: "Newer construction with genuinely wide doorways, roll-in showers in accessible rooms, flat pool decks, and a relatively compact layout compared to mega-resorts.",
     doesnt: "Being in Cap Cana rather than central Bávaro, it's a bit further from PUJ airport and from some off-resort excursions.",
-    tip: "Our Cap Cana airport transfer runs from $55 — book it alongside your stay since Cap Cana taxis are less frequent than in central Bávaro.",
+    tip: "Our Cap Cana airport transfer runs $80 — book it alongside your stay since Cap Cana taxis are less frequent than in central Bávaro.",
   },
   {
     name: "Excellence Playa Mujeres",
