@@ -165,41 +165,47 @@ export default function MeditikoCalculatorPage() {
     `Hi Medit, I need transportation for a long trip: ${tripSummary}`
   )}`;
 
-  async function handleBook() {
-    setBookingError(null);
+  // The booking button is a real <a href> to WhatsApp (so link-based analytics triggers can
+  // detect it) that also saves the booking record. Opening in a new tab (target="_blank") keeps
+  // this tab's JS running, so the save request still completes even though the anchor's default
+  // navigation isn't blocked. Validation failures call preventDefault to stop the WhatsApp
+  // navigation from happening at all.
+  function handleBook(e: React.MouseEvent<HTMLAnchorElement>) {
     if (!passengerName.trim() || !passengerPhone.trim()) {
+      e.preventDefault();
       setBookingError("Enter your name and phone number to book.");
       return;
     }
-    if (effectiveKm == null) return;
-    setBooking(true);
-    try {
-      const res = await fetch("/api/meditiko/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          passenger_name: passengerName.trim(),
-          passenger_phone: passengerPhone.trim(),
-          pickup_address: pickupAddress,
-          destination_address: destinationAddress,
-          trip_distance_km: effectiveKm,
-          estimated_duration_minutes: effectiveMinutes ?? 0,
-          trip_type: tripType === "roundtrip" ? "round_trip" : "one_way",
-          waiting_hours: waitingHours,
-          estimated_price: calculatedPrice,
-        }),
-      });
-      if (!res.ok) {
-        setBookingError("Could not submit the booking. Try again or contact us on WhatsApp.");
-        setBooking(false);
-        return;
-      }
-      setBookingConfirmed(true);
-      window.open(bookHref, "_blank", "noopener,noreferrer");
-    } catch {
-      setBookingError("Could not submit the booking. Try again or contact us on WhatsApp.");
+    if (effectiveKm == null) {
+      e.preventDefault();
+      return;
     }
-    setBooking(false);
+    setBookingError(null);
+    setBooking(true);
+    fetch("/api/meditiko/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        passenger_name: passengerName.trim(),
+        passenger_phone: passengerPhone.trim(),
+        pickup_address: pickupAddress,
+        destination_address: destinationAddress,
+        trip_distance_km: effectiveKm,
+        estimated_duration_minutes: effectiveMinutes ?? 0,
+        trip_type: tripType === "roundtrip" ? "round_trip" : "one_way",
+        waiting_hours: waitingHours,
+        estimated_price: calculatedPrice,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          setBookingError("Could not submit the booking. Try again or contact us on WhatsApp.");
+          return;
+        }
+        setBookingConfirmed(true);
+      })
+      .catch(() => setBookingError("Could not submit the booking. Try again or contact us on WhatsApp."))
+      .finally(() => setBooking(false));
   }
 
   return (
@@ -458,13 +464,22 @@ export default function MeditikoCalculatorPage() {
                   📍 Contact Medit Premium
                 </a>
               ) : (
-                <button
-                  onClick={handleBook}
-                  disabled={booking}
-                  className="flex w-full transform items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 font-bold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:opacity-60"
+                <a
+                  href={bookHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-disabled={booking}
+                  onClick={(e) => {
+                    if (booking) {
+                      e.preventDefault();
+                      return;
+                    }
+                    handleBook(e);
+                  }}
+                  className={`flex w-full transform items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 font-bold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl ${booking ? "pointer-events-none opacity-60" : ""}`}
                 >
                   📍 {booking ? "Submitting booking…" : "Book Now"}
-                </button>
+                </a>
               )}
               {bookingError && <p className="text-center text-sm text-red-600">{bookingError}</p>}
             </>

@@ -25,7 +25,8 @@ const SERVICES = [
 ];
 
 export default function Services() {
-  function go(type: "transfer" | "tour") {
+  function go(e: React.MouseEvent<HTMLAnchorElement>, type: "transfer" | "tour") {
+    e.preventDefault();
     if (type === "tour") {
       document.getElementById("tours")?.scrollIntoView({ behavior: "smooth" });
       return;
@@ -42,10 +43,11 @@ export default function Services() {
         </h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {SERVICES.map((s) => (
-            <button
+            <a
               key={s.title}
-              onClick={() => go(s.type)}
-              className="group rounded-2xl border border-zinc-200 bg-medit-bg p-6 text-left transition-shadow hover:shadow-xl dark:border-zinc-800 dark:bg-[#0d1421]"
+              href={s.type === "tour" ? "#tours" : "#reservar"}
+              onClick={(e) => go(e, s.type)}
+              className="group block rounded-2xl border border-zinc-200 bg-medit-bg p-6 text-left transition-shadow hover:shadow-xl dark:border-zinc-800 dark:bg-[#0d1421]"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-medit-navy to-medit-teal-2 text-2xl">
                 {s.icon}
@@ -53,7 +55,7 @@ export default function Services() {
               <h3 className="font-display mt-4 text-xl font-bold text-medit-fg dark:text-white">{s.title}</h3>
               <p className="font-body mt-2 text-sm text-zinc-600 dark:text-zinc-400">{s.desc}</p>
               <span className="font-body mt-3 inline-block text-sm font-bold text-medit-teal-2 dark:text-medit-teal">{s.cta}</span>
-            </button>
+            </a>
           ))}
         </div>
       </div>

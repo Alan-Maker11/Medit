@@ -155,7 +155,7 @@ export default function BookingWizard() {
     setStep(n);
   }
 
-  function submitBooking() {
+  const bookingWhatsAppUrl = useMemo(() => {
     const serviceLabel = type === "transfer" ? "Transfer" : type === "tour" ? "Tour" : "Custom";
     const regionLabel = region === "puj" ? "Punta Cana (PUJ)" : "Santo Domingo (SDQ)";
     const addonLines = ALL_ADDONS.filter((a) => addons[a.key] > 0)
@@ -179,24 +179,8 @@ export default function BookingWizard() {
       (addonLines ? `\n🎁 *Requested add-ons:*\n${addonLines}\n   Add-ons subtotal: $${addonsSubtotal} USD\n` : "") +
       `\nPlease confirm availability and final price. Thank you! 🙏`;
 
-    window.open(`https://wa.me/18293296920?text=${encodeURIComponent(message)}`, "_blank");
-  }
-
-  function whaCalc() {
-    const addonsLabel = [calcWheelchair ? "Wheelchair" : "", calcStairclimber ? "Stair climber" : ""]
-      .filter(Boolean)
-      .join(", ");
-    const { range } = fareRange;
-    const message =
-      `🧮 *MEDIT TRANSPORT QUOTE*\n` +
-      `📍 Origin: ${calcOrigin || "—"}\n` +
-      `🏁 Destination: ${calcDest || "—"}\n` +
-      `↔️ Type: Round trip (up to 3h)\n` +
-      (addonsLabel ? `♿ Add-ons: ${addonsLabel}\n` : "") +
-      `💰 Estimate: ${range}\n\n` +
-      `Please confirm the exact fare and availability. Thank you!`;
-    window.open(`https://wa.me/18293296920?text=${encodeURIComponent(message)}`, "_blank");
-  }
+    return `https://wa.me/18293296920?text=${encodeURIComponent(message)}`;
+  }, [type, region, addons, passengerName, selectedRoute, date, time, pax, trip, returnTime, waitingHours, flight, addonsSubtotal]);
 
   const fareRange = useMemo(() => {
     const baseMin = 60;
@@ -218,6 +202,22 @@ export default function BookingWizard() {
       range: `$${totalMin} USD – $${totalMax} USD`,
     };
   }, [calcFloor, calcWheelchair, calcStairclimber]);
+
+  const calcWhatsAppUrl = useMemo(() => {
+    const addonsLabel = [calcWheelchair ? "Wheelchair" : "", calcStairclimber ? "Stair climber" : ""]
+      .filter(Boolean)
+      .join(", ");
+    const { range } = fareRange;
+    const message =
+      `🧮 *MEDIT TRANSPORT QUOTE*\n` +
+      `📍 Origin: ${calcOrigin || "—"}\n` +
+      `🏁 Destination: ${calcDest || "—"}\n` +
+      `↔️ Type: Round trip (up to 3h)\n` +
+      (addonsLabel ? `♿ Add-ons: ${addonsLabel}\n` : "") +
+      `💰 Estimate: ${range}\n\n` +
+      `Please confirm the exact fare and availability. Thank you!`;
+    return `https://wa.me/18293296920?text=${encodeURIComponent(message)}`;
+  }, [calcWheelchair, calcStairclimber, fareRange, calcOrigin, calcDest]);
 
   const showFareResult = calcOrigin.trim() !== "" || calcDest.trim() !== "";
 
@@ -480,9 +480,9 @@ export default function BookingWizard() {
                     </div>
                   )}
                 </div>
-                <button className="btn-whatsapp" onClick={submitBooking}>
+                <a className="btn-whatsapp" href={bookingWhatsAppUrl} target="_blank" rel="noopener noreferrer">
                   📱 Confirm via WhatsApp
-                </button>
+                </a>
                 <button className="btn-back" onClick={() => goStep(3)}>
                   ← Edit
                 </button>
@@ -583,9 +583,9 @@ export default function BookingWizard() {
               </div>
             )}
             {showFareResult && (
-              <button className="fare-wha" onClick={whaCalc}>
+              <a className="fare-wha" href={calcWhatsAppUrl} target="_blank" rel="noopener noreferrer">
                 📱 Confirm via WhatsApp
-              </button>
+              </a>
             )}
           </div>
         )}

@@ -29,12 +29,11 @@ export default function BookingForm() {
   const [requests, setRequests] = useState("");
   const [contactPref, setContactPref] = useState<"whatsapp" | "email">("whatsapp");
   const [submitted, setSubmitted] = useState(false);
+  const [missingFields, setMissingFields] = useState(false);
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    const wheelchairLabel = WHEELCHAIR_OPTIONS.find((w) => w.value === wheelchair)?.label ?? wheelchair;
-    const message =
-      `🔵 *MEDIT RD — BOOKING REQUEST*\n` +
+  const wheelchairLabel = WHEELCHAIR_OPTIONS.find((w) => w.value === wheelchair)?.label ?? wheelchair;
+  const whatsAppUrl = waLink(
+    `🔵 *MEDIT RD — BOOKING REQUEST*\n` +
       `━━━━━━━━━━━━━━━━━━━━━━\n` +
       (name ? `👤 Name: ${name}\n` : "") +
       `📅 Date of travel: ${date || "—"}\n` +
@@ -44,15 +43,22 @@ export default function BookingForm() {
       `♿ Wheelchair type: ${wheelchairLabel}\n` +
       (requests ? `📝 Special requests: ${requests}\n` : "") +
       `☎️ Preferred contact: ${contactPref === "whatsapp" ? "WhatsApp" : "Email"}\n` +
-      `\nPlease confirm availability and final price. Thank you! 🙏`;
+      `\nPlease confirm availability and final price. Thank you! 🙏`
+  );
 
-    window.open(waLink(message), "_blank");
+  function handleSend(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (!name.trim() || !date.trim() || !pickup.trim() || !dropoff.trim()) {
+      e.preventDefault();
+      setMissingFields(true);
+      return;
+    }
+    setMissingFields(false);
     setSubmitted(true);
   }
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={(e: FormEvent) => e.preventDefault()}
       className="font-body flex flex-col gap-5 rounded-2xl border border-zinc-200 bg-medit-bg p-6 shadow-sm dark:border-zinc-800 dark:bg-[#0d1421] sm:p-8"
     >
       <div className="grid gap-5 sm:grid-cols-2">
@@ -163,12 +169,21 @@ export default function BookingForm() {
         </div>
       </fieldset>
 
-      <button
-        type="submit"
-        className="rounded-full bg-medit-teal px-6 py-3 text-base font-bold text-medit-navy transition-transform duration-150 hover:scale-[1.02] hover:bg-medit-teal-2"
+      <a
+        href={whatsAppUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={handleSend}
+        className="rounded-full bg-medit-teal px-6 py-3 text-center text-base font-bold text-medit-navy transition-transform duration-150 hover:scale-[1.02] hover:bg-medit-teal-2"
       >
         💬 Send via WhatsApp
-      </button>
+      </a>
+
+      {missingFields && (
+        <p className="text-center text-sm font-semibold text-red-600">
+          Please fill in your name, date, pick-up, and drop-off location first.
+        </p>
+      )}
 
       {submitted && (
         <p className="text-center text-sm font-semibold text-medit-teal-2 dark:text-medit-teal">
