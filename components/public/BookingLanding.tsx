@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Navbar from "@/components/public/Navbar";
+import Footer from "@/components/public/Footer";
 import { WHATSAPP_NUMBER, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 
 type Lang = "es" | "en";
@@ -229,7 +231,7 @@ declare global {
   }
 }
 
-export default function BookingLanding({ lang }: { lang: Lang }) {
+export default function BookingLanding({ lang, hasLogo }: { lang: Lang; hasLogo: boolean }) {
   const c = CONTENT[lang];
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
   const [missingFields, setMissingFields] = useState(false);
@@ -268,18 +270,16 @@ export default function BookingLanding({ lang }: { lang: Lang }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-body dark:bg-black">
-      <header className="flex items-center justify-between px-4 py-4 sm:px-6">
-        <Link href="/" className="font-display bg-gradient-to-r from-medit-teal to-cyan-300 bg-clip-text text-xl font-bold text-transparent">
-          MEDIT
-        </Link>
+      <Navbar hasLogo={hasLogo} />
+      <div className="flex justify-end bg-medit-bg px-4 py-2 dark:bg-[#0d1421]">
         <Link
           href={c.switchHref}
           lang={lang === "es" ? "en" : "es"}
-          className="rounded-full border border-zinc-300 px-4 py-1.5 text-sm font-semibold text-medit-fg transition-colors hover:bg-medit-bg dark:border-zinc-700 dark:text-white dark:hover:bg-[#0d1421]"
+          className="rounded-full border border-zinc-300 px-4 py-1.5 text-sm font-semibold text-medit-fg transition-colors hover:bg-white dark:border-zinc-700 dark:text-white dark:hover:bg-black"
         >
           🌐 {c.switchLabel}
         </Link>
-      </header>
+      </div>
 
       <section className="medit-hero-gradient relative overflow-hidden px-4 py-12 sm:py-20">
         <div className="pointer-events-none absolute inset-0 opacity-20 [background:radial-gradient(circle_at_20%_20%,theme(colors.medit-teal)_0%,transparent_45%)]" />
@@ -460,9 +460,7 @@ export default function BookingLanding({ lang }: { lang: Lang }) {
         </div>
       </section>
 
-      <footer className="bg-medit-navy px-4 py-8 text-center text-sm text-white/60">
-        <p>© {new Date().getFullYear()} Medit RD — {WHATSAPP_DISPLAY}</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BookingLanding from "@/components/public/BookingLanding";
+import { hasMeditLogo } from "@/lib/hasLogo";
 
 const BASE_URL = "https://www.meditrd.site";
 const URL_ES = `${BASE_URL}/es/reservar`;
@@ -36,5 +37,5 @@ export const metadata: Metadata = {
 };
 
 export default function ReservarPage() {
-  return <BookingLanding lang="es" />;
+  return <BookingLanding lang="es" hasLogo={hasMeditLogo()} />;
 }
