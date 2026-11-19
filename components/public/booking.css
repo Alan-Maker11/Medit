@@ -139,7 +139,7 @@
 .addon-check input { width: 16px; height: 16px; accent-color: var(--bk-teal); flex-shrink: 0; }
 .addon-check small { font-weight: 700; color: var(--bk-teal2); margin-left: 4px; }
 .addon-check.checked { border-color: var(--bk-teal); background: var(--bk-accent); }
-.fare-wha { margin-top: 12px; width: 100%; background: #25D366; color: #fff; font-weight: 700; padding: 13px; border-radius: 10px; font-size: 0.94rem; transition: background 0.2s; cursor: pointer; font-family: inherit; }
+.fare-wha { display: block; margin-top: 12px; width: 100%; background: #25D366; color: #fff; font-weight: 700; padding: 13px; border-radius: 10px; font-size: 0.94rem; text-align: center; text-decoration: none; box-sizing: border-box; transition: background 0.2s; cursor: pointer; font-family: inherit; }
 .fare-wha:hover { background: #1da851; }
 
 .addon-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
@@ -161,7 +161,7 @@
 .summary-card { background: var(--bk-accent); border-radius: var(--bk-r2); padding: 16px; margin-bottom: 18px; border: 1px solid rgba(0, 191, 160, 0.2); }
 .summary-row { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 5px 0; color: var(--bk-fg); }
 .summary-row .val { font-weight: 700; }
-.btn-whatsapp { width: 100%; background: #25D366; color: #fff; font-weight: 700; font-size: 0.97rem; padding: 14px; border-radius: var(--bk-r2); margin-top: 6px; transition: background 0.2s; cursor: pointer; font-family: inherit; }
+.btn-whatsapp { display: block; width: 100%; background: #25D366; color: #fff; font-weight: 700; font-size: 0.97rem; padding: 14px; border-radius: var(--bk-r2); margin-top: 6px; text-align: center; text-decoration: none; box-sizing: border-box; transition: background 0.2s; cursor: pointer; font-family: inherit; }
 .btn-whatsapp:hover { background: #1da851; }
 
 .btn-primary { background: var(--bk-teal); color: #fff; font-weight: 700; padding: 14px 32px; border-radius: 26px; font-size: 1rem; box-shadow: 0 4px 20px rgba(0, 191, 160, 0.4); transition: all 0.2s; cursor: pointer; font-family: inherit; border: none; }

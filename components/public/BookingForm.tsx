@@ -174,7 +174,7 @@ export default function BookingForm() {
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleSend}
-        className="rounded-full bg-medit-teal px-6 py-3 text-center text-base font-bold text-medit-navy transition-transform duration-150 hover:scale-[1.02] hover:bg-medit-teal-2"
+        className="block rounded-full bg-medit-teal px-6 py-3 text-center text-base font-bold text-medit-navy no-underline transition-transform duration-150 hover:scale-[1.02] hover:bg-medit-teal-2"
       >
         💬 Send via WhatsApp
       </a>
