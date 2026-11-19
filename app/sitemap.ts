@@ -35,8 +35,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/blog/traslado-medico-accesible-punta-cana",
   ];
 
+  const bookingLandingPages = [
+    { url: `${baseUrl}/es/reservar`, lang: "es-DO" as const, altUrl: `${baseUrl}/en/book`, altLang: "en" as const },
+    { url: `${baseUrl}/en/book`, lang: "en" as const, altUrl: `${baseUrl}/es/reservar`, altLang: "es-DO" as const },
+  ];
+
   return [
     { url: baseUrl, lastModified: now, changeFrequency: "weekly", priority: 1 },
+    ...bookingLandingPages.map((p) => ({
+      url: p.url,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+      alternates: {
+        languages: {
+          [p.lang]: p.url,
+          [p.altLang]: p.altUrl,
+          "x-default": `${baseUrl}/en/book`,
+        },
+      },
+    })),
     ...servicePages.map((slug) => ({
       url: `${baseUrl}${slug}`,
       lastModified: now,
