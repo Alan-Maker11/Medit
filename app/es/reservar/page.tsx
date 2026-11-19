@@ -7,7 +7,7 @@ const URL_ES = `${BASE_URL}/es/reservar`;
 const URL_EN = `${BASE_URL}/en/book`;
 
 export const metadata: Metadata = {
-  title: "Reserva transporte en silla de ruedas en RD | Medit RD",
+  title: "Reserva transporte en silla de ruedas en RD",
   description:
     "Reserve su transporte accesible en silla de ruedas en Santo Domingo y toda RD. Vans con rampa, silla salvaescaleras y asistencia puerta a puerta. Desde RD$1,250.",
   alternates: {

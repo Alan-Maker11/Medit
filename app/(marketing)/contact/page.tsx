@@ -8,7 +8,7 @@ const SLUG = "/contact";
 
 export const metadata: Metadata = buildPageMetadata({
   slug: SLUG,
-  title: "Book Accessible Transport — Medit RD",
+  title: "Book Accessible Transport",
   description:
     "Book your wheelchair-accessible transfer or tour in 2 minutes. WhatsApp, email or our booking form. Available 24/7 in DR.",
 });

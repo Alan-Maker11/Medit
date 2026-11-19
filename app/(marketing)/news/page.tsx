@@ -7,7 +7,7 @@ const SLUG = "/news";
 
 export const metadata: Metadata = buildPageMetadata({
   slug: SLUG,
-  title: "News & Updates — Medit RD",
+  title: "News & Updates",
   description: "Latest news and updates on wheelchair-accessible travel in the Dominican Republic from Medit RD.",
 });
 

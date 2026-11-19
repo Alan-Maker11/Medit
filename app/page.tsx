@@ -10,13 +10,12 @@ import Destinations from "@/components/public/Destinations";
 import ToursGallery from "@/components/public/ToursGallery";
 import BookingWizard from "@/components/public/BookingWizard";
 import TrustStrip from "@/components/public/TrustStrip";
-import Reviews from "@/components/public/Reviews";
 import FAQ from "@/components/public/FAQ";
 import PortalLinks from "@/components/public/PortalLinks";
 import Footer from "@/components/public/Footer";
 
 export const metadata: Metadata = {
-  title: "Wheelchair Accessible Transport Dominican Republic",
+  title: { absolute: "Wheelchair Accessible Transport Dominican Republic | Medit RD" },
   description:
     "The only certified wheelchair-accessible transport in Punta Cana & Santo Domingo. Airport transfers, medical transport & tours. Book via WhatsApp in 2 minutes.",
   alternates: {
@@ -45,7 +44,6 @@ export default function Home() {
       <ToursGallery />
       <BookingWizard />
       <TrustStrip />
-      <Reviews />
       <FAQ />
       <PortalLinks />
       <Footer />

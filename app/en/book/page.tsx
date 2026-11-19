@@ -7,7 +7,7 @@ const URL_ES = `${BASE_URL}/es/reservar`;
 const URL_EN = `${BASE_URL}/en/book`;
 
 export const metadata: Metadata = {
-  title: "Book Wheelchair-Accessible Transport in DR | Medit RD",
+  title: "Book Wheelchair-Accessible Transport in DR",
   description:
     "Book your wheelchair-accessible transport in the Dominican Republic in minutes. Ramp vans, stair-climber service and door-to-door assistance. From RD$1,250.",
   alternates: {

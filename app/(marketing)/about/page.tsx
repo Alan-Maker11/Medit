@@ -7,7 +7,7 @@ const SLUG = "/about";
 
 export const metadata: Metadata = buildPageMetadata({
   slug: SLUG,
-  title: "About Medit RD — Accessible Transport DR",
+  title: "About Us — Accessible Transport DR",
   description:
     "Medit RD is the Dominican Republic's first dedicated wheelchair-accessible transport service. Meet our team and our mission.",
 });

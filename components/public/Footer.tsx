@@ -49,6 +49,11 @@ export default function Footer() {
               </a>
             </li>
             <li>
+              <a href="tel:+18293296920" className="hover:text-white">
+                📞 +1 (829) 329-6920
+              </a>
+            </li>
+            <li>
               <a href="mailto:medicapatrans@gmail.com" className="hover:text-white">
                 ✉️ medicapatrans@gmail.com
               </a>

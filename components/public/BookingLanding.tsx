@@ -19,9 +19,6 @@ interface Content {
   callCta: string;
   switchLabel: string;
   switchHref: string;
-  reviewsTitle: string;
-  ratingLabel: string;
-  reviews: { name: string; text: string }[];
   formTitle: string;
   formIntro: string;
   labels: {
@@ -89,22 +86,6 @@ const CONTENT: Record<Lang, Content> = {
     callCta: "Llamar ahora",
     switchLabel: "English",
     switchHref: "/en/book",
-    reviewsTitle: "Lo que dicen nuestros clientes",
-    ratingLabel: "4.9 de 5",
-    reviews: [
-      {
-        name: "Carmen R.",
-        text: "El conductor fue puntual y muy atento con mi madre, que usa silla de ruedas. Todo el viaje al aeropuerto fue sin estrés.",
-      },
-      {
-        name: "James T.",
-        text: "Reservé un traslado desde el aeropuerto de Punta Cana — la van era totalmente accesible y el conductor siguió el retraso de nuestro vuelo a la perfección.",
-      },
-      {
-        name: "Luisa M.",
-        text: "Uso Medit cada semana para las terapias de mi hijo. Siempre llegan a tiempo y son muy amables.",
-      },
-    ],
     formTitle: "Solicite su reserva",
     formIntro:
       "Este formulario no envía nada por sí solo: arma un mensaje de WhatsApp con todos sus datos y lo abre para que usted lo envíe. Nada queda reservado hasta que lo confirmemos por WhatsApp.",
@@ -164,22 +145,6 @@ const CONTENT: Record<Lang, Content> = {
     callCta: "Call now",
     switchLabel: "Español",
     switchHref: "/es/reservar",
-    reviewsTitle: "What our customers say",
-    ratingLabel: "4.9 out of 5",
-    reviews: [
-      {
-        name: "Carmen R.",
-        text: "The driver was punctual and very attentive to my mother, who uses a wheelchair. The whole trip to the airport was stress-free.",
-      },
-      {
-        name: "James T.",
-        text: "Booked a transfer from Punta Cana airport — the van was fully accessible and the driver tracked our flight delay perfectly.",
-      },
-      {
-        name: "Luisa M.",
-        text: "I use Medit for my son's therapy sessions every week. They always arrive on time and are very friendly.",
-      },
-    ],
     formTitle: "Request your booking",
     formIntro:
       "This form doesn't submit anywhere on its own — it composes a WhatsApp message with everything you entered and opens it for you to send. Nothing is booked until we confirm back on WhatsApp.",
@@ -318,27 +283,6 @@ export default function BookingLanding({ lang, hasLogo }: { lang: Lang; hasLogo:
               {t}
             </div>
           ))}
-        </div>
-      </section>
-
-      <section className="bg-white px-4 py-12 dark:bg-black sm:py-16">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex flex-col items-center text-center">
-            <h2 className="font-display text-2xl font-bold text-medit-fg dark:text-white sm:text-3xl">{c.reviewsTitle}</h2>
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-medit-gold">★★★★★</span>
-              <span className="font-body text-sm font-semibold text-zinc-600 dark:text-zinc-400">{c.ratingLabel}</span>
-            </div>
-          </div>
-          <div className="mt-8 grid gap-5 sm:grid-cols-3">
-            {c.reviews.map((r) => (
-              <div key={r.name} className="rounded-2xl border border-zinc-200 bg-medit-bg p-5 dark:border-zinc-800 dark:bg-[#0d1421]">
-                <span className="text-medit-gold">★★★★★</span>
-                <p className="font-body mt-2 text-sm text-zinc-600 dark:text-zinc-400">&ldquo;{r.text}&rdquo;</p>
-                <p className="font-body mt-3 text-sm font-bold text-medit-fg dark:text-white">{r.name}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
