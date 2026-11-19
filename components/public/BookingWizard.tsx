@@ -582,11 +582,9 @@ export default function BookingWizard() {
                 </p>
               </div>
             )}
-            {showFareResult && (
-              <a className="fare-wha" href={calcWhatsAppUrl} target="_blank" rel="noopener noreferrer">
-                📱 Confirm via WhatsApp
-              </a>
-            )}
+            <a className="fare-wha" href={calcWhatsAppUrl} target="_blank" rel="noopener noreferrer">
+              📱 Confirm via WhatsApp
+            </a>
           </div>
         )}
       </div>
