@@ -35,7 +35,6 @@ interface Content {
     needs: string;
     needWheelchair: string;
     needStairClimber: string;
-    needCompanion: string;
     notes: string;
     notesPlaceholder: string;
     submit: string;
@@ -55,7 +54,6 @@ interface FormState {
   tripType: "one-way" | "round-trip";
   needWheelchair: boolean;
   needStairClimber: boolean;
-  needCompanion: boolean;
   notes: string;
 }
 
@@ -69,7 +67,6 @@ const INITIAL_STATE: FormState = {
   tripType: "one-way",
   needWheelchair: false,
   needStairClimber: false,
-  needCompanion: false,
   notes: "",
 };
 
@@ -82,7 +79,7 @@ const CONTENT: Record<Lang, Content> = {
       "Vans adaptadas, conductores capacitados y asistencia puerta a puerta. Complete el formulario y le enviamos la disponibilidad al instante por WhatsApp.",
     trustPoints: [
       "🚐 Vehículos adaptados con rampa, listos para silla de ruedas",
-      "🪜 Servicio de silla salvaescaleras (2do piso en adelante)",
+      "🪜 Servicio de máquina para bajar escaleras (2do piso en adelante)",
       "🤝 Asistencia puerta a puerta en cada viaje",
     ],
     priceLine: "Desde RD$1,250",
@@ -121,8 +118,7 @@ const CONTENT: Record<Lang, Content> = {
       roundTrip: "Ida y vuelta",
       needs: "Necesidades especiales",
       needWheelchair: "♿ Silla de ruedas",
-      needStairClimber: "🪜 Silla salvaescaleras",
-      needCompanion: "🤝 Acompañante",
+      needStairClimber: "🪜 Máquina para bajar escaleras",
       notes: "Notas adicionales",
       notesPlaceholder: "Número de vuelo, equipaje, paradas extra…",
       submit: "Enviar por WhatsApp →",
@@ -139,11 +135,10 @@ const CONTENT: Record<Lang, Content> = {
       `📍 Recogida: ${f.pickup}\n` +
       `🏁 Destino: ${f.dropoff}\n` +
       `↔️ Tipo de viaje: ${f.tripType === "one-way" ? "Solo ida" : "Ida y vuelta"}\n` +
-      (f.needWheelchair || f.needStairClimber || f.needCompanion
+      (f.needWheelchair || f.needStairClimber
         ? `♿ Necesidades: ${[
             f.needWheelchair ? "Silla de ruedas" : "",
-            f.needStairClimber ? "Silla salvaescaleras" : "",
-            f.needCompanion ? "Acompañante" : "",
+            f.needStairClimber ? "Máquina para bajar escaleras" : "",
           ]
             .filter(Boolean)
             .join(", ")}\n`
@@ -198,8 +193,7 @@ const CONTENT: Record<Lang, Content> = {
       roundTrip: "Round trip",
       needs: "Special needs",
       needWheelchair: "♿ Wheelchair",
-      needStairClimber: "🪜 Stair-climber",
-      needCompanion: "🤝 Companion",
+      needStairClimber: "🪜 Stair-climbing machine",
       notes: "Additional notes",
       notesPlaceholder: "Flight number, luggage, extra stops…",
       submit: "Send via WhatsApp →",
@@ -216,11 +210,10 @@ const CONTENT: Record<Lang, Content> = {
       `📍 Pick-up: ${f.pickup}\n` +
       `🏁 Destination: ${f.dropoff}\n` +
       `↔️ Trip type: ${f.tripType === "one-way" ? "One way" : "Round trip"}\n` +
-      (f.needWheelchair || f.needStairClimber || f.needCompanion
+      (f.needWheelchair || f.needStairClimber
         ? `♿ Needs: ${[
             f.needWheelchair ? "Wheelchair" : "",
-            f.needStairClimber ? "Stair-climber" : "",
-            f.needCompanion ? "Companion" : "",
+            f.needStairClimber ? "Stair-climbing machine" : "",
           ]
             .filter(Boolean)
             .join(", ")}\n`
@@ -436,15 +429,6 @@ export default function BookingLanding({ lang }: { lang: Lang }) {
                     className="accent-medit-teal"
                   />
                   {c.labels.needStairClimber}
-                </label>
-                <label className="font-body flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  <input
-                    type="checkbox"
-                    checked={form.needCompanion}
-                    onChange={(e) => set("needCompanion", e.target.checked)}
-                    className="accent-medit-teal"
-                  />
-                  {c.labels.needCompanion}
                 </label>
               </div>
             </fieldset>
